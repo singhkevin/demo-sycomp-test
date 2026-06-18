@@ -1,0 +1,24 @@
+# WordPress Core and Server Configuration Files
+wp-config.php
+.htaccess
+.htaccess.bk
+local-xdebuginfo.php
+test-path.php
+fix-sycomp.php
+
+# WordPress Content Uploads & Backups
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/ai1wm-backups/
+wp-content/litespeed/
+wp-content/debug.log
+
+# ZIP files (plugin/theme backups)
+wp-content/plugins/**/*.zip
+wp-content/themes/**/*.zip
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

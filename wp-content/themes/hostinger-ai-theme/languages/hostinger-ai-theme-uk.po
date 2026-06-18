@@ -1,0 +1,2382 @@
+# Copyright (C) 2024 Hostinger
+# This file is distributed under the GPLv3.
+msgid ""
+msgstr ""
+"Project-Id-Version: Hostinger AI theme 1.0.3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/hostinger-ai-"
+"theme\n"
+"Last-Translator: Julia\n"
+"Language-Team: Ukrainian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-09-17T07:01:03+00:00\n"
+"PO-Revision-Date: 2026-05-07 10:55+0000\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Domain: hostinger-ai-theme\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10 >= 2 && "
+"n%10<=4 &&(n%100<10||n%100 >= 20)? 1 : 2);\n"
+"X-Loco-Version: 2.8.1; wp-6.9; php-8.2.29"
+
+#: includes/Admin/AdminTranslations.php:47
+#, fuzzy, php-format
+msgid "%s characters left"
+msgstr "залишилося %s символів"
+
+#. translators: %s: plugin name
+#: includes/Builder/AbstractPluginBuilder.php:46
+#, fuzzy, php-format
+msgid "%s is not active after installation."
+msgstr "%s не активний після встановлення."
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:46
+#, fuzzy
+msgid "A customizable booking form for your website"
+msgstr "Налаштовувана форма бронювання для вашого сайту"
+
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:9
+#, fuzzy
+msgid "A customizable contact form for your website"
+msgstr "Налаштовувана контактна форма для вашого сайту"
+
+#: includes/Admin/AdminTranslations.php:137
+#, fuzzy
+msgid "Accent"
+msgstr "Акцент"
+
+#: includes/Admin/AdminTranslations.php:194
+#: includes/Admin/AdminTranslations.php:199
+#, fuzzy
+msgid "Actions"
+msgstr "Дії"
+
+#: includes/Admin/AdminTranslations.php:207
+#, fuzzy
+msgid "Add"
+msgstr "Додати"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Add an image"
+msgstr "Додати зображення"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:126
+#, fuzzy
+msgid "Add text..."
+msgstr "Додати текст..."
+
+#: includes/Settings/Theme.php:97
+msgid "Adjust how elements are displayed on your website:"
+msgstr "Налаштуйте відображення елементів на вашому сайті:"
+
+#: includes/Admin/AdminTranslations.php:17
+msgid "Affiliate marketing site"
+msgstr "Сайт партнерського маркетингу"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#: gutenberg-blocks/AiContent/src/index.js:10
+#, fuzzy
+msgid "AI Content Generator"
+msgstr "Генератор контенту зі штучним інтелектом"
+
+#: includes/Admin/AdminTranslations.php:10 includes/Admin/Menu.php:21
+#: includes/Admin/Menu.php:22
+#, fuzzy
+msgid "AI Website Builder"
+msgstr "Конструктор веб-сайтів зі штучним інтелектом"
+
+#: includes/Builder/NavigationBuilder.php:213
+msgid "All rights reserved."
+msgstr "Всі права захищені."
+
+#: includes/Admin/AdminTranslations.php:153
+#, fuzzy
+msgid "Almost ready to build"
+msgstr "Майже готовий до будівництва"
+
+#: gutenberg-blocks/ContactForm/ContactForm.php:78
+#: includes/Elementor/WidgetManager.php:55
+msgid "An error occurred. Please try again later."
+msgstr "Виникла помилка. Будь ласка, спробуйте пізніше."
+
+#: includes/Admin/AdminTranslations.php:213
+#, fuzzy
+msgid "At least one page is needed for the website"
+msgstr "Для веб-сайту потрібна принаймні одна сторінка"
+
+#: includes/Rest/LogoRoutes.php:43
+#, fuzzy
+msgid "Attachment file not found on disk."
+msgstr "Файл вкладення не знайдено на диску."
+
+#: includes/Rest/LogoRoutes.php:25
+#, fuzzy
+msgid "Attachment not found."
+msgstr "Вкладення не знайдено."
+
+#. translators: %s php version
+#: functions.php:56
+msgid "Attention:"
+msgstr "Увага:"
+
+#: includes/Admin/AdminTranslations.php:163
+#, fuzzy
+msgid ""
+"Awesome! I'm now building your site – just give me a few moments until it's "
+"done and ready!"
+msgstr ""
+"Чудово! Я зараз створюю ваш сайт - просто дайте мені кілька хвилин, поки він "
+"не буде готовий!"
+
+#: includes/Admin/AdminTranslations.php:25
+msgid "Back"
+msgstr "Назад"
+
+#: gutenberg-blocks/AiContent/block.json
+msgctxt "block description"
+msgid "A block for AI-powered content generation and regeneration"
+msgstr "Блок для генерації та оновлення контенту на основі ШІ"
+
+#: gutenberg-blocks/Booking/block.json
+msgctxt "block description"
+msgid "A block with booking form integration"
+msgstr "Блок з інтеграцією форми бронювання"
+
+#: gutenberg-blocks/ContactForm/block.json
+msgctxt "block description"
+msgid "A customizable contact form for your website"
+msgstr "Контактна форма для вашого сайту, яку можна налаштувати"
+
+#: includes/Admin/AdminTranslations.php:53
+msgid "Block editor"
+msgstr "Редактор блоків"
+
+#: gutenberg-blocks/AiContent/block.json
+msgctxt "block title"
+msgid "AI Content Generator"
+msgstr "Генератор контенту ШІ"
+
+#: gutenberg-blocks/Booking/block.json
+msgctxt "block title"
+msgid "Booking Block"
+msgstr "Блок бронювання"
+
+#: gutenberg-blocks/ContactForm/block.json
+msgctxt "block title"
+msgid "Contact Form"
+msgstr "Контактна форма"
+
+#: includes/Admin/AdminTranslations.php:19
+msgid "Blog"
+msgstr "Блог"
+
+#: includes/Elementor/Widgets/BlogPostsWidget.php:18
+msgid "Blog Posts"
+msgstr "Дописи в блозі"
+
+#: includes/Admin/AdminTranslations.php:21
+msgid "Booking"
+msgstr "Бронювання"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:45
+#, fuzzy
+msgid "Booking Form"
+msgstr "Форма бронювання"
+
+#: gutenberg-blocks/Booking/Booking.php:76
+msgid "Bookings"
+msgstr "Бронювання"
+
+#: includes/Rest/BuilderRoutes.php:388
+#, fuzzy
+msgid "Brand data not found."
+msgstr "Дані про бренд не знайдено."
+
+#: includes/Admin/AdminTranslations.php:12
+#: includes/Admin/AdminTranslations.php:215
+msgid "Brand name"
+msgstr "Назва бренду"
+
+#: includes/Admin/AdminTranslations.php:216
+#, fuzzy
+msgid "Brand name is required"
+msgstr "Назва бренду обов'язкова"
+
+#: includes/Admin/AdminTranslations.php:97
+#, fuzzy
+msgid ""
+"Build a blog for \"Wanderlust Lens,\" featuring travel photography and "
+"destination guides. Use adventurous colors like blue, orange, and white. "
+"Include gallery sections and a newsletter signup for travel tips."
+msgstr ""
+"Створіть блог \"Об'єктив мандрівника\", в якому публікуйте фотографії з "
+"подорожей та путівники. Використовуйте авантюрні кольори, такі як синій, "
+"помаранчевий і білий. Додайте розділи галереї та підписку на розсилку порад "
+"для мандрівників."
+
+#: includes/Admin/AdminTranslations.php:129
+#, fuzzy
+msgid ""
+"Build a calming landing page for \"Calm Mind,\" a meditation and mindfulness "
+"app. Use soothing colors like lavender, soft blue, and white. Design should "
+"be serene and minimal with clear app features."
+msgstr ""
+"Створіть заспокійливу цільову сторінку для \"Calm Mind\", додатку для "
+"медитації та усвідомленості. Використовуйте заспокійливі кольори, такі як "
+"лавандовий, ніжно-блакитний та білий. Дизайн повинен бути спокійним і "
+"мінімалістичним з чіткими функціями додатку."
+
+#: includes/Admin/AdminTranslations.php:107
+#, fuzzy
+msgid ""
+"Build a calming website for \"Zen Flow Yoga,\" a boutique yoga studio "
+"offering individual classes and group workshops. Use peaceful colors like "
+"sage green and beige. Keep the design minimal and serene"
+msgstr ""
+"Створіть заспокійливий веб-сайт для \"Zen Flow Yoga\", бутікової студії йоги,"
+" що пропонує індивідуальні заняття та групові майстер-класи. Використовуйте "
+"спокійні кольори, такі як шавлієвий зелений і бежевий. Зробіть дизайн "
+"мінімалістичним і спокійним"
+
+#: includes/Admin/AdminTranslations.php:115
+#, fuzzy
+msgid ""
+"Build a cozy website for \"Morning Crumb Bakery & Cafe,\" a neighborhood "
+"spot serving fresh pastries and coffee. Use warm, appetizing colors like "
+"golden brown and cream."
+msgstr ""
+"Створіть затишний веб-сайт для \"Morning Crumb Bakery & Cafe\" - сусіднього "
+"закладу, де подають свіжу випічку та каву. Використовуйте теплі, апетитні "
+"кольори, такі як золотисто-коричневий і кремовий."
+
+#: includes/Admin/AdminTranslations.php:127
+#, fuzzy
+msgid ""
+"Build a modern landing page for \"CloudMail,\" a SaaS startup launching new "
+"AI based email app. Use tech-forward colors like electric blue, purple, and "
+"white. Design should be minimal with waitlist signup and feature highlights."
+msgstr ""
+"Створіть сучасну цільову сторінку для \"CloudMail\", SaaS-стартапу, що "
+"запускає новий поштовий додаток на основі штучного інтелекту. Використовуйте "
+"технологічні кольори, такі як синій, фіолетовий та білий. Дизайн має бути "
+"мінімалістичним, зі списком очікування для реєстрації та основними функціями."
+
+#: includes/Admin/AdminTranslations.php:101
+#, fuzzy
+msgid ""
+"Build a portfolio site for wedding photographers \"Frames Photography.\" "
+"Keep design elegant and minimal. Use color palette of black, white, and "
+"beige. Add a blog page to share valuable wedding tips with couples."
+msgstr ""
+"Створіть сайт-портфоліо для весільних фотографів \"Frames Photography\" "
+"Дизайн повинен бути елегантним і мінімалістичним. Використовуйте чорно-біло-"
+"бежеву палітру. Додайте сторінку блогу, щоб ділитися з парами цінними "
+"весільними порадами."
+
+#: includes/Admin/AdminTranslations.php:117
+#, fuzzy
+msgid ""
+"Build a professional site for \"Pixel Growth,\" a digital marketing agency "
+"for small businesses. Use modern, confident colors like navy blue, bright "
+"orange, and white. Keep design clean and minimal with clear service sections."
+"."
+msgstr ""
+"Створіть професійний сайт для \"Pixel Growth\", агентства цифрового "
+"маркетингу для малого бізнесу. Використовуйте сучасні, впевнені кольори, "
+"такі як темно-синій, яскраво-помаранчевий та білий. Зробіть дизайн чистим і "
+"мінімалістичним з чіткими сервісними розділами..."
+
+#: includes/Admin/AdminTranslations.php:133
+#, fuzzy
+msgid ""
+"Build a whimsical page for\"Emma Stories\" showcasing published books and "
+"upcoming releases for children books. Use cheerful colors like pink, yellow, "
+"and light blue. Design should be playful and fun with colorful images."
+msgstr ""
+"Створіть химерну сторінку для \"Історій Емми\", на якій будуть представлені "
+"опубліковані книги та майбутні випуски дитячих книжок. Використовуйте веселі "
+"кольори, такі як рожевий, жовтий і блакитний. Дизайн має бути грайливим і "
+"веселим, з барвистими зображеннями."
+
+#: includes/Admin/AdminTranslations.php:125
+#, fuzzy
+msgid ""
+"Build an elegant site for \"Valley Vista Vineyard,\" offering wine tastings, "
+"tours, and bottle sales. Use rich, earthy colors like burgundy, deep green, "
+"and cream. Design should feel rustic yet refined with event calendar and "
+"wine collection showcase."
+msgstr ""
+"Створіть елегантний сайт для виноградника \"Valley Vista Vineyard\", що "
+"пропонує дегустації вин, екскурсії та продаж пляшок. Використовуйте насичені,"
+" землисті кольори, такі як бордовий, темно-зелений і кремовий. Дизайн має "
+"бути сільським, але вишуканим, з календарем подій та вітриною колекції вин."
+
+#: includes/Admin/AdminTranslations.php:87
+#, fuzzy
+msgid ""
+"Build an online store for \"Retro Revival,\" selling curated vintage "
+"clothing from the 60s-90s. Use nostalgic colors like mustard yellow, burnt "
+"orange, and brown. Design should feel fun and energetic with retro vibe."
+msgstr ""
+"Створіть інтернет-магазин для \"Ретро-відродження\", де продаватиметься "
+"кураторський вінтажний одяг 60-90-х років. Використовуйте ностальгічні "
+"кольори, такі як гірчично-жовтий, вигорілий помаранчевий і коричневий. "
+"Дизайн має бути веселим та енергійним, з ретро-вібрацією."
+
+#: includes/Admin/AdminTranslations.php:52
+msgid "Builder type"
+msgstr "Тип конструктора"
+
+#: includes/Admin/AdminTranslations.php:30
+msgid "Building content"
+msgstr "Вміст будівлі"
+
+#: includes/Admin/AdminTranslations.php:16
+msgid "Business and services"
+msgstr "Бізнес та послуги"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:64
+#, fuzzy
+msgid "Button Settings"
+msgstr "Налаштування кнопок"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:120
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:66
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:96
+msgid "Button Text"
+msgstr "Текст кнопки"
+
+#: includes/Admin/AdminTranslations.php:39
+#: gutenberg-blocks/AiContent/build/index.js:1
+msgid "Cancel"
+msgstr "Скасувати"
+
+#: includes/Admin/AdminTranslations.php:88
+#, fuzzy
+msgid "Candle shop"
+msgstr "Свічковий магазин"
+
+#: includes/Admin/AdminTranslations.php:122
+#, fuzzy
+msgid "Car repair services"
+msgstr "Послуги з ремонту автомобілів"
+
+#: includes/Builder/WebsiteBuilder.php:507
+msgid "Cart"
+msgstr "Кошик"
+
+#: includes/Builder/ProductCategoryManager.php:145
+#, fuzzy, php-format
+msgid "Category %d"
+msgstr "Категорія %d"
+
+#: includes/Admin/AdminTranslations.php:193
+#: includes/Admin/AdminTranslations.php:198
+#, fuzzy
+msgid "Chat"
+msgstr "Чат"
+
+#: includes/Admin/AdminTranslations.php:173
+#, fuzzy
+msgid "Check that your file is in one of these formats: PNG, JPG."
+msgstr "Переконайтеся, що ваш файл має один з цих форматів: PNG, JPG."
+
+#: includes/Settings/Theme.php:113
+msgid "Check this box to hide the header element on all pages"
+msgstr ""
+"Встановіть цей прапорець, щоб приховати елемент заголовка на всіх сторінках"
+
+#: includes/Admin/Hooks.php:159
+#, fuzzy
+msgid ""
+"Check this box to hide the page title on the frontend. This is useful when "
+"your page content already includes a heading."
+msgstr ""
+"Поставте цей прапорець, щоб приховати заголовок сторінки на інтерфейсі. Це "
+"корисно, коли вміст сторінки вже містить заголовок."
+
+#: includes/Builder/WebsiteBuilder.php:516
+msgid "Checkout"
+msgstr "Оформлення замовлення"
+
+#: includes/Admin/AdminTranslations.php:132
+#, fuzzy
+msgid "Children's book author page"
+msgstr "Сторінка автора дитячої книги"
+
+#: includes/Admin/AdminTranslations.php:164
+#, fuzzy
+msgid "Choose a color palette for your website."
+msgstr "Оберіть кольорову палітру для свого сайту."
+
+#: includes/Admin/AdminTranslations.php:49
+msgid "Choose your site’s language"
+msgstr "Виберіть мову вашого сайту"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Close AI Generator"
+msgstr "Закрити Генератор штучного інтелекту"
+
+#: includes/Admin/AdminTranslations.php:120
+#, fuzzy
+msgid "Coffee roastery site"
+msgstr "Сайт кав'ярні для обсмажування кави"
+
+#: includes/Admin/AdminTranslations.php:139
+#, fuzzy
+msgid "Color code"
+msgstr "Колірний код"
+
+#: theme.json
+msgctxt "Color name"
+msgid "Color 1 (Section backgrounds)"
+msgstr "Колір 1 (фон розділу)"
+
+#: theme.json
+msgctxt "Color name"
+msgid "Color 2 (Section backgrounds)"
+msgstr "Колір 2 (фони секцій)"
+
+#: theme.json
+msgctxt "Color name"
+msgid "Color 3 (Button background)"
+msgstr "Колір 3 (фон кнопки)"
+
+#: theme.json
+msgctxt "Color name"
+msgid "Dark (Text on Light and Color 1)"
+msgstr "Темний (текст на світлі та кольорі 1)"
+
+#: theme.json
+msgctxt "Color name"
+msgid "Grey (Form borders)"
+msgstr "Сірий (межі форми)"
+
+#: theme.json
+msgctxt "Color name"
+msgid "Light (Text on Color 2 and Gradient)"
+msgstr "Світло (текст на кольорі 2 і градієнт)"
+
+#: includes/Admin/AdminTranslations.php:144
+#, fuzzy
+msgid "Colors"
+msgstr "Кольори"
+
+#: includes/Rest/BuilderRoutes.php:846
+#, fuzzy
+msgid "Colors data with color_palette is required."
+msgstr "Потрібні дані про кольори з color_palette."
+
+#: includes/Admin/AdminTranslations.php:212
+#, fuzzy
+msgid "Confirm"
+msgstr "Підтвердити"
+
+#: includes/Admin/AdminTranslations.php:147
+#, fuzzy
+msgid "Confirm site details"
+msgstr "Підтвердити дані сайту"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:36
+#, fuzzy
+msgid "Consent Text"
+msgstr "Текст згоди"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:17
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:8
+msgid "Contact Form"
+msgstr "Контактна форма"
+
+#: includes/Builder/Translator.php:37
+msgid "Contacts"
+msgstr "Контакти"
+
+#: includes/Elementor/Widgets/BlogPostsWidget.php:37
+#: includes/Elementor/Widgets/ContactFormWidget.php:50
+msgid "Content"
+msgstr "Вміст"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Content generated but could not be inserted. Please try again."
+msgstr ""
+"Вміст створено, але його не вдалося вставити. Будь ласка, спробуйте ще раз."
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Content generated successfully!"
+msgstr "Вміст успішно згенеровано!"
+
+#: includes/Rest/BlockTypeRoutes.php:284
+msgid "Content generation failed"
+msgstr "Не вдалося згенерувати вміст"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Content generation failed. Please try again."
+msgstr "Не вдалося згенерувати вміст. Будь ласка, спробуйте ще раз."
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Content length"
+msgstr "Довжина вмісту"
+
+#: includes/Admin/AdminTranslations.php:42
+msgid "Continue"
+msgstr "Продовжуйте"
+
+#: includes/Admin/AdminTranslations.php:141
+#: includes/Admin/AdminTranslations.php:151
+#, fuzzy
+msgid "Continue to setup"
+msgstr "Продовжуйте налаштування"
+
+#: includes/Admin/AdminTranslations.php:80
+#, fuzzy
+msgid "Couldn’t create your site this time"
+msgstr "Цього разу не вдалося створити ваш сайт"
+
+#: includes/Admin/AdminTranslations.php:23
+msgid "Country"
+msgstr "Країна"
+
+#: includes/Admin/AdminTranslations.php:24
+msgid "Create"
+msgstr "Створити"
+
+#: includes/Admin/AdminTranslations.php:201
+#, fuzzy
+msgid "Create a blog about..."
+msgstr "Створіть блог про..."
+
+#: includes/Admin/AdminTranslations.php:93
+#, fuzzy
+msgid ""
+"Create a blog called “Mindful Money\" sharing tips on budgeting, investing, "
+"and financial freedom. Use trustworthy colors like dark blue, light gray, "
+"and white. Design should be clean and professional with easy navigation and "
+"newsletter signup."
+msgstr ""
+"Створіть блог під назвою \"Розумні гроші\", в якому діліться порадами про "
+"бюджетування, інвестування та фінансову свободу. Використовуйте надійні "
+"кольори, такі як темно-синій, світло-сірий та білий. Дизайн повинен бути "
+"чистим і професійним, зі зручною навігацією та підпискою на розсилку новин."
+
+#: includes/Admin/AdminTranslations.php:103
+#, fuzzy
+msgid ""
+"Create a portfolio for a freelance graphic designer \"GrapicVibe\" "
+"specializing in branding and visual identity. Use bold, modern colors like "
+"black, neon green, and white. Design should be minimal yet striking with "
+"large project showcases."
+msgstr ""
+"Створіть портфоліо для графічного дизайнера-фрілансера \"GrapicVibe\", що "
+"спеціалізується на брендингу та візуальній ідентичності. Використовуйте "
+"сміливі, сучасні кольори, такі як чорний, неоновий зелений та білий. Дизайн "
+"повинен бути мінімальним, але вражати великими вітринами проектів."
+
+#: includes/Admin/AdminTranslations.php:123
+#, fuzzy
+msgid ""
+"Create a site for \"Pette’s Auto Care,\" a local mechanic shop offering "
+"honest repairs and maintenance. Use professional colors like orange, black, "
+"and gray. Include our services list, contact form and a blog about cars."
+msgstr ""
+"Створіть сайт для \"Pette's Auto Care\", місцевої автомайстерні, що пропонує "
+"чесний ремонт і технічне обслуговування. Використовуйте професійні кольори, "
+"такі як помаранчевий, чорний і сірий. Додайте список наших послуг, контактну "
+"форму та блог про автомобілі."
+
+#: includes/Admin/AdminTranslations.php:121
+#, fuzzy
+msgid ""
+"Create a website for \"Dark Bean Roasters,\" an artisan coffee roastery. Use "
+"rich, earthy tones like dark brown, copper, and cream. Design should be warm "
+"and inviting. Include a blog page about coffee culture and brewing tips."
+msgstr ""
+"Створіть веб-сайт для \"Dark Bean Roasters\", ремісничої кав'ярні, що "
+"займається обсмажуванням темних зерен. Використовуйте насичені, землисті "
+"тони, такі як темно-коричневий, мідний і кремовий. Дизайн повинен бути "
+"теплим і привабливим. Додайте сторінку блогу про кавову культуру та поради "
+"щодо приготування кави."
+
+#: includes/Admin/AdminTranslations.php:200
+#, fuzzy
+msgid "Create a website for my business..."
+msgstr "Створити сайт для мого бізнесу..."
+
+#: includes/Admin/AdminTranslations.php:31
+msgid "Create again"
+msgstr "Створити знову"
+
+#: includes/Admin/AdminTranslations.php:99
+#, fuzzy
+msgid ""
+"Create an affiliate marketing blog called \"Glow Guide\" reviewing and "
+"recommending skincare products. Use fresh colors like white, light gray and "
+"green."
+msgstr ""
+"Створіть партнерський маркетинговий блог під назвою \"Glow Guide\" з оглядом "
+"та рекомендаціями засобів для догляду за шкірою. Використовуйте свіжі "
+"кольори, такі як білий, світло-сірий і зелений."
+
+#: includes/Admin/AdminTranslations.php:95
+#, fuzzy
+msgid ""
+"Create an affiliate marketing blog called \"Smart Reviews\" featuring in-"
+"depth reviews of smartphones and laptops and other home gadgets. Use modern, "
+"tech-inspired colors like dark blue, silver, and white. Add newsletter "
+"signup section."
+msgstr ""
+"Створіть блог для партнерського маркетингу під назвою \"Розумні огляди\", де "
+"будуть представлені докладні огляди смартфонів, ноутбуків та інших домашніх "
+"гаджетів. Використовуйте сучасні, натхненні технологіями кольори, такі як "
+"темно-синій, сріблястий і білий. Додайте розділ підписки на розсилку новин."
+
+#: includes/Admin/AdminTranslations.php:204
+#, fuzzy
+msgid "Create an affiliate marketing site for..."
+msgstr "Створіть сайт партнерського маркетингу для..."
+
+#: includes/Admin/AdminTranslations.php:85
+#, fuzzy
+msgid ""
+"Create an e-commerce website selling handmade macrame and knitted goods "
+"called \"Cozy Knot”. Use warm and light tones like white, beige, light green."
+msgstr ""
+"Створіть інтернет-магазин для продажу макраме та в'язаних виробів ручної "
+"роботи під назвою \"Затишний вузлик\". Використовуйте теплі та світлі тони: "
+"білий, бежевий, салатовий."
+
+#: includes/Admin/AdminTranslations.php:105
+#, fuzzy
+msgid ""
+"Create an elegant portfolio for \"Morning Interiors,\" showcasing "
+"residential design projects. Use sophisticated colors like black, light "
+"brown. Design should be minimal and luxurious with large project images."
+msgstr ""
+"Створіть елегантне портфоліо для \"Ранкових інтер'єрів\", демонструючи "
+"проекти дизайну житла. Використовуйте вишукані кольори, такі як чорний, "
+"світло-коричневий. Дизайн має бути мінімалістичним і розкішним, з великими "
+"зображеннями проектів."
+
+#: includes/Admin/AdminTranslations.php:119
+#, fuzzy
+msgid ""
+"Create an elegant website for \"Wanderlux Travel,\" offering curated luxury "
+"tours to exotic destinations. Use sophisticated tones of blues and greens. "
+"Design should feel inspiring with stunning exotic destination photography "
+"and package details."
+msgstr ""
+"Створіть елегантний веб-сайт для \"Wanderlux Travel\", що пропонує добірні "
+"розкішні тури в екзотичні країни. Використовуйте вишукані сині та зелені "
+"тони. Дизайн має надихати завдяки приголомшливим фотографіям екзотичних "
+"напрямків і деталям пакетів."
+
+#: includes/Admin/AdminTranslations.php:202
+#, fuzzy
+msgid "Create an online store selling..."
+msgstr "Створити інтернет-магазин з продажу..."
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Create content section"
+msgstr "Створіть розділ контенту"
+
+#: includes/Admin/AdminTranslations.php:203
+#, fuzzy
+msgid "Create portfolio showcasing my..."
+msgstr "Створити портфоліо, що демонструє мої..."
+
+#: includes/Admin/AdminTranslations.php:205
+#, fuzzy
+msgid "Create..."
+msgstr "Створити..."
+
+#: includes/Admin/AdminTranslations.php:190
+#, fuzzy
+msgid "Creating your site"
+msgstr "Створення сайту"
+
+#: theme.json
+msgctxt "Custom template name"
+msgid "No title"
+msgstr "Без назви"
+
+#: includes/Admin/AdminTranslations.php:158
+#: includes/Admin/AdminTranslations.php:168
+#, fuzzy
+msgid "Customize again"
+msgstr "Налаштуйте ще раз"
+
+#: includes/Admin/AdminTranslations.php:149
+#, fuzzy
+msgid "Customize style"
+msgstr "Налаштуйте стиль"
+
+#: includes/Admin/AdminTranslations.php:136
+#, fuzzy
+msgid "Dark background"
+msgstr "Темний фон"
+
+#: gutenberg-blocks/Booking/Booking.php:85
+#: includes/Elementor/Widgets/ContactFormWidget.php:210
+msgid "Date"
+msgstr "Дата"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:208
+#, fuzzy
+msgid "Date Label"
+msgstr "Етикетка з датою"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:220
+#, fuzzy
+msgid "Date Placeholder"
+msgstr "Заповнювач дати"
+
+#: includes/Admin/AdminTranslations.php:71
+#, fuzzy
+msgid "Describe your website idea..."
+msgstr "Опишіть ідею вашого сайту..."
+
+#: includes/Admin/AdminTranslations.php:22
+#: includes/Admin/AdminTranslations.php:57
+#: includes/Elementor/Widgets/ContactFormWidget.php:107
+#: gutenberg-blocks/AiContent/build/index.js:1
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:53
+msgid "Description"
+msgstr "Опис"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Description is required"
+msgstr "Опис обов'язковий"
+
+#: includes/Rest/BlockTypeRoutes.php:118 includes/Rest/BlockTypeRoutes.php:368
+#: includes/Rest/BuilderRoutes.php:224
+msgid "Description is required."
+msgstr "Опис обов'язковий."
+
+#: includes/Admin/AdminTranslations.php:46
+#, fuzzy
+#| msgid ""
+#| "Description is too long. Please shorten it to 2000 characters or less."
+msgid "Description is too long. Please shorthen it to 2000 or  less"
+msgstr ""
+"Опис занадто довгий. Будь ласка, скоротіть його до 2000 символів або менше."
+
+#: includes/Admin/AdminTranslations.php:109
+#, fuzzy
+msgid ""
+"Design a friendly service website for \"Pawsitive Grooming,\" a local pet "
+"grooming business. Use playful, warm colors like green, light blue, and "
+"yellow. The design should feel welcoming and trustworthy for pet owners."
+msgstr ""
+"Створіть дружній веб-сайт для \"Pawsitive Grooming\", місцевого бізнесу з "
+"догляду за домашніми тваринами. Використовуйте грайливі, теплі кольори, такі "
+"як зелений, блакитний і жовтий. Дизайн має викликати у власників домашніх "
+"улюбленців відчуття привітності та довіри."
+
+#: includes/Admin/AdminTranslations.php:111
+#, fuzzy
+msgid ""
+"Design a motivating website for fitness coach \"Power Path\" offering "
+"personal training and nutrition plans. Use energetic colors like red, black, "
+"and white. The design should feel bold and inspiring with clear service "
+"packages."
+msgstr ""
+"Створіть мотивуючий веб-сайт для фітнес-тренера \"Power Path\", який "
+"пропонує персональні плани тренувань і харчування. Використовуйте енергійні "
+"кольори, такі як червоний, чорний та білий. Дизайн має бути сміливим і "
+"надихаючим, з чіткими пакетами послуг."
+
+#: includes/Admin/AdminTranslations.php:131
+#, fuzzy
+msgid ""
+"Design a site for \"Second Chance Paws,\" a non-profit rescuing and rehoming "
+"abandoned dogs, cats and other pets. Use warm colors like orange, beige, "
+"light brown. Include adoption listings and volunteer signup section.."
+msgstr ""
+"Створіть сайт для некомерційної організації \"Second Chance Paws\", яка "
+"займається порятунком і прилаштуванням покинутих собак, котів та інших "
+"домашніх улюбленців. Використовуйте теплі кольори: помаранчевий, бежевий, "
+"світло-коричневий. Додайте оголошення про усиновлення та розділ для "
+"реєстрації волонтерів."
+
+#: includes/Admin/AdminTranslations.php:113
+#, fuzzy
+msgid ""
+"Design a stylish site for corporate events, and parties company \"This "
+"Moment\" . Use bright colors like purple, black, lime green. Showcase our "
+"service, include portfolio gallery, and contact form for inquiries."
+msgstr ""
+"Розробіть стильний сайт для корпоративних заходів та вечірок компанії \"This "
+"Moment\" . Використовуйте яскраві кольори: фіолетовий, чорний, салатовий. "
+"Продемонструйте наші послуги, додайте галерею портфоліо та контактну форму "
+"для запитів."
+
+#: includes/Admin/AdminTranslations.php:91
+#, fuzzy
+msgid ""
+"Design a vibrant food blog named \"Green Plate\" focusing on plant-based, "
+"healthy recipes. Use fresh, bright colors like lime green, yellow, and white."
+" Include the subscribe section."
+msgstr ""
+"Створіть яскравий кулінарний блог під назвою \"Зелена тарілка\", "
+"зосереджуючись на рослинних, здорових рецептах. Використовуйте свіжі, "
+"яскраві кольори, такі як салатовий, жовтий і білий. Додайте розділ підписки."
+
+#: includes/Admin/AdminTranslations.php:116
+#, fuzzy
+msgid "Digital marketing agency"
+msgstr "Агентство цифрового маркетингу"
+
+#: includes/Settings/Theme.php:56
+msgid "Display Settings"
+msgstr "Налаштування дисплея"
+
+#: includes/Admin/AdminTranslations.php:62
+#, fuzzy
+msgid "Do you have any comments/suggestions to improve created site?"
+msgstr "Чи є у вас зауваження/пропозиції щодо покращення створеного сайту?"
+
+#: includes/Admin/Surveys/WebsiteBuilderExperience.php:33
+msgid "Do you have any comments/suggestions to improve our AI tools?"
+msgstr "Чи є у вас коментарі/пропозиції щодо покращення наших інструментів ШІ?"
+
+#: includes/Admin/AdminTranslations.php:84
+#, fuzzy
+msgid "E-shop for handmade crafts"
+msgstr "Інтернет-магазин ручної роботи"
+
+#: includes/Admin/AdminTranslations.php:72
+#, fuzzy
+msgid "Easy drag-and-drop builder for fast, no-code design"
+msgstr ""
+"Простий конструктор перетягування для швидкого створення дизайну без коду"
+
+#: includes/Admin/AdminTranslations.php:32 includes/Hooks.php:154
+msgid "Edit site"
+msgstr "Редагувати сайт"
+
+#: includes/Admin/AdminTranslations.php:181
+#, fuzzy
+msgid "Edit site design and content"
+msgstr "Редагування дизайну та контенту сайту"
+
+#: includes/Admin/AdminTranslations.php:74
+#, fuzzy
+#| msgid "Editor: "
+msgid "Editor"
+msgstr "Редактор:"
+
+#: includes/Admin/AdminTranslations.php:183
+#, fuzzy
+msgid "editor"
+msgstr "редактор"
+
+#: includes/Admin/AdminTranslations.php:78
+#, fuzzy
+msgid "Editor is required"
+msgstr "Потрібен редактор"
+
+#: includes/Admin/AdminTranslations.php:54
+msgid "Elementor"
+msgstr "Elementor"
+
+#: includes/Admin/AdminTranslations.php:56
+msgid ""
+"Elementor is an easy drag-and-drop builder, while the WordPress Block Editor "
+"gives pros more flexibility"
+msgstr ""
+"Elementor – це простий конструктор з функцією перетягування елементів, а "
+"WordPress Block Editor надає професіоналам більше гнучкості."
+
+#: includes/Builder/Translator.php:47
+#: includes/Elementor/Widgets/ContactFormWidget.php:174
+#: includes/Shortcodes/ShortcodesManager.php:25
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:40
+msgid "Email"
+msgstr "Пошта"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:135
+msgid ""
+"Email address where form submissions will be sent. Defaults to WordPress "
+"admin email."
+msgstr ""
+"Пошта, на яку будуть надсилатися заповнені форми. За замовчуванням "
+"використовується пошта адміністратора WordPress."
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:172
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:74
+msgid "Email Label"
+msgstr "Позначка електронної пошти"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:181
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:79
+msgid "Email Placeholder"
+msgstr "Заповнювач електронної пошти"
+
+#: includes/Elementor/ScrollAnimation.php:37
+#, fuzzy
+msgid "Enable fade-up animation when this section scrolls into view."
+msgstr "Увімкнути анімацію при прокручуванні цього розділу."
+
+#: includes/Elementor/ScrollAnimation.php:36
+#, fuzzy
+msgid "Enable Scroll Animation"
+msgstr "Увімкнути анімацію прокрутки"
+
+#: includes/Admin/AdminTranslations.php:27
+#, fuzzy
+msgid "Enabling plugins"
+msgstr "Увімкнення плагінів"
+
+#: includes/Admin/AdminTranslations.php:83
+#, fuzzy
+msgid "Enhance with AI"
+msgstr "Покращуйте за допомогою ШІ"
+
+#: includes/Admin/AdminTranslations.php:34
+msgid "Enter at least 11 characters"
+msgstr "Введіть щонайменше 11 символів"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:123
+msgid "Enter button text"
+msgstr "Введіть текст кнопки"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:110
+msgid "Enter form description"
+msgstr "Введіть опис форми"
+
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:56
+#, fuzzy
+msgid "Enter form description..."
+msgstr "Введіть опис форми..."
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:73
+msgid "Enter form title"
+msgstr "Введіть назву форми"
+
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:41
+#, fuzzy
+msgid "Enter form title..."
+msgstr "Введіть назву форми..."
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:134
+msgid "Enter recipient email address"
+msgstr "Введіть пошту одержувача"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:19
+#, fuzzy
+msgid "Enter your email..."
+msgstr "Введіть свій email..."
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:31
+#, fuzzy
+msgid "Enter your message..."
+msgstr "Введіть своє повідомлення..."
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:13
+#, fuzzy
+msgid "Enter your name..."
+msgstr "Введіть своє ім'я..."
+
+#: includes/Admin/AdminTranslations.php:112
+#, fuzzy
+msgid "Event planning services"
+msgstr "Послуги з планування заходів"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid ""
+"Example: article about the benefits of drop-shipping with included tips & "
+"tricks."
+msgstr "Приклад: стаття про переваги дропшиппінгу з порадами та підказками."
+
+#: includes/Admin/AdminTranslations.php:64
+#, fuzzy
+msgid "Excellent"
+msgstr "Чудово"
+
+#: includes/Admin/AdminTranslations.php:37
+msgid "Existing content will be deleted"
+msgstr "Існуючий контент буде видалено"
+
+#: includes/Admin/Templates/featured-image-metabox.php:7
+msgid "External image can be used to show featured image."
+msgstr ""
+"Зовнішнє зображення може бути використане для показу основного зображення."
+
+#: includes/Admin/Templates/featured-image-metabox.php:12
+msgid "External Image URL"
+msgstr "URL-адреса зовнішнього зображення"
+
+#. translators: %s: plugin name
+#: includes/Builder/PluginInstaller.php:38
+#: includes/Builder/PluginInstaller.php:205
+#, fuzzy, php-format
+msgid "Failed to activate %s. Please try activating it manually."
+msgstr "Не вдалося активувати %s. Спробуйте активувати його вручну."
+
+#. translators: %s: plugin name
+#: includes/Builder/PluginInstaller.php:76
+#, fuzzy, php-format
+msgid ""
+"Failed to download %s after multiple attempts. Please try again later or "
+"install the plugin manually."
+msgstr ""
+"Не вдалося завантажити %s після декількох спроб. Будь ласка, повторіть "
+"спробу пізніше або встановіть плагін вручну."
+
+#: includes/Rest/BlockTypeRoutes.php:233
+msgid ""
+"Failed to generate content. Please try again with a different description."
+msgstr "Не вдалося згенерувати вміст. Спробуйте ще раз, змінивши опис."
+
+#: includes/Rest/BlockTypeRoutes.php:150
+msgid "Failed to generate page content."
+msgstr "Не вдалося згенерувати вміст сторінки."
+
+#: includes/Rest/BlockTypeRoutes.php:186
+msgid ""
+"Failed to generate page content. Please try again with a different "
+"description."
+msgstr ""
+"Не вдалося згенерувати вміст сторінки. Спробуйте ще раз, змінивши опис."
+
+#: includes/Rest/BlockTypeRoutes.php:142
+msgid "Failed to generate page structure."
+msgstr "Не вдалося згенерувати структуру сторінки."
+
+#: includes/Rest/BuilderRoutes.php:401
+#, fuzzy
+msgid "Failed to generate pages list."
+msgstr "Не вдалося згенерувати список сторінок."
+
+#: includes/Rest/BlockTypeRoutes.php:428
+msgid "Failed to generate section content."
+msgstr "Не вдалося згенерувати вміст розділу."
+
+#: includes/Rest/BlockTypeRoutes.php:105
+msgid ""
+"Failed to generate section content. Please try again with a different "
+"description."
+msgstr "Не вдалося згенерувати вміст розділу. Спробуйте ще раз, змінивши опис."
+
+#: includes/Rest/BuilderRoutes.php:496 includes/Rest/BuilderRoutes.php:512
+#, fuzzy
+msgid "Failed to generate structure."
+msgstr "Не вдалося створити структуру."
+
+#: includes/Rest/BlockTypeRoutes.php:434
+msgid "Failed to merge content with structure."
+msgstr "Не вдалося поєднати вміст зі структурою."
+
+#: includes/Admin/AdminTranslations.php:176
+#, fuzzy
+msgid "Failed to remove logo. Please try again."
+msgstr "Не вдалося видалити логотип. Спробуйте ще раз."
+
+#: gutenberg-blocks/ContactForm/ContactForm.php:143
+#: includes/Elementor/Widgets/ContactFormWidget.php:383
+msgid "Failed to send email. Please try again later."
+msgstr "Не вдалося відправити лист. Будь ласка, спробуйте пізніше."
+
+#: includes/Admin/AdminTranslations.php:175
+#, fuzzy
+msgid "Failed to upload logo. Please try again."
+msgstr "Не вдалося завантажити логотип. Будь ласка, спробуйте ще раз."
+
+#: includes/Admin/Hooks.php:39
+msgid "Featured Image with URL"
+msgstr "Зображення з URL-адресою"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:18
+#, fuzzy
+msgid "Field Settings"
+msgstr "Налаштування поля"
+
+#: includes/Admin/AdminTranslations.php:174 includes/Hooks.php:427
+#: includes/Rest/LogoRoutes.php:51
+#, fuzzy
+msgid "File size exceeds the 2 MB limit."
+msgstr "Розмір файлу перевищує 2 МБ."
+
+#: includes/Admin/AdminTranslations.php:142
+#: includes/Admin/AdminTranslations.php:156
+#, fuzzy
+msgid "Finish customization"
+msgstr "Закінчити налаштування"
+
+#: includes/Admin/AdminTranslations.php:160
+#, fuzzy
+msgid ""
+"First, I just want to make sure I got this right – what's your brand name?"
+msgstr ""
+"По-перше, я просто хочу переконатися, що я правильно зрозумів - як "
+"називається ваш бренд?"
+
+#: includes/Admin/AdminTranslations.php:110
+#, fuzzy
+msgid "Fitness coaching services"
+msgstr "Послуги фітнес-тренера"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Catamaran"
+msgstr "Catamaran"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Caudex"
+msgstr "Caudex"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Cormorant"
+msgstr "Баклан"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "DM Sans"
+msgstr "DM Sans"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "DM Serif Display"
+msgstr "DM Serif Display"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Fira Sans"
+msgstr "Fira Sans"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Gruppo"
+msgstr "Gruppo"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "IBM Plex Mono"
+msgstr "IBM Plex Mono"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Junge"
+msgstr "Junge"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Lato"
+msgstr "Lato"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Manrope"
+msgstr "Manrope"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Monospace"
+msgstr "Монопростір"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Montserrat"
+msgstr "Montserrat"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Nunito Sans"
+msgstr "Nunito Sans"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Open Sans"
+msgstr "Open Sans"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Playfair Display"
+msgstr "Playfair Display"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Poppins"
+msgstr "Poppins"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Prata"
+msgstr "Prata"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Prompt"
+msgstr "Prompt"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Prosto One"
+msgstr "Prosto One"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Roboto"
+msgstr "Roboto"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Serif"
+msgstr "Засечка"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "System"
+msgstr "Система"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Titillium Web"
+msgstr "Titillium Web"
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Trirong"
+msgstr "Тріронг"
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Large"
+msgstr "Великий"
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Medium"
+msgstr "Середній"
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Small"
+msgstr "Малий"
+
+#: theme.json
+msgctxt "Font size name"
+msgid "XL"
+msgstr "XL"
+
+#: theme.json
+msgctxt "Font size name"
+msgid "XXL"
+msgstr "XXL"
+
+#: includes/Admin/AdminTranslations.php:146
+#, fuzzy
+msgid "Fonts"
+msgstr "Шрифти"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:146
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:61
+msgid "Form Fields"
+msgstr "Поля форми"
+
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:29
+#, fuzzy
+msgid "Form Settings"
+msgstr "Налаштування форми"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Generate"
+msgstr "Згенерувати"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#: gutenberg-blocks/AiContent/src/index.js:11
+#, fuzzy
+msgid "Generate and regenerate content using AI"
+msgstr "Створюйте та регенеруйте контент за допомогою ШІ"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid ""
+"Generating a full page will delete all existing content on this page and "
+"replace it with new AI-generated content."
+msgstr ""
+"При створенні повної сторінки весь наявний на ній контент буде видалено і "
+"замінено новим, згенерованим ШІ."
+
+#: includes/Admin/AdminTranslations.php:26
+msgid "Generating colors"
+msgstr "Генерування кольорів"
+
+#: includes/Admin/AdminTranslations.php:29
+msgid "Generating content"
+msgstr "Створення контенту"
+
+#: includes/Admin/AdminTranslations.php:28
+msgid "Generating structure"
+msgstr "Генеруюча структура"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Generating..."
+msgstr "Генерування..."
+
+#: includes/Builder/Translator.php:42
+#: includes/Elementor/Widgets/ContactFormWidget.php:72
+msgid "Get in Touch"
+msgstr "Зв'язатися з нами"
+
+#: includes/Admin/AdminTranslations.php:33
+msgid "Give us a minute"
+msgstr "Дайте нам хвилинку"
+
+#: includes/Admin/AdminTranslations.php:189
+#, fuzzy
+msgid "Go to WordPress"
+msgstr "Перейдіть до WordPress"
+
+#: includes/Admin/AdminTranslations.php:196
+#, fuzzy
+msgid "Go to WordPress admin"
+msgstr "Перейдіть до адміністратора WordPress"
+
+#: theme.json
+msgctxt "Gradient name"
+msgid "Section background gradient"
+msgstr "Градієнт фону секції"
+
+#: includes/Admin/AdminTranslations.php:102
+#, fuzzy
+msgid "Graphic designer portfolio"
+msgstr "Портфоліо графічного дизайнера"
+
+#: includes/Admin/AdminTranslations.php:36
+msgid "Great description! Feel free to add more details"
+msgstr "Чудовий опис! Не соромтеся додавати більше деталей"
+
+#: includes/Admin/AdminTranslations.php:152
+#, fuzzy
+msgid "Head to WP admin or your chosen editor"
+msgstr "Перейдіть до адміністратора WP або обраного вами редактора"
+
+#: includes/Admin/AdminTranslations.php:90
+#, fuzzy
+msgid "Healthy food blog"
+msgstr "Блог про здорову їжу"
+
+#: includes/Admin/AdminTranslations.php:58
+#, fuzzy
+msgid "Help us improve"
+msgstr "Допоможіть нам покращити"
+
+#: includes/Admin/AdminTranslations.php:159
+#, fuzzy
+msgid ""
+"Hi 👋 I'm your AI assistant. Your site is on the way.\\n\\nHere is the plan:"
+msgstr ""
+"Привіт 👋 Я твій помічник зі штучним інтелектом. Ваш сайт вже на шляху до "
+"створення.\\n\\nОсь план:"
+
+#: includes/Elementor/Widgets/BlogPostsWidget.php:48
+#: includes/Elementor/Widgets/ContactFormWidget.php:61
+#: includes/Elementor/Widgets/ContactFormWidget.php:86
+#: includes/Elementor/Widgets/ContactFormWidget.php:98
+#| msgid "Ehime"
+msgid "Hide"
+msgstr "Приховати"
+
+#: includes/Settings/Theme.php:63
+msgid "Hide Header"
+msgstr "Приховати заголовок"
+
+#: includes/Admin/Hooks.php:155
+#, fuzzy
+msgid "Hide page title"
+msgstr "Приховати назву сторінки"
+
+#. Author of the theme
+#: style.css
+msgid "Hostinger"
+msgstr "Хостінгер"
+
+#. Theme Name of the theme
+#: style.css
+msgid "Hostinger AI theme"
+msgstr "Тема штучного інтелекту Hostinger"
+
+#. Description of the theme
+#: style.css
+msgid ""
+"Hostinger AI theme built with SEO and mobile responsiveness in mind, this "
+"theme ensures optimal performance and a better online presence."
+msgstr ""
+"Тема Hostinger AI, створена з урахуванням SEO та мобільної адаптивності, "
+"забезпечує оптимальну продуктивність і кращу присутність в Інтернеті."
+
+#: includes/Admin/Surveys/WebsiteBuilderExperience.php:29
+msgid ""
+"How would you rate your experience using our AI website builder to create "
+"your site? (Scale 1-10)"
+msgstr ""
+"Як ви оцінюєте свій досвід використання нашого конструктора сайтів ШІ (за "
+"шкалою від 1 до 10)?"
+
+#. Author URI of the theme
+#: style.css
+msgid "https://hostinger.com"
+msgstr "https://hostinger.com"
+
+#: includes/Admin/AdminTranslations.php:89
+#, fuzzy
+msgid ""
+"I am creating luxury handmade soy wax candles under the brand name “Bliss "
+"Candles\". I need a warm and inviting online store for it. The design should "
+"emphasize relaxation and luxury. Use soft, muted colors: lavender, light "
+"gray, and beige."
+msgstr ""
+"Я створюю розкішні свічки ручної роботи з соєвого воску під брендом \"Bliss "
+"Candles\". Мені потрібен теплий і привабливий інтернет-магазин для нього. "
+"Дизайн повинен підкреслювати розслабленість і розкіш. Використовуйте м'які, "
+"приглушені кольори: лавандовий, світло-сірий, бежевий."
+
+#: gutenberg-blocks/ContactForm/render.php:18
+#: includes/Elementor/Widgets/ContactFormWidget.php:263
+msgid ""
+"I consent to use of provided personal data for the purpose of responding to "
+"the request as described in"
+msgstr ""
+"Я даю згоду на використання наданих персональних даних з метою відповіді на "
+"запит, як описано в"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:37
+#, fuzzy
+msgid ""
+"I consent to use of provided personal data for the purpose of responding to "
+"the request as described in Privacy Policy which I have read. I may withdraw "
+"my consent at any time."
+msgstr ""
+"Я даю згоду на використання наданих мною персональних даних з метою надання "
+"відповіді на запит, як описано в Політиці конфіденційності, з якою я "
+"ознайомився. Я можу відкликати свою згоду в будь-який час."
+
+#: includes/Admin/AdminTranslations.php:166
+#, fuzzy
+msgid ""
+"If there's anything you'd still like to change, you can customize your site "
+"again. If you're done, simply continue to setup and I'll guide you through "
+"the rest! "
+msgstr ""
+"Якщо ви все ще хочете щось змінити, ви можете налаштувати свій сайт ще раз. "
+"Якщо ви закінчили, просто продовжуйте налаштування, а я проведу вас до кінця!"
+
+#: includes/Admin/AdminTranslations.php:172
+#, fuzzy
+msgid ""
+"If you believe this is a mistake, please revise the description and try "
+"again."
+msgstr ""
+"Якщо ви вважаєте, що це помилка, будь ласка, перегляньте опис і спробуйте ще "
+"раз."
+
+#: includes/Admin/AdminTranslations.php:41
+msgid "Improve description"
+msgstr "Покращити опис"
+
+#: includes/Admin/AdminTranslations.php:104
+#, fuzzy
+msgid "Interior design portfolio"
+msgstr "Портфоліо дизайну інтер'єру"
+
+#: includes/Rest/BlockTypeRoutes.php:389
+msgid "Invalid block type response."
+msgstr "Неправильна відповідь типу блоку."
+
+#: includes/Rest/BuilderRoutes.php:143
+#, fuzzy
+msgid "Invalid body font."
+msgstr "Неправильний шрифт тіла."
+
+#: includes/Admin/AdminTranslations.php:138
+#, fuzzy
+msgid "Invalid color code"
+msgstr "Неправильний код кольору"
+
+#: includes/Hooks.php:420 includes/Rest/LogoRoutes.php:34
+#, fuzzy
+msgid "Invalid file type. Allowed types: jpg, png, svg."
+msgstr "Неправильний тип файлу. Допустимі типи: jpg, png, svg."
+
+#: includes/Rest/BuilderRoutes.php:135
+#, fuzzy
+msgid "Invalid heading font."
+msgstr "Неправильний шрифт заголовка."
+
+#: patterns/hidden-404.php:17
+msgid "It looks like nothing was found at this location. Maybe try a search?"
+msgstr "Схоже, за цією адресою нічого не знайдено. Може, спробувати пошукати?"
+
+#: includes/Admin/AdminTranslations.php:154
+#, fuzzy
+msgid "Just confirm a few details in the chat to get your site up and running"
+msgstr "Просто підтвердіть кілька деталей у чаті, щоб запустити ваш сайт"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:22
+#, fuzzy
+msgid "Label"
+msgstr "Етикетка"
+
+#: includes/Admin/AdminTranslations.php:20
+msgid "Landing"
+msgstr "Лендінг"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:247
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:107
+msgid "Leave empty to use default privacy policy text"
+msgstr ""
+"Залиште поле порожнім, щоб використовувати текст політики конфіденційності "
+"за замовчуванням"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:248
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:108
+msgid ""
+"Leave empty to use the default privacy policy text with automatic link "
+"generation."
+msgstr ""
+"Залиште поле порожнім, щоб використовувати текст політики конфіденційності "
+"за замовчуванням з автоматичним створенням посилань."
+
+#: includes/Admin/AdminTranslations.php:35
+msgid "Let us know more about your website to get the best result"
+msgstr ""
+"Дайте нам більше інформації про ваш сайт, щоб отримати найкращий результат"
+
+#: includes/Admin/AdminTranslations.php:70
+#, fuzzy
+msgid "Let's start with your website idea"
+msgstr "Почнемо з ідеї вашого сайту"
+
+#: includes/Admin/AdminTranslations.php:135
+#, fuzzy
+msgid "Light background"
+msgstr "Світлий фон"
+
+#: includes/Admin/AdminTranslations.php:148
+#, fuzzy
+msgid "Like brand name, pages or contact information"
+msgstr "Наприклад, назва бренду, сторінки або контактна інформація"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:43
+#, fuzzy
+msgid "Link to your privacy policy page"
+msgstr "Посилання на сторінку вашої політики конфіденційності"
+
+#: includes/Admin/AdminTranslations.php:155
+#, fuzzy
+msgid "Loading website preview"
+msgstr "Завантаження попереднього перегляду веб-сайту"
+
+#: includes/Admin/AdminTranslations.php:114
+#, fuzzy
+msgid "Local bakery site"
+msgstr "Сайт місцевої пекарні"
+
+#: includes/Admin/AdminTranslations.php:124
+#, fuzzy
+msgid "Local wine tasting page"
+msgstr "Сторінка дегустації місцевих вин"
+
+#: includes/Admin/AdminTranslations.php:145
+#, fuzzy
+msgid "Logo"
+msgstr "Логотип"
+
+#: includes/Admin/AdminTranslations.php:177
+#, fuzzy
+msgid "Logo preview"
+msgstr "Попередній перегляд логотипу"
+
+#: includes/Admin/AdminTranslations.php:165
+#, fuzzy
+msgid "Looks like your site is done! 😊 "
+msgstr "Схоже, ваш сайт готовий! 😊"
+
+#: includes/Admin/AdminTranslations.php:180
+#, fuzzy
+msgid "Manage your site, add plugins, domain and adjust other settings"
+msgstr ""
+"Керуйте своїм сайтом, додавайте плагіни, домен та змінюйте інші налаштування"
+
+#: includes/Admin/AdminTranslations.php:167
+#, fuzzy
+msgid "Maximum attempts reached. Please try later."
+msgstr "Вичерпано максимальну кількість спроб. Будь ласка, спробуйте пізніше."
+
+#: includes/Admin/AdminTranslations.php:128
+#, fuzzy
+msgid "Meditation app landing page"
+msgstr "Цільова сторінка додатку для медитації"
+
+#: includes/Builder/Translator.php:36
+msgid "Menu"
+msgstr "Меню"
+
+#: includes/Builder/Translator.php:49
+#: includes/Elementor/Widgets/ContactFormWidget.php:192
+#: includes/Shortcodes/ShortcodesManager.php:26
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:44
+msgid "Message"
+msgstr "Повідомлення"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:190
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:85
+msgid "Message Label"
+msgstr "Позначка повідомлення"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:199
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:90
+msgid "Message Placeholder"
+msgstr "Заповнювач повідомлення"
+
+#: includes/Builder/WebsiteBuilder.php:525
+msgid "My Account"
+msgstr "Мій акаунт"
+
+#: includes/Builder/Translator.php:45
+#: includes/Elementor/Widgets/ContactFormWidget.php:156
+#: includes/Shortcodes/ShortcodesManager.php:24
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:36
+msgid "Name"
+msgstr "Назва"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:154
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:63
+msgid "Name Label"
+msgstr "Позначка назви"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:163
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:68
+msgid "Name Placeholder"
+msgstr "Заповнювач назви"
+
+#: gutenberg-blocks/ContactForm/ContactForm.php:108
+#: includes/Elementor/Widgets/ContactFormWidget.php:360
+msgid "New Contact Form Submission"
+msgstr "Нова контактна форма для надсилання"
+
+#: includes/Admin/AdminTranslations.php:208
+#, fuzzy
+msgid "New page name"
+msgstr "Нова назва сторінки"
+
+#: includes/Elementor/ScrollAnimation.php:39
+#, fuzzy
+msgid "No"
+msgstr "Ні"
+
+#: gutenberg-blocks/Booking/Booking.php:79
+msgid "No bookings yet."
+msgstr "Бронювань поки немає."
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "No content was generated. Please try again."
+msgstr "Вміст не згенеровано. Будь ласка, спробуйте ще раз."
+
+#: includes/Elementor/Widgets/BlogPostsWidget.php:72
+msgid "No posts found. Please create some blog posts."
+msgstr "Не знайдено жодної публікації. Створіть кілька публікацій у блозі."
+
+#: patterns/query.php:24
+msgid "No results found."
+msgstr "Результатів не знайдено."
+
+#: includes/Admin/AdminTranslations.php:130
+#, fuzzy
+msgid "Non-profit animal rescue organization"
+msgstr "Неприбуткова організація з порятунку тварин"
+
+#: includes/Admin/AdminTranslations.php:143
+#: includes/Admin/AdminTranslations.php:157
+#, fuzzy
+msgid "Not now"
+msgstr "Не зараз"
+
+#: includes/Admin/AdminTranslations.php:66
+#, fuzzy
+msgid "of"
+msgstr "з"
+
+#: includes/Admin/AdminTranslations.php:18
+msgid "Online store"
+msgstr "Інтернет-магазин"
+
+#: includes/Admin/AdminTranslations.php:14
+msgid "Other"
+msgstr "Інше"
+
+#: patterns/hidden-404.php:13
+msgid "Page not found"
+msgstr "Сторінку не знайдено"
+
+#: includes/Admin/Hooks.php:138
+#, fuzzy
+msgid "Page Title Display"
+msgstr "Відображення назви сторінки"
+
+#: includes/Rest/BuilderRoutes.php:427 includes/Rest/BuilderRoutes.php:447
+#, fuzzy
+msgid "Pages must be a non-empty array."
+msgstr "Сторінки повинні бути непорожнім масивом."
+
+#: patterns/hidden-404.php
+msgctxt "Pattern title"
+msgid "404"
+msgstr "404"
+
+#: patterns/hidden-post-meta.php
+msgctxt "Pattern title"
+msgid "Hidden post meta"
+msgstr "Прихована мета-мета повідомлення"
+
+#: patterns/query.php
+msgctxt "Pattern title"
+msgid "Query"
+msgstr "Запит"
+
+#: includes/Admin/AdminTranslations.php:92
+#, fuzzy
+msgid "Personal finance blog"
+msgstr "Блог про особисті фінанси"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Personalize your content"
+msgstr "Персоналізуйте свій контент"
+
+#: includes/Admin/AdminTranslations.php:108
+#, fuzzy
+msgid "Pet grooming services"
+msgstr "Послуги з догляду за домашніми тваринами"
+
+#: includes/Admin/AdminTranslations.php:150
+#, fuzzy
+msgid "Pick your colors and logo"
+msgstr "Обирайте кольори та логотип"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:28
+#, fuzzy
+msgid "Placeholder"
+msgstr "Заповнювач"
+
+#: gutenberg-blocks/ContactForm/ContactForm.php:101
+#: includes/Elementor/Widgets/ContactFormWidget.php:353
+msgid "Please agree with privacy policy."
+msgstr "Будь ласка, погодьтеся з політикою конфіденційності."
+
+#: includes/Admin/AdminTranslations.php:214
+#, fuzzy
+msgid "Please confirm the essentials first:"
+msgstr "Будь ласка, спочатку підтвердьте найнеобхідніше:"
+
+#: gutenberg-blocks/ContactForm/ContactForm.php:105
+#: includes/Elementor/Widgets/ContactFormWidget.php:357
+msgid "Please enter a valid email address."
+msgstr "Будь ласка, введіть дійсну адресу електронної пошти."
+
+#: includes/Rest/BuilderRoutes.php:364
+#, fuzzy
+msgid "Plugin installation failed."
+msgstr "Не вдалося встановити плагін."
+
+#: includes/Admin/AdminTranslations.php:179
+#, fuzzy
+msgid "PNG, JPG (max 2MB)"
+msgstr "PNG, JPG (макс. 2 МБ)"
+
+#: includes/Admin/AdminTranslations.php:63
+#, fuzzy
+msgid "Poor"
+msgstr "Бідолаха"
+
+#: includes/Admin/AdminTranslations.php:15
+msgid "Portfolio"
+msgstr "Портфоліо"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Powered by Hostinger"
+msgstr "Powered by Hostinger"
+
+#: includes/Admin/AdminTranslations.php:195
+#, fuzzy
+msgid "Prefer to start from scratch?"
+msgstr "Віддаєте перевагу починати з нуля?"
+
+#: gutenberg-blocks/ContactForm/render.php:20
+#: includes/Elementor/Widgets/ContactFormWidget.php:236
+#: includes/Elementor/Widgets/ContactFormWidget.php:265
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:39
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:102
+msgid "Privacy Policy"
+msgstr "політиці конфіденційності"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:48
+#, fuzzy
+msgid "Privacy Policy Link Text"
+msgstr "Політика конфіденційності Текст посилання"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:244
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:104
+#| msgid "Privacy Policy URL"
+msgid "Privacy Policy Text"
+msgstr "Текст політики конфіденційності"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:42
+#, fuzzy
+msgid "Privacy Policy URL"
+msgstr "URL-адреса політики конфіденційності"
+
+#: includes/Rest/BuilderRoutes.php:628
+msgid "Problem building content."
+msgstr "Створення контенту для вирішення проблем."
+
+#: includes/Rest/BuilderRoutes.php:581
+msgid "Problem generating content."
+msgstr "Проблема зі створенням контенту."
+
+#: includes/Rest/BuilderRoutes.php:868
+#, fuzzy
+msgid "Problem setting colors."
+msgstr "Проблема із задаванням кольорів."
+
+#: includes/Admin/AdminTranslations.php:65
+#, fuzzy
+msgid "Question"
+msgstr "Запитання"
+
+#: includes/Admin/AdminTranslations.php:59
+#, fuzzy
+msgid "Rate"
+msgstr "Ставка"
+
+#: includes/Admin/AdminTranslations.php:60
+#, fuzzy
+msgid "Rate site"
+msgstr "Оцініть сайт"
+
+#: includes/Admin/AdminTranslations.php:61
+#, fuzzy
+msgid "Rate the site AI created for you"
+msgstr "Оцініть сайт, який створив для вас ШІ"
+
+#: includes/Admin/AdminTranslations.php:184
+#, fuzzy
+msgid "Rate your site"
+msgstr "Оцініть свій сайт"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:130
+msgid "Recipient Email Address"
+msgstr "Пошта отримувача"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Replace All Content"
+msgstr "Замінити весь вміст"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Replace All Content?"
+msgstr "Замінити весь вміст?"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:56
+#, fuzzy
+msgid "Required"
+msgstr "Потрібно"
+
+#: includes/Elementor/ScrollAnimation.php:28
+#, fuzzy
+msgid "Scroll Animation"
+msgstr "Анімація прокрутки"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:222
+#, fuzzy
+msgid "Select a date"
+msgstr "Виберіть дату"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/index.js:25
+#, fuzzy
+msgid "Select date..."
+msgstr "Виберіть дату..."
+
+#: includes/Admin/AdminTranslations.php:55
+msgid "Select editor"
+msgstr "Виберіть редактор"
+
+#: includes/Builder/Translator.php:44
+#: includes/Elementor/Widgets/ContactFormWidget.php:122
+#: includes/Shortcodes/ShortcodesManager.php:23
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:32
+msgid "Send Message"
+msgstr "Надіслати повідомлення"
+
+#: includes/Admin/AdminTranslations.php:169
+#, fuzzy
+msgid "Setup in WP admin"
+msgstr "Налаштування в адмінці WP"
+
+#: includes/Elementor/Widgets/BlogPostsWidget.php:47
+#: includes/Elementor/Widgets/ContactFormWidget.php:60
+#: includes/Elementor/Widgets/ContactFormWidget.php:85
+#: includes/Elementor/Widgets/ContactFormWidget.php:97
+msgid "Show"
+msgstr "Показати"
+
+#: includes/Elementor/Widgets/BlogPostsWidget.php:45
+#: includes/Elementor/Widgets/ContactFormWidget.php:95
+msgid "Show Date"
+msgstr "Дата показу"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:83
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:46
+msgid "Show Description"
+msgstr "Показати опис"
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:58
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:31
+msgid "Show Title"
+msgstr "Показати назву"
+
+#: includes/Admin/AdminTranslations.php:79
+#, fuzzy
+msgid "Site couldn’t be created"
+msgstr "Не вдалося створити сайт"
+
+#: includes/Admin/AdminTranslations.php:48
+msgid "Site Language"
+msgstr "Мова сайту"
+
+#: includes/Admin/AdminTranslations.php:75
+#, fuzzy
+#| msgid "Site language: "
+msgid "Site language"
+msgstr "Мова сайту:"
+
+#: includes/Admin/AdminTranslations.php:192
+#: includes/Admin/AdminTranslations.php:197
+#, fuzzy
+msgid "Site preview"
+msgstr "Попередній перегляд сайту"
+
+#: includes/Admin/AdminTranslations.php:171
+#, fuzzy
+msgid "Site request not allowed"
+msgstr "Запит до сайту не дозволено"
+
+#: includes/Admin/AdminTranslations.php:98
+#, fuzzy
+msgid "Skincare affiliate site"
+msgstr "Партнерський сайт по догляду за шкірою"
+
+#: includes/Builder/Translator.php:38
+msgid "Socials"
+msgstr "Соціальні мережі"
+
+#: includes/Admin/AdminTranslations.php:161
+#, fuzzy
+msgid "Sorry, I didn't understand your answer. What\\u2019s your brand name?"
+msgstr "Вибачте, я не зрозумів вашої відповіді. Як називається ваш бренд?"
+
+#: includes/Rest/BuilderRoutes.php:278
+msgid "Sorry, something wrong with data."
+msgstr "Вибачте, щось не так з даними."
+
+#: includes/Admin/AdminTranslations.php:206
+#, fuzzy
+msgid ""
+"Sounds great 🚀 Next, based on what you shared so far, I'm thinking these "
+"pages would work well for your site.\\n\\nFeel free to remove or add pages "
+"as you like – then hit confirm when you're ready!"
+msgstr ""
+"Звучить чудово 🚀 Далі, виходячи з того, чим ви поділилися, я думаю, що ці "
+"сторінки добре підійдуть для вашого сайту.\\n\\nНе соромтеся видаляти або "
+"додавати сторінки, як вам подобається - а потім натисніть кнопку "
+"\"Підтвердити\", коли будете готові!"
+
+#: includes/Admin/AdminTranslations.php:77
+#, fuzzy
+#| msgid "Location is required"
+msgid "Store location is required"
+msgstr "Місцезнаходження обов'язкове"
+
+#: includes/Admin/AdminTranslations.php:76
+#, fuzzy
+msgid "Store location: "
+msgstr "Місцезнаходження магазину:"
+
+#: includes/Admin/AdminTranslations.php:67
+#, fuzzy
+msgid "Submit"
+msgstr "Надіслати"
+
+#: includes/Admin/AdminTranslations.php:68
+#, fuzzy
+msgid "Submitting..."
+msgstr "Подання..."
+
+#: includes/Builder/Translator.php:39
+msgid "Subscribe to our newsletter"
+msgstr "Підпишіться на нашу розсилку"
+
+#: gutenberg-blocks/ContactForm/ContactForm.php:141
+#: includes/Elementor/Widgets/ContactFormWidget.php:381
+msgid "Successfully submitted!"
+msgstr "Успішно надіслано!"
+
+#: includes/Admin/AdminTranslations.php:40
+msgid "Suggest a description"
+msgstr "Запропонуйте опис"
+
+#: includes/Admin/AdminTranslations.php:94
+#, fuzzy
+msgid "Tech gadgets affiliate site"
+msgstr "Партнерський сайт для технологічних гаджетів"
+
+#: includes/Admin/AdminTranslations.php:126
+#, fuzzy
+msgid "Tech startup landing page"
+msgstr "Посадкова сторінка технологічного стартапу"
+
+#: includes/Admin/AdminTranslations.php:11
+msgid "Tell us about your site"
+msgstr "Розкажіть нам про ваш сайт"
+
+#: theme.json
+msgctxt "Template part name"
+msgid "Footer"
+msgstr "Нижній колонтитул"
+
+#: theme.json
+msgctxt "Template part name"
+msgid "Header"
+msgstr "Заголовок"
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:49
+#, fuzzy
+msgid "Text to display for the privacy policy link"
+msgstr "Текст для відображення посилання на політику конфіденційності"
+
+#: includes/Admin/AdminTranslations.php:186
+#, fuzzy
+msgid "Thank you!"
+msgstr "Дякую!"
+
+#: includes/Admin/AdminTranslations.php:69
+#, fuzzy
+msgid "Thanks for your feedback"
+msgstr "Дякуємо за ваш відгук"
+
+#: includes/Admin/AdminTranslations.php:82
+#, fuzzy
+msgid ""
+"The AI builder is experiencing high demand right now. Try again in a few "
+"minutes."
+msgstr ""
+"Конструктор штучного інтелекту зараз користується великим попитом. Спробуйте "
+"ще раз за кілька хвилин."
+
+#. translators: %s php version
+#: functions.php:56
+#, php-format
+msgid ""
+"The Hostinger Easy Onboarding plugin requires minimum PHP version of <b>"
+"%s</b>. "
+msgstr ""
+"Плагін Hostinger Easy Onboarding потребує мінімальної версії PHP <b>%s</b>."
+
+#: gutenberg-blocks/Booking/build/index.js:1
+#: gutenberg-blocks/Booking/src/edit.js:37
+#, fuzzy
+msgid "The text shown with the privacy policy checkbox"
+msgstr "Текст, що відображається з прапорцем політики конфіденційності"
+
+#: includes/Settings/Theme.php:32 includes/Settings/Theme.php:33
+#: includes/Settings/Theme.php:125
+msgid "Theme Settings"
+msgstr "Налаштування теми"
+
+#: includes/Admin/AdminTranslations.php:191
+#, fuzzy
+msgid "Thinking..."
+msgstr "Думаю..."
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "This action cannot be undone. Are you sure you want to continue?"
+msgstr "Цю дію не можна скасувати. Ви впевнені, що хочете продовжити?"
+
+#: includes/Admin/AdminTranslations.php:43
+msgid "This field is required"
+msgstr "Це поле є обов'язковим"
+
+#: includes/Admin/AdminTranslations.php:45
+#| msgid "This field should not be longer than 1024 symbols."
+msgid "This field should not be longer than 1500 symbols."
+msgstr "Це поле може містити не більше 1500 символів."
+
+#: includes/Admin/AdminTranslations.php:44
+msgid "This field should not be longer than 255 symbols."
+msgstr "Довжина цього поля не повинна перевищувати 255 символів."
+
+#: includes/Admin/AdminTranslations.php:81
+#, fuzzy
+msgid ""
+"This issue is on our side. While we sort it out, you can start building with "
+"WordPress pre-built websites instead."
+msgstr ""
+"Ця проблема на нашому боці. Поки ми з нею розбираємося, ви можете почати "
+"створювати сайти на готових WordPress-шаблонах."
+
+#: includes/Elementor/Widgets/ContactFormWidget.php:70
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/edit.js:38
+#| msgid "Tete"
+msgid "Title"
+msgstr "Назва"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "Tone of voice"
+msgstr "Тон голосу"
+
+#: includes/Builder/Translator.php:51
+#, fuzzy
+msgid "Top rated by 100+ clients"
+msgstr "Найкращий рейтинг від 100+ клієнтів"
+
+#: includes/Admin/AdminTranslations.php:118
+#, fuzzy
+msgid "Travel agency for luxury tours"
+msgstr "Туристична агенція для елітних турів"
+
+#: includes/Admin/AdminTranslations.php:96
+#, fuzzy
+msgid "Travel photography blog"
+msgstr "Блог про туристичну фотографію"
+
+#: includes/Admin/AdminTranslations.php:170
+#, fuzzy
+msgid "Type your answer..."
+msgstr "Введіть свою відповідь..."
+
+#: includes/Admin/AdminTranslations.php:140
+#, fuzzy
+msgid "Update site colors"
+msgstr "Оновлення кольорів сайту"
+
+#: includes/Admin/AdminTranslations.php:209
+#, fuzzy
+msgid "Update site fonts"
+msgstr "Оновлення шрифтів сайту"
+
+#: includes/Admin/AdminTranslations.php:178
+#, fuzzy
+msgid "Upload"
+msgstr "Завантажити"
+
+#: includes/Admin/AdminTranslations.php:86
+#, fuzzy
+msgid "Vintage clothing e-shop"
+msgstr "Інтернет-магазин вінтажного одягу"
+
+#: includes/Builder/Translator.php:43
+#: includes/Elementor/Widgets/ContactFormWidget.php:109
+msgid ""
+"We'd love to hear from you. Send us a message and we'll respond as soon as "
+"possible."
+msgstr ""
+"Ми будемо раді отримати від вас повідомлення. Напишіть нам, а ми відповімо у "
+"найкоротші терміни."
+
+#: includes/Admin/AdminTranslations.php:13
+msgid "Website type"
+msgstr "Тип сайту"
+
+#: includes/Admin/AdminTranslations.php:100
+#, fuzzy
+msgid "Wedding photography website"
+msgstr "Веб-сайт весільної фотографії"
+
+#: gutenberg-blocks/AiContent/build/index.js:1
+#, fuzzy
+msgid "What do you want AI to create?"
+msgstr "Що ви хочете, щоб ШІ створив?"
+
+#: includes/Builder/Translator.php:48
+#: includes/Elementor/Widgets/ContactFormWidget.php:183
+#: includes/Shortcodes/ShortcodesManager.php:28
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:52
+msgid "What's your email?"
+msgstr "Яка ваша електронна пошта?"
+
+#: includes/Builder/Translator.php:46
+#: includes/Elementor/Widgets/ContactFormWidget.php:165
+#: includes/Shortcodes/ShortcodesManager.php:27
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:48
+msgid "What's your name?"
+msgstr "Як вас звати?"
+
+#: gutenberg-blocks/ContactForm/render.php:22
+#: includes/Elementor/Widgets/ContactFormWidget.php:267
+msgid "which I have read. I may withdraw my consent at any time."
+msgstr "яку я прочитав (-ла). Я можу скасувати згоду в будь-який час."
+
+#: includes/Admin/AdminTranslations.php:185
+#, fuzzy
+msgid "Why did you give this rating?"
+msgstr "Чому ви склали цей рейтинг?"
+
+#: includes/Admin/AdminTranslations.php:73
+#, fuzzy
+msgid ""
+"WordPress's built-in block editor with powerful flexibility for advanced "
+"users"
+msgstr ""
+"Вбудований редактор блоків WordPress з потужною гнучкістю для досвідчених "
+"користувачів"
+
+#: includes/Admin/AdminTranslations.php:51
+#: includes/Admin/AdminTranslations.php:182
+#, fuzzy
+msgid "WP admin"
+msgstr "Адміністратор WP"
+
+#: includes/Admin/AdminTranslations.php:211
+#, fuzzy
+msgid "Write brand name"
+msgstr "Напишіть назву бренду"
+
+#: includes/Admin/AdminTranslations.php:188
+#, fuzzy
+msgid "Write your feedback here (optional)"
+msgstr "Напишіть свій відгук тут (необов'язково)"
+
+#: includes/Builder/Translator.php:50
+#: includes/Elementor/Widgets/ContactFormWidget.php:201
+#: includes/Shortcodes/ShortcodesManager.php:29
+#: gutenberg-blocks/ContactForm/build/index.js:1
+#: gutenberg-blocks/ContactForm/src/index.js:56
+msgid "Write your message..."
+msgstr "Напишіть повідомлення..."
+
+#: includes/Rest/BuilderRoutes.php:470 includes/Rest/BuilderRoutes.php:540
+#: includes/Rest/BuilderRoutes.php:609
+msgid "Wrong sequence of step execution."
+msgstr "Неправильна послідовність виконання кроків."
+
+#: includes/Elementor/ScrollAnimation.php:38
+#, fuzzy
+msgid "Yes"
+msgstr "Так"
+
+#: includes/Admin/AdminTranslations.php:106
+#, fuzzy
+msgid "Yoga studio website"
+msgstr "Сайт студії йоги"
+
+#. translators: %s php version
+#: functions.php:60
+#, php-format
+msgid "You are running <b>%s</b> PHP version."
+msgstr "У вас запущено <b>%s</b> версію PHP."
+
+#: includes/Admin/AdminTranslations.php:38
+msgid ""
+"You have already generated content. Continuing will delete all previous "
+"content. Are you sure you want to proceed?"
+msgstr ""
+"Ви вже створили вміст. Продовження видалить весь попередній вміст. Ви "
+"впевнені, що хочете продовжити?"
+
+#: includes/Admin/AdminTranslations.php:187
+#, fuzzy
+msgid "Your feedback will help us improve."
+msgstr "Ваші відгуки допоможуть нам вдосконалюватися."
+
+#: includes/Admin/AdminTranslations.php:134
+#, fuzzy
+msgid "Your own color palette"
+msgstr "Ваша власна палітра кольорів"
+
+#: includes/Admin/AdminTranslations.php:210
+#, fuzzy
+#| msgid "My own font pair"
+msgid "Your own font pair"
+msgstr "Моя власна пара шрифтів"
+
+#: includes/Admin/AdminTranslations.php:50
+#, fuzzy
+#| msgid ""
+#| "Your site’s language will be changed to the selected language from this "
+#| "list, and all content will be generated in that language.”"
+msgid ""
+"Your site’s language will be changed to the selected language from this list,"
+" and all content will be generated in that language."
+msgstr ""
+"Мова вашого сайту буде змінена на мову, вибрану з цього списку. Весь вміст "
+"буде генеруватися цією мовою.\""
+
+#: includes/Admin/AdminTranslations.php:162
+#, fuzzy
+msgid "{builderType}, {language} and {brandName} for brand name"
+msgstr "{builderType}, {language} та {brandName} для назви бренду"

@@ -1,0 +1,36 @@
+/* =========================================================================
+   Sycomp re-branding of wp-admin — applied for the shop_manager role only,
+   so product / category editing never looks like raw WordPress.
+   ========================================================================= */
+
+/* Remove the WordPress toolbar entirely. */
+#wpadminbar { display: none !important; }
+html.wp-toolbar { padding-top: 0 !important; }
+
+/* Sycomp-navy admin menu. */
+#adminmenuback,
+#adminmenuwrap,
+#adminmenu,
+#adminmenu .wp-submenu,
+#adminmenu .wp-submenu-wrap {
+  background-color: #0c1c3c !important;
+}
+#adminmenu a { color: rgba(255, 255, 255, .82) !important; }
+#adminmenu div.wp-menu-image:before { color: rgba(255, 255, 255, .72) !important; }
+#adminmenu li.menu-top:hover,
+#adminmenu li.opensub > a.menu-top,
+#adminmenu li > a.menu-top:focus,
+#adminmenu li.current a.menu-top,
+#adminmenu li.wp-has-current-submenu a.menu-top,
+#adminmenu li.wp-menu-open > a.menu-top {
+  background-color: #1e4fd6 !important;
+  color: #ffffff !important;
+}
+#adminmenu li.menu-top:hover div.wp-menu-image:before,
+#adminmenu li.current div.wp-menu-image:before,
+#adminmenu li.wp-has-current-submenu div.wp-menu-image:before {
+  color: #ffffff !important;
+}
+
+/* Drop the WordPress footer credit and version. */
+#wpfooter { display: none !important; }

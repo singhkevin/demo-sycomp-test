@@ -1,0 +1,494 @@
+/*
+Theme Name: Sycomp Portal
+Theme URI: https://sycomp.com
+Author: Viral Inbound
+Author URI: https://viralinbound.com
+Description: Private B2B procurement portal theme for Sycomp. Built to pair with the Sycomp B2B Portal plugin (WooCommerce). Minimal, professional, login-gated storefront with multi-market pricing and a purchase-order workflow.
+Version: 1.8.3
+Requires at least: 6.2
+Tested up to: 6.5
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: sycomp-portal
+*/
+
+/* =========================================================================
+   Sycomp Portal — design tokens
+   ========================================================================= */
+:root {
+  /* ---- Brand & surface colour ---- */
+  --sy-navy:         #0c1c3c;
+  --sy-navy-deep:    #081429;
+  --sy-ink:          #0a0e16;
+  --sy-white:        #ffffff;
+  --sy-surface:      #f6f7f9;
+  --sy-surface-2:    #eef0f3;
+  --sy-border:       #e3e6eb;
+  --sy-border-strong:#d4d9e0;
+  --sy-text:         #1a1f29;
+  --sy-muted:        #5b6472;
+  --sy-accent:       #1e4fd6;
+  --sy-accent-dark:  #1640b0;
+  --sy-success:      #1f8a4c;
+  --sy-warning:      #b7791f;
+  --sy-danger:       #c0392b;
+
+  /* ---- Type scale ---- */
+  --sy-font:         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --sy-text-3xs:     0.68rem;
+  --sy-text-2xs:     0.74rem;
+  --sy-text-xs:      0.8rem;
+  --sy-text-sm:      0.875rem;
+  --sy-text-base:    0.95rem;
+  --sy-text-md:      1.05rem;
+  --sy-text-lg:      1.2rem;
+  --sy-text-xl:      1.5rem;
+  --sy-text-2xl:     1.9rem;
+
+  /* ---- Spacing scale (4px base) ---- */
+  --sy-space-1:      4px;
+  --sy-space-2:      8px;
+  --sy-space-3:      12px;
+  --sy-space-4:      16px;
+  --sy-space-5:      20px;
+  --sy-space-6:      24px;
+  --sy-space-8:      32px;
+  --sy-space-10:     40px;
+  --sy-space-12:     48px;
+
+  /* ---- Radius ---- */
+  --sy-radius-sm:    4px;
+  --sy-radius:       6px;
+  --sy-radius-lg:    10px;
+  --sy-radius-pill:  100px;
+
+  /* ---- Elevation ---- */
+  --sy-shadow-sm:    0 1px 2px rgba(10,14,22,.05), 0 1px 3px rgba(10,14,22,.06);
+  --sy-shadow:       0 1px 2px rgba(10,14,22,.06), 0 4px 12px rgba(10,14,22,.06);
+  --sy-shadow-md:    0 2px 6px rgba(10,14,22,.07), 0 14px 32px rgba(10,14,22,.10);
+
+  /* ---- Motion ---- */
+  --sy-transition:   .15s ease;
+
+  --sy-maxw:         1300px;
+}
+
+/* =========================================================================
+   Reset / base
+   ========================================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--sy-font);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--sy-text);
+  background: var(--sy-white);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--sy-accent); text-decoration: none; }
+a:hover { color: var(--sy-accent-dark); text-decoration: underline; }
+h1, h2, h3, h4 { color: var(--sy-ink); font-weight: 650; line-height: 1.25; margin: 0 0 .5em; }
+h1 { font-size: var(--sy-text-2xl); }
+h2 { font-size: var(--sy-text-xl); }
+h3 { font-size: var(--sy-text-lg); }
+p { margin: 0 0 1rem; }
+hr { border: 0; border-top: 1px solid var(--sy-border); margin: 1.5rem 0; }
+:focus-visible { outline: 2px solid var(--sy-accent); outline-offset: 2px; }
+
+.sy-container { max-width: var(--sy-maxw); margin: 0 auto; padding: 0 48px; }
+.screen-reader-text {
+  position: absolute !important; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap;
+}
+.sy-skip-link {
+  position: absolute; left: -9999px; top: 0; background: var(--sy-navy);
+  color: #fff; padding: 10px 16px; z-index: 1000;
+}
+.sy-skip-link:focus { left: 8px; top: 8px; }
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+.sy-btn, button.sy-btn, input.sy-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: inherit; font-size: var(--sy-text-sm); font-weight: 600; line-height: 1;
+  padding: 11px 18px; border-radius: var(--sy-radius); border: 1px solid transparent;
+  cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease;
+  text-decoration: none;
+}
+.sy-btn--primary { background: var(--sy-navy); color: #fff; }
+.sy-btn--primary:hover { background: var(--sy-navy-deep); color: #fff; text-decoration: none; }
+.sy-btn--accent { background: var(--sy-accent); color: #fff; }
+.sy-btn--accent:hover { background: var(--sy-accent-dark); color: #fff; text-decoration: none; }
+.sy-btn--ghost { background: #fff; color: var(--sy-navy); border-color: var(--sy-border); }
+.sy-btn--ghost:hover { background: var(--sy-surface); color: var(--sy-navy); text-decoration: none; }
+.sy-btn--danger { background: #fff; color: var(--sy-danger); border-color: #f1c8c3; }
+.sy-btn--danger:hover { background: #fbe9e7; color: var(--sy-danger); border-color: #e6b3ab; text-decoration: none; }
+.sy-btn--sm { padding: 7px 12px; font-size: var(--sy-text-xs); }
+.sy-btn--block { width: 100%; }
+.sy-btn[disabled], .sy-btn.is-disabled { opacity: .5; cursor: not-allowed; }
+
+/* =========================================================================
+   Header
+   ========================================================================= */
+.sy-header {
+  background: #fff;
+  color: var(--sy-text);
+  border-bottom: 1px solid var(--sy-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+/* Offset the sticky header below the WordPress admin bar when it is shown. */
+body.admin-bar .sy-header { top: 32px; }
+@media screen and (max-width: 782px) {
+  body.admin-bar .sy-header { top: 46px; }
+}
+.sy-header__bar {
+  display: flex; align-items: center; gap: 24px;
+  min-height: 76px; padding-top: 10px; padding-bottom: 10px;
+}
+.sy-header__logo { display: flex; align-items: center; gap: 10px; }
+.sy-header__logo img { max-height: 40px; width: auto; }
+.sy-header__logo-text { color: var(--sy-navy); font-weight: 700; font-size: var(--sy-text-lg); letter-spacing: .01em; }
+.sy-header__nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.sy-header__nav a {
+  color: var(--sy-navy); font-size: var(--sy-text-base); font-weight: 600;
+  padding: 8px 12px; border-radius: var(--sy-radius);
+}
+.sy-header__nav a:hover, .sy-header__nav a[aria-current] {
+  color: var(--sy-accent); background: var(--sy-surface); text-decoration: none;
+}
+.sy-header__meta { display: flex; align-items: center; gap: 14px; }
+.sy-header__user { font-size: var(--sy-text-sm); font-weight: 600; color: var(--sy-navy); }
+.sy-header__user:hover { color: var(--sy-accent); text-decoration: none; }
+.sy-header__support {
+  display: inline-flex; align-items: center; gap: 9px; margin-left: auto;
+  color: var(--sy-navy); font-weight: 600; font-size: var(--sy-text-base);
+}
+.sy-header__support:hover { color: var(--sy-accent); text-decoration: none; }
+.sy-header__support svg { width: 20px; height: 20px; }
+
+/* Location switcher (rendered by plugin, styled here) */
+.sy-locsw { position: relative; }
+.sy-locsw__btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--sy-surface); border: 1px solid var(--sy-border);
+  color: var(--sy-navy); padding: 9px 13px; border-radius: var(--sy-radius);
+  font-size: var(--sy-text-sm); font-weight: 600; cursor: pointer;
+}
+.sy-locsw__btn:hover { background: var(--sy-surface-2); }
+.sy-locsw__flag { width: 20px; height: 14px; border-radius: 2px; object-fit: cover; }
+.sy-locsw__caret { opacity: .7; }
+.sy-locsw__menu {
+  position: absolute; right: 0; top: calc(100% + 8px); min-width: 280px;
+  background: #fff; color: var(--sy-text); border: 1px solid var(--sy-border);
+  border-radius: var(--sy-radius-lg); box-shadow: var(--sy-shadow);
+  padding: 6px; z-index: 60; display: none;
+}
+.sy-locsw.is-open .sy-locsw__menu { display: block; }
+.sy-locsw__group-label {
+  font-size: var(--sy-text-2xs); text-transform: uppercase; letter-spacing: .06em;
+  color: var(--sy-muted); padding: 8px 10px 4px;
+}
+.sy-locsw__item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: none; border: 0; text-align: left; cursor: pointer;
+  padding: 9px 10px; border-radius: var(--sy-radius); font-size: var(--sy-text-sm); color: var(--sy-text);
+}
+.sy-locsw__item:hover { background: var(--sy-surface); }
+.sy-locsw__item.is-active { background: var(--sy-surface-2); font-weight: 600; }
+.sy-locsw__item-meta { margin-left: auto; color: var(--sy-muted); font-size: var(--sy-text-xs); }
+
+/* =========================================================================
+   Layout
+   ========================================================================= */
+.sy-main { min-height: 60vh; padding: 32px 0 56px; }
+.sy-page-head { margin-bottom: 24px; }
+.sy-page-head p.sy-lede { color: var(--sy-muted); font-size: var(--sy-text-base); margin: 0; }
+.sy-card {
+  background: #fff; border: 1px solid var(--sy-border);
+  border-radius: var(--sy-radius-lg); box-shadow: var(--sy-shadow);
+}
+.sy-notice {
+  border-radius: var(--sy-radius); padding: 12px 16px; font-size: var(--sy-text-sm);
+  border: 1px solid var(--sy-border); background: var(--sy-surface); margin-bottom: 16px;
+}
+.sy-notice--info { border-color: #c9d8f5; background: #eef3fd; }
+.sy-notice--warn { border-color: #f0dcb0; background: #fcf4e1; }
+.sy-notice--success { border-color: #bfe3cb; background: #e9f6ee; }
+
+/* =========================================================================
+   Footer
+   ========================================================================= */
+.sy-footer {
+  background: var(--sy-navy); color: rgba(255,255,255,.72);
+  margin-top: auto; padding: 32px 0 28px;
+}
+.sy-footer__row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+.sy-footer__logo img { height: 38px; width: auto; display: block; }
+.sy-footer__nav {
+  display: flex; flex: 1; justify-content: center; flex-wrap: wrap; gap: 8px 22px;
+}
+.sy-footer__nav a { color: rgba(255,255,255,.82); font-size: var(--sy-text-base); }
+.sy-footer__nav a:hover { color: #fff; text-decoration: none; }
+.sy-footer__social { display: flex; gap: 11px; }
+.sy-footer__social a {
+  width: 37px; height: 37px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.1);
+}
+.sy-footer__social a:hover { background: rgba(255,255,255,.2); }
+.sy-footer__social svg { width: 17px; height: 17px; fill: #fff; }
+.sy-footer__divider { height: 1px; background: rgba(255,255,255,.12); margin: 16px 0 12px; }
+.sy-footer__bottom { position: relative; text-align: center; min-height: 20px; }
+.sy-footer__copy { font-size: var(--sy-text-base); font-weight: 600; color: rgba(255,255,255,.82); }
+.sy-footer__legal { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+.sy-footer__legal a { color: rgba(255,255,255,.6); font-size: var(--sy-text-sm); margin-left: 18px; }
+.sy-footer__legal a:hover { color: #fff; text-decoration: none; }
+
+/* =========================================================================
+   Tabs (account / catalogue navigation)
+   ========================================================================= */
+.sy-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--sy-border); margin-bottom: 24px; }
+.sy-tabs a {
+  padding: 12px 18px; font-size: var(--sy-text-base); font-weight: 600; color: var(--sy-muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.sy-tabs a:hover { color: var(--sy-navy); text-decoration: none; }
+.sy-tabs a.is-active { color: var(--sy-navy); border-bottom-color: var(--sy-navy); }
+
+/* =========================================================================
+   Tables
+   ========================================================================= */
+.sy-table { width: 100%; border-collapse: collapse; font-size: var(--sy-text-sm); }
+.sy-table th, .sy-table td {
+  text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--sy-border);
+  vertical-align: middle;
+}
+.sy-table thead th {
+  font-size: var(--sy-text-2xs); text-transform: uppercase; letter-spacing: .05em;
+  color: var(--sy-muted); background: var(--sy-surface); font-weight: 700;
+}
+.sy-table tbody tr:hover { background: var(--sy-surface); }
+.sy-badge {
+  display: inline-block; padding: 3px 9px; border-radius: var(--sy-radius-pill);
+  font-size: var(--sy-text-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+}
+.sy-badge--instock { background: #e9f6ee; color: var(--sy-success); }
+.sy-badge--review  { background: #fcf4e1; color: var(--sy-warning); }
+.sy-badge--approved{ background: #e9f6ee; color: var(--sy-success); }
+.sy-badge--draft   { background: var(--sy-surface-2); color: var(--sy-muted); }
+.sy-badge--rejected{ background: #fbe9e7; color: var(--sy-danger); }
+
+/* =========================================================================
+   Login gate
+   ========================================================================= */
+.sy-login-wrap { max-width: 420px; margin: 60px auto; }
+.sy-login-wrap .sy-card { padding: 32px; }
+.sy-login-wrap h1 { font-size: var(--sy-text-xl); }
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+@media (max-width: 860px) {
+  .sy-container { padding: 0 20px; }
+  .sy-header__bar { flex-wrap: wrap; min-height: 0; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+  .sy-header__nav { order: 3; width: 100%; margin-left: 0; overflow-x: auto; }
+  .sy-footer__row { justify-content: center; text-align: center; }
+  .sy-footer__nav { flex: 1 1 100%; }
+  .sy-footer__legal { position: static; transform: none; display: block; margin-top: 6px; }
+  .sy-footer__legal a { margin: 0 9px; }
+  h1 { font-size: var(--sy-text-xl); }
+}
+
+/* =========================================================================
+   WooCommerce single product — related products
+   The product image + summary are floated; clear the related section so it
+   sits as a full-width band below them.
+   ========================================================================= */
+.woocommerce div.product .related.products,
+.woocommerce div.product .up-sells {
+  clear: both;
+  width: 100%;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--sy-border);
+}
+.woocommerce div.product .related.products > h2 {
+  font-size: var(--sy-text-lg);
+  margin-bottom: 18px;
+}
+
+/* =========================================================================
+   Header — logged-in buyer's company logo (co-branding)
+   ========================================================================= */
+.sy-header__company {
+  display: flex; align-items: center;
+  margin-left: 4px; padding-left: 16px;
+  border-left: 1px solid var(--sy-border);
+}
+.sy-header__company-logo { max-height: 44px; max-width: 190px; width: auto; display: block; }
+.sy-header__company-name { font-weight: 650; color: var(--sy-navy); font-size: var(--sy-text-md); }
+
+/* =========================================================================
+   WooCommerce buttons — Sycomp palette (replaces the default purple)
+   ========================================================================= */
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit,
+.woocommerce #place_order {
+  border-radius: var(--sy-radius);
+  font-weight: 600;
+  text-shadow: none;
+  box-shadow: none;
+}
+/* Primary call-to-action buttons: Add to cart, Proceed to checkout, Submit PO. */
+.woocommerce a.button.alt,
+.woocommerce button.button.alt,
+.woocommerce input.button.alt,
+.woocommerce #respond input#submit.alt,
+.woocommerce #place_order,
+.woocommerce .single_add_to_cart_button,
+.woocommerce-cart .wc-proceed-to-checkout a.checkout-button {
+  background-color: var(--sy-accent) !important;
+  color: #fff !important;
+  border-color: var(--sy-accent) !important;
+}
+.woocommerce a.button.alt:hover,
+.woocommerce button.button.alt:hover,
+.woocommerce input.button.alt:hover,
+.woocommerce #respond input#submit.alt:hover,
+.woocommerce #place_order:hover,
+.woocommerce .single_add_to_cart_button:hover,
+.woocommerce-cart .wc-proceed-to-checkout a.checkout-button:hover {
+  background-color: var(--sy-accent-dark) !important;
+  color: #fff !important;
+  border-color: var(--sy-accent-dark) !important;
+}
+/* Secondary plain buttons, e.g. Update cart. */
+.woocommerce a.button:not(.alt),
+.woocommerce button.button:not(.alt),
+.woocommerce input.button:not(.alt) {
+  background-color: var(--sy-surface) !important;
+  color: var(--sy-navy) !important;
+  border: 1px solid var(--sy-border) !important;
+}
+.woocommerce a.button:not(.alt):hover,
+.woocommerce button.button:not(.alt):hover,
+.woocommerce input.button:not(.alt):hover {
+  background-color: var(--sy-surface-2) !important;
+  color: var(--sy-navy) !important;
+}
+
+/* =========================================================================
+   Single product — price reads as high-contrast ink, not a muted default
+   ========================================================================= */
+.woocommerce div.product p.price,
+.woocommerce div.product p.price ins,
+.woocommerce div.product span.price {
+  color: var(--sy-navy);
+  font-weight: 700;
+  font-size: var(--sy-text-xl);
+}
+
+/* Product with no image — drop the empty gallery column, centre the summary
+   so the page reads as a deliberate spec sheet rather than a void. */
+.woocommerce div.product.sy-product--noimage .woocommerce-product-gallery {
+  display: none;
+}
+.woocommerce div.product.sy-product--noimage .summary,
+.woocommerce div.product.sy-product--noimage .entry-summary {
+  float: none;
+  width: 100%;
+  max-width: 720px;
+  margin: 0;
+}
+
+/* =========================================================================
+   WooCommerce form fields — checkout, cart and account forms get the same
+   field treatment as the rest of the portal (consistent size, border,
+   radius, focus ring) instead of WooCommerce's cramped defaults.
+   ========================================================================= */
+.woocommerce form .form-row { margin: 0 0 16px; padding: 0; }
+.woocommerce form .form-row label {
+  display: block;
+  font-size: var(--sy-text-sm);
+  font-weight: 600;
+  color: var(--sy-navy);
+  margin: 0 0 5px;
+}
+.woocommerce .form-row .optional { color: var(--sy-muted); font-weight: 400; }
+.woocommerce .required { color: var(--sy-danger); border: 0; }
+
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select,
+.woocommerce-checkout input[type="text"],
+.woocommerce-checkout input[type="email"],
+.woocommerce-checkout input[type="tel"],
+.woocommerce-checkout input[type="password"],
+.woocommerce-checkout input[type="number"],
+.woocommerce-checkout textarea,
+.woocommerce-checkout select {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: var(--sy-text-base);
+  line-height: 1.4;
+  padding: 10px 12px;
+  border: 1px solid var(--sy-border);
+  border-radius: var(--sy-radius);
+  background: #fff;
+  color: var(--sy-text);
+  box-shadow: none;
+}
+.woocommerce form .form-row textarea,
+.woocommerce-checkout textarea { min-height: 88px; resize: vertical; }
+
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus,
+.woocommerce form .form-row select:focus,
+.woocommerce-checkout input:focus,
+.woocommerce-checkout textarea:focus,
+.woocommerce-checkout select:focus {
+  outline: 2px solid var(--sy-accent);
+  outline-offset: 1px;
+  border-color: var(--sy-accent);
+}
+
+/* Cart quantity stepper */
+.woocommerce .quantity input.qty {
+  width: 74px;
+  box-sizing: border-box;
+  padding: 9px 6px;
+  font-family: inherit;
+  font-size: var(--sy-text-base);
+  border: 1px solid var(--sy-border);
+  border-radius: var(--sy-radius);
+  text-align: center;
+}
+
+/* Checkout — give the customer details and order review some structure */
+.woocommerce-checkout #customer_details,
+.woocommerce-checkout #order_review {
+  background: #fff;
+  border: 1px solid var(--sy-border);
+  border-radius: var(--sy-radius-lg);
+  padding: 20px 22px;
+}
+.woocommerce-checkout #order_review_heading { margin-top: 8px; }
+
+/* =========================================================================
+   Premium polish — typographic finish
+   ========================================================================= */
+h1, h2 { letter-spacing: -0.011em; }
+.sy-btn { transition: background .15s ease, color .15s ease, border-color .15s ease, transform .08s ease; }

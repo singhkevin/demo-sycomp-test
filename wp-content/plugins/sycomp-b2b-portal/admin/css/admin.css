@@ -1,0 +1,88 @@
+/* =========================================================================
+   Sycomp B2B Portal — admin styles
+   ========================================================================= */
+.sycomp-admin__lede { font-size: 14px; color: #50575e; max-width: 720px; }
+
+/* Dashboard stat tiles */
+.sycomp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 18px 0 26px;
+}
+.sycomp-stat {
+  flex: 1 1 150px;
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 8px;
+  padding: 18px;
+}
+.sycomp-stat--alert { border-color: #f0c33c; background: #fff8e5; }
+.sycomp-stat__n {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: #0c1c3c;
+}
+.sycomp-stat__l {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #646970;
+}
+
+/* Cards */
+.sycomp-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.sycomp-card {
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+.sycomp-card h2 { margin-top: 0; font-size: 15px; }
+.sycomp-card p { color: #50575e; font-size: 13px; }
+.sycomp-card .button { margin: 4px 6px 0 0; }
+.sycomp-card pre {
+  background: #1d2327;
+  color: #e6e6e6;
+  padding: 12px 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 12px;
+}
+
+/* Per-market pricing table on the product editor */
+.sycomp-pricing-table { margin-top: 10px; max-width: 520px; }
+.sycomp-pricing-table th,
+.sycomp-pricing-table td { padding: 8px 10px; }
+.sycomp-price-input { width: 140px; }
+
+/* Pills */
+.sycomp-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.sycomp-pill--ok       { background: #e9f6ee; color: #1f8a4c; }
+.sycomp-pill--partial  { background: #fff8e5; color: #b7791f; }
+.sycomp-pill--none     { background: #fbe9e7; color: #c0392b; }
+.sycomp-pill--review   { background: #fff8e5; color: #b7791f; }
+.sycomp-pill--approved { background: #e9f6ee; color: #1f8a4c; }
+.sycomp-pill--rejected { background: #fbe9e7; color: #c0392b; }
+
+/* PO lifecycle status pills */
+.sycomp-pill--open      { background: #fff8e5; color: #b7791f; }
+.sycomp-pill--process   { background: #eef3fd; color: #1e4fd6; }
+.sycomp-pill--closed    { background: #e9f6ee; color: #1f8a4c; }
+.sycomp-pill--cancelled { background: #fbe9e7; color: #c0392b; }
