@@ -2659,7 +2659,10 @@ class Sycomp_B2B_Manager {
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Buyer', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . esc_html( $order->get_formatted_billing_full_name() ? $order->get_formatted_billing_full_name() : $order->get_billing_email() ) . '</span></div>';
 		$sycomp_supplier = $market ? Sycomp_B2B_Warehouses::address_lines( $market ) : array();
 		echo '<div class="sy-deflist__full"><span class="sy-deflist__k">' . esc_html__( 'Supplier (ship-from)', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $sycomp_supplier ? wp_kses_post( implode( '<br>', array_map( 'esc_html', $sycomp_supplier ) ) ) : '-' ) . '</span></div>';
-		$sycomp_billing = $location_id ? Sycomp_B2B_Post_Types::get_location_billing_address( $location_id ) : '';
+		$sycomp_billing = (string) $order->get_meta( '_sycomp_billing_address' );
+		if ( empty( $sycomp_billing ) && $location_id ) {
+			$sycomp_billing = Sycomp_B2B_Post_Types::get_location_billing_address( $location_id );
+		}
 		if ( empty( $sycomp_billing ) && $company_id ) {
 			$sycomp_billing = Sycomp_B2B_Post_Types::get_company_billing_address( $company_id );
 		}

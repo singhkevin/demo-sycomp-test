@@ -859,3 +859,42 @@ a.sy-stat:hover { transform: translateY(-2px); text-decoration: none; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Ensure high contrast and readability of optgroup headers and select options */
+select optgroup {
+  background-color: var(--sy-white) !important;
+  color: var(--sy-navy) !important;
+  font-weight: 700 !important;
+}
+select option {
+  background-color: var(--sy-white) !important;
+  color: var(--sy-text) !important;
+}
+.select2-dropdown {
+  background-color: var(--sy-white) !important;
+  color: var(--sy-text) !important;
+  border-color: var(--sy-border) !important;
+}
+.select2-container--default .select2-results__group,
+.select2-container--classic .select2-results__group,
+.select2-results__group {
+  background-color: var(--sy-surface) !important;
+  color: var(--sy-navy) !important;
+  font-weight: 700 !important;
+  font-size: var(--sy-text-xs) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  padding: 6px 12px !important;
+}
+.select2-container--default .select2-results__option,
+.select2-container--classic .select2-results__option,
+.select2-results__option {
+  background-color: var(--sy-white) !important;
+  color: var(--sy-text) !important;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--default .select2-results__option--highlighted[data-selected],
+.select2-results__option--highlighted {
+  background-color: var(--sy-accent) !important;
+  color: var(--sy-white) !important;
+}

@@ -267,7 +267,9 @@ class Sycomp_B2B_Manager_Customers {
 		$name    = isset( $_POST['l_name'] ) ? sanitize_text_field( wp_unslash( $_POST['l_name'] ) ) : '';
 		$market  = isset( $_POST['l_market'] ) ? sanitize_key( wp_unslash( $_POST['l_market'] ) ) : '';
 		$code    = isset( $_POST['l_code'] ) ? sanitize_text_field( wp_unslash( $_POST['l_code'] ) ) : '';
-		$billing = isset( $_POST['l_billing'] ) ? sanitize_textarea_field( wp_unslash( $_POST['l_billing'] ) ) : '';
+		
+		$billing_raw = isset( $_POST['l_billing'] ) ? (array) $_POST['l_billing'] : array();
+		$billing = array_values( array_filter( array_map( 'sanitize_textarea_field', array_map( 'wp_unslash', $billing_raw ) ), 'trim' ) );
 
 		$drop_shipping_raw = isset( $_POST['l_drop_shipping'] ) ? (array) $_POST['l_drop_shipping'] : array();
 		$drop_shipping = array_values( array_filter( array_map( 'sanitize_textarea_field', array_map( 'wp_unslash', $drop_shipping_raw ) ), 'trim' ) );
@@ -299,11 +301,13 @@ class Sycomp_B2B_Manager_Customers {
 		}
 
 		if ( $lid && ! is_wp_error( $lid ) ) {
+			$legacy_billing = ! empty( $billing ) ? $billing[0] : '';
 			update_post_meta( $lid, Sycomp_B2B_Post_Types::META_LOCATION_COMPANY, $cid );
 			update_post_meta( $lid, Sycomp_B2B_Post_Types::META_LOCATION_MARKET, $market );
 			update_post_meta( $lid, Sycomp_B2B_Post_Types::META_LOCATION_CODE, $code );
 			update_post_meta( $lid, Sycomp_B2B_Post_Types::META_LOCATION_ADDRESS, $legacy_address );
-			update_post_meta( $lid, '_sycomp_billing_address', $billing );
+			update_post_meta( $lid, '_sycomp_billing_address', $legacy_billing );
+			update_post_meta( $lid, '_sycomp_billing_addresses', $billing );
 			update_post_meta( $lid, '_sycomp_drop_shipping_addresses', $drop_shipping );
 			update_post_meta( $lid, '_sycomp_msp_shipping_addresses', $msp_shipping );
 		}
@@ -792,7 +796,7 @@ class Sycomp_B2B_Manager_Customers {
 
 		$cur_market  = $edit_loc ? Sycomp_B2B_Post_Types::get_location_market( $edit_loc->ID ) : '';
 		$cur_code    = $edit_loc ? (string) get_post_meta( $edit_loc->ID, Sycomp_B2B_Post_Types::META_LOCATION_CODE, true ) : '';
-		$cur_billing = $edit_loc ? Sycomp_B2B_Post_Types::get_location_billing_address( $edit_loc->ID ) : '';
+		$cur_billing = $edit_loc ? Sycomp_B2B_Post_Types::get_location_billing_addresses( $edit_loc->ID ) : array();
 		$cur_drop    = $edit_loc ? Sycomp_B2B_Post_Types::get_location_drop_shipping_addresses( $edit_loc->ID ) : array();
 		$cur_msp     = $edit_loc ? Sycomp_B2B_Post_Types::get_location_msp_shipping_addresses( $edit_loc->ID ) : array();
 		$locations   = Sycomp_B2B_Post_Types::get_company_locations( $cid );
@@ -841,18 +845,34 @@ class Sycomp_B2B_Manager_Customers {
 		echo '</style>';
 
 		echo '<div class="sy-form__grid">';
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Location name', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Billing name', 'sycomp-b2b-portal' ) . '</span>';
 		echo '<input type="text" name="l_name" required value="' . esc_attr( $edit_loc ? get_the_title( $edit_loc ) : '' ) . '" placeholder="' . esc_attr__( 'e.g. India Office', 'sycomp-b2b-portal' ) . '"></label>';
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Market', 'sycomp-b2b-portal' ) . '</span><select name="l_market" required>';
-		echo '<option value="">' . esc_html__( '— Select market —', 'sycomp-b2b-portal' ) . '</option>';
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Currency', 'sycomp-b2b-portal' ) . '</span><select name="l_market" required>';
+		echo '<option value="">' . esc_html__( '— Select currency —', 'sycomp-b2b-portal' ) . '</option>';
 		foreach ( Sycomp_B2B_Markets::all() as $key => $market ) {
 			echo '<option value="' . esc_attr( $key ) . '" ' . selected( $cur_market, $key, false ) . '>' . esc_html( $market['label'] . ' (' . $market['currency'] . ')' ) . '</option>';
 		}
 		echo '</select></label>';
 		
 		// Row 2: Billing Address and Location Code (50/50 split)
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Billing address', 'sycomp-b2b-portal' ) . '</span>';
-		echo '<textarea name="l_billing" rows="2" placeholder="' . esc_attr__( 'The billing address for this location/market', 'sycomp-b2b-portal' ) . '">' . esc_textarea( $cur_billing ) . '</textarea></label>';
+		echo '<div class="sy-field">';
+		echo '<span class="sy-field__label">' . esc_html__( 'Billing address', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<div style="display: flex; gap: 8px; align-items: stretch;">';
+		echo '<textarea id="l_billing_input" rows="1" style="flex-grow: 1; resize: none; min-height: 38px; padding: 8px; border: 1px solid var(--sy-border); border-radius: var(--sy-radius);" placeholder="' . esc_attr__( 'Type address and press enter...', 'sycomp-b2b-portal' ) . '"></textarea>';
+		echo '<button type="button" id="l_billing_add_btn" class="sy-btn sy-btn--ghost" style="padding: 0 16px; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid var(--sy-border); border-radius: var(--sy-radius); line-height: 1;" title="' . esc_attr__( 'Add address', 'sycomp-b2b-portal' ) . '">↵</button>';
+		echo '</div>';
+		echo '<div id="l_billing_list" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">';
+		foreach ( $cur_billing as $addr ) {
+			if ( ! empty( trim( $addr ) ) ) {
+				echo '<div class="sy-address-pill" onclick="editAddress(this, \'l_billing_input\')">';
+				echo '<span class="sy-address-pill-text">' . esc_html( $addr ) . '</span>';
+				echo '<input type="hidden" name="l_billing[]" value="' . esc_attr( $addr ) . '">';
+				echo '<span class="sy-address-pill-remove" onclick="event.stopPropagation(); this.parentElement.remove();">&times;</span>';
+				echo '</div>';
+			}
+		}
+		echo '</div>';
+		echo '</div>';
 
 		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Location code', 'sycomp-b2b-portal' ) . '</span>';
 		echo '<input type="text" name="l_code" value="' . esc_attr( $cur_code ) . '" placeholder="' . esc_attr__( 'optional', 'sycomp-b2b-portal' ) . '"></label>';
@@ -980,6 +1000,7 @@ class Sycomp_B2B_Manager_Customers {
 		}
 
 		document.addEventListener('DOMContentLoaded', function() {
+			setupAddressInput('l_billing_input', 'l_billing_add_btn', 'l_billing_list', 'l_billing');
 			setupAddressInput('l_drop_shipping_input', 'l_drop_shipping_add_btn', 'l_drop_shipping_list', 'l_drop_shipping');
 			setupAddressInput('l_msp_shipping_input', 'l_msp_shipping_add_btn', 'l_msp_shipping_list', 'l_msp_shipping');
 		});
@@ -998,8 +1019,8 @@ class Sycomp_B2B_Manager_Customers {
 			echo '<p class="sy-muted" style="margin-top:12px;">' . esc_html__( 'No locations yet.', 'sycomp-b2b-portal' ) . '</p>';
 		} else {
 			echo '<table class="sy-table sy-table--admin sy-table--stack" style="margin-top:14px;"><thead><tr>';
-			echo '<th>' . esc_html__( 'Location', 'sycomp-b2b-portal' ) . '</th>';
-			echo '<th>' . esc_html__( 'Market', 'sycomp-b2b-portal' ) . '</th>';
+			echo '<th>' . esc_html__( 'Billing name', 'sycomp-b2b-portal' ) . '</th>';
+			echo '<th>' . esc_html__( 'Currency', 'sycomp-b2b-portal' ) . '</th>';
 			echo '<th>' . esc_html__( 'Code', 'sycomp-b2b-portal' ) . '</th>';
 			echo '<th class="sy-col-act">' . esc_html__( 'Actions', 'sycomp-b2b-portal' ) . '</th>';
 			echo '</tr></thead><tbody>';

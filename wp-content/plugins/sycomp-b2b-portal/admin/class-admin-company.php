@@ -80,10 +80,13 @@ class Sycomp_B2B_Admin_Company {
 	public static function render_location_box( $post ) {
 		wp_nonce_field( self::NONCE, self::NONCE . '_field' );
 
-		$company_id = Sycomp_B2B_Post_Types::get_location_company( $post->ID );
-		$market     = Sycomp_B2B_Post_Types::get_location_market( $post->ID );
-		$code       = get_post_meta( $post->ID, Sycomp_B2B_Post_Types::META_LOCATION_CODE, true );
-		$address    = Sycomp_B2B_Post_Types::get_location_address( $post->ID );
+		$company_id        = Sycomp_B2B_Post_Types::get_location_company( $post->ID );
+		$market            = Sycomp_B2B_Post_Types::get_location_market( $post->ID );
+		$code              = get_post_meta( $post->ID, Sycomp_B2B_Post_Types::META_LOCATION_CODE, true );
+		$address           = Sycomp_B2B_Post_Types::get_location_address( $post->ID );
+		$billing_addresses = Sycomp_B2B_Post_Types::get_location_billing_addresses( $post->ID );
+		$drop_shipping     = Sycomp_B2B_Post_Types::get_location_drop_shipping_addresses( $post->ID );
+		$msp_shipping      = Sycomp_B2B_Post_Types::get_location_msp_shipping_addresses( $post->ID );
 		?>
 		<style>
 		.sy-admin-grid {
@@ -167,10 +170,24 @@ class Sycomp_B2B_Admin_Company {
 				<p class="description" style="margin-top: 2px;"><?php esc_html_e( 'Pricing and currency this location sees are determined by its market.', 'sycomp-b2b-portal' ); ?></p>
 			</div>
 
-			<!-- Row 2: Billing Address and Location Code -->
+			<!-- Row 2: Billing Addresses and Location Code -->
 			<div class="sy-admin-field">
-				<label for="sycomp_billing_address"><?php esc_html_e( 'Billing address', 'sycomp-b2b-portal' ); ?></label>
-				<textarea name="sycomp_billing_address" id="sycomp_billing_address" rows="2" placeholder="<?php esc_attr_e( 'The billing address for this location/market', 'sycomp-b2b-portal' ); ?>"><?php echo esc_textarea( $billing ); ?></textarea>
+				<label><?php esc_html_e( 'Billing Addresses', 'sycomp-b2b-portal' ); ?></label>
+				<div style="display: flex; gap: 8px; align-items: stretch;">
+					<textarea id="sycomp_billing_input" rows="1" style="flex-grow: 1; resize: none; min-height: 30px; padding: 6px;" placeholder="<?php esc_attr_e( 'Type address and press enter...', 'sycomp-b2b-portal' ); ?>"></textarea>
+					<button type="button" id="sycomp_billing_add_btn" class="button" style="display: flex; align-items: center; justify-content: center; font-size: 16px;" title="<?php esc_attr_e( 'Add address', 'sycomp-b2b-portal' ); ?>">↵</button>
+				</div>
+				<div id="sycomp_billing_list" style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+					<?php foreach ( $billing_addresses as $addr ) : ?>
+						<?php if ( ! empty( trim( $addr ) ) ) : ?>
+							<div class="sy-address-pill" onclick="editAdminAddress(this, 'sycomp_billing_input')">
+								<span class="sy-address-pill-text"><?php echo esc_html( $addr ); ?></span>
+								<input type="hidden" name="sycomp_billing[]" value="<?php echo esc_attr( $addr ); ?>">
+								<span class="sy-address-pill-remove" onclick="event.stopPropagation(); this.parentElement.remove();">&times;</span>
+							</div>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</div>
 			</div>
 
 			<div class="sy-admin-field">
@@ -291,6 +308,7 @@ class Sycomp_B2B_Admin_Company {
 		}
 
 		function initAdminAddressPills() {
+			setupAdminAddressInput('sycomp_billing_input', 'sycomp_billing_add_btn', 'sycomp_billing_list', 'sycomp_billing');
 			setupAdminAddressInput('sycomp_drop_shipping_input', 'sycomp_drop_shipping_add_btn', 'sycomp_drop_shipping_list', 'sycomp_drop_shipping');
 			setupAdminAddressInput('sycomp_msp_shipping_input', 'sycomp_msp_shipping_add_btn', 'sycomp_msp_shipping_list', 'sycomp_msp_shipping');
 		}
@@ -453,7 +471,9 @@ class Sycomp_B2B_Admin_Company {
 		$company_id = isset( $_POST['sycomp_company_id'] ) ? absint( wp_unslash( $_POST['sycomp_company_id'] ) ) : 0;
 		$market     = isset( $_POST['sycomp_market'] ) ? sanitize_key( wp_unslash( $_POST['sycomp_market'] ) ) : '';
 		$code       = isset( $_POST['sycomp_location_code'] ) ? sanitize_text_field( wp_unslash( $_POST['sycomp_location_code'] ) ) : '';
-		$billing    = isset( $_POST['sycomp_billing_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sycomp_billing_address'] ) ) : '';
+
+		$billing_raw = isset( $_POST['sycomp_billing'] ) ? (array) $_POST['sycomp_billing'] : array();
+		$billing     = array_values( array_filter( array_map( 'sanitize_textarea_field', array_map( 'wp_unslash', $billing_raw ) ), 'trim' ) );
 
 		$drop_shipping_raw = isset( $_POST['sycomp_drop_shipping'] ) ? (array) $_POST['sycomp_drop_shipping'] : array();
 		$drop_shipping = array_values( array_filter( array_map( 'sanitize_textarea_field', array_map( 'wp_unslash', $drop_shipping_raw ) ), 'trim' ) );
@@ -468,10 +488,16 @@ class Sycomp_B2B_Admin_Company {
 			$legacy_address = $msp_shipping[0];
 		}
 
+		$legacy_billing = '';
+		if ( ! empty( $billing ) ) {
+			$legacy_billing = $billing[0];
+		}
+
 		update_post_meta( $post_id, Sycomp_B2B_Post_Types::META_LOCATION_COMPANY, $company_id );
 		update_post_meta( $post_id, Sycomp_B2B_Post_Types::META_LOCATION_CODE, $code );
 		update_post_meta( $post_id, Sycomp_B2B_Post_Types::META_LOCATION_ADDRESS, $legacy_address );
-		update_post_meta( $post_id, '_sycomp_billing_address', $billing );
+		update_post_meta( $post_id, '_sycomp_billing_address', $legacy_billing );
+		update_post_meta( $post_id, '_sycomp_billing_addresses', $billing );
 		update_post_meta( $post_id, '_sycomp_drop_shipping_addresses', $drop_shipping );
 		update_post_meta( $post_id, '_sycomp_msp_shipping_addresses', $msp_shipping );
 

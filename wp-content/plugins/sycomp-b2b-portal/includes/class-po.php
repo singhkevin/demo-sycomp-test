@@ -64,8 +64,8 @@ class Sycomp_B2B_PO {
 		add_action( 'woocommerce_after_order_notes', array( __CLASS__, 'po_reference_field' ) );
 		add_action( 'woocommerce_checkout_create_order', array( __CLASS__, 'attach_location_to_order' ), 10, 2 );
 		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'customise_checkout_fields' ) );
+		add_filter( 'woocommerce_form_field_select', array( __CLASS__, 'render_checkout_select_field' ), 10, 4 );
 		add_filter( 'woocommerce_thankyou_order_received_text', array( __CLASS__, 'thankyou_text' ), 10, 2 );
-		add_action( 'wp_footer', array( __CLASS__, 'checkout_address_selector_script' ) );
 
 		// Send email when PO is submitted (generated).
 		add_action( 'woocommerce_order_status_' . self::STATUS_OPEN, array( __CLASS__, 'send_po_generated_email' ), 10, 2 );
@@ -246,15 +246,22 @@ class Sycomp_B2B_PO {
 			);
 		}
 
-		// Set order billing address from the location's billing address.
-		if ( $location_id ) {
+		// Set order billing address from checkout selection or the location's default billing address.
+		$billing = '';
+		if ( ! empty( $_POST['sycomp_billing_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$billing = sanitize_textarea_field( wp_unslash( $_POST['sycomp_billing_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+
+		if ( empty( $billing ) && $location_id ) {
 			$billing = Sycomp_B2B_Post_Types::get_location_billing_address( $location_id );
-			if ( empty( $billing ) && $company_id ) {
-				$billing = Sycomp_B2B_Post_Types::get_company_billing_address( $company_id );
-			}
-			if ( ! empty( $billing ) ) {
-				$order->set_billing_address_1( str_replace( array( "\r\n", "\r", "\n" ), ', ', $billing ) );
-			}
+		}
+		if ( empty( $billing ) && $company_id ) {
+			$billing = Sycomp_B2B_Post_Types::get_company_billing_address( $company_id );
+		}
+
+		if ( ! empty( $billing ) ) {
+			$order->update_meta_data( '_sycomp_billing_address', $billing );
+			$order->set_billing_address_1( str_replace( array( "\r\n", "\r", "\n" ), ', ', $billing ) );
 		}
 
 		// Delivery address - defaults to the location, editable at checkout.
@@ -298,20 +305,25 @@ class Sycomp_B2B_PO {
 		$location_id = Sycomp_B2B_Context::get_active_location_id();
 		$drop_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_drop_shipping_addresses( $location_id ) : array();
 		$msp_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_msp_shipping_addresses( $location_id ) : array();
+		$billing_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_billing_addresses( $location_id ) : array();
 
-		// Default fallback
+		// Default fallback for delivery
 		$default = '';
-		if ( ! empty( $drop_addresses ) ) {
-			$default = $drop_addresses[0];
-		} elseif ( ! empty( $msp_addresses ) ) {
-			$default = $msp_addresses[0];
-		} else {
-			$default = $location_id ? Sycomp_B2B_Post_Types::get_location_address( $location_id ) : '';
+		if ( ! empty( $msp_addresses ) ) {
+			$default = trim( $msp_addresses[0] );
+		} elseif ( ! empty( $drop_addresses ) ) {
+			$default = trim( $drop_addresses[0] );
 		}
 
-		// Build choices for the dropdown
+		// Default fallback for billing
+		$billing_default = '';
+		if ( ! empty( $billing_addresses ) ) {
+			$billing_default = trim( $billing_addresses[0] );
+		}
+
+		// Build choices for delivery dropdown
 		$options = array(
-			'' => __( '— Select predefined address (or enter custom below) —', 'sycomp-b2b-portal' ),
+			'' => __( '— Select a delivery address —', 'sycomp-b2b-portal' ),
 		);
 
 		foreach ( $msp_addresses as $index => $addr ) {
@@ -326,30 +338,36 @@ class Sycomp_B2B_PO {
 			}
 		}
 
-		$options['custom'] = __( 'Custom shipping address (enter below)', 'sycomp-b2b-portal' );
-
-		// Add select field if we have predefined addresses
-		if ( count( $options ) > 2 ) {
-			$fields['billing']['sycomp_delivery_address_select'] = array(
-				'type'        => 'select',
-				'label'       => __( 'Predefined Delivery Addresses', 'sycomp-b2b-portal' ),
-				'required'    => false,
-				'class'       => array( 'form-row-wide' ),
-				'priority'    => 24,
-				'options'     => $options,
-				'default'     => $default,
-			);
+		// Build choices for billing dropdown
+		$billing_options = array(
+			'' => __( '— Select a billing address —', 'sycomp-b2b-portal' ),
+		);
+		foreach ( $billing_addresses as $index => $addr ) {
+			if ( ! empty( trim( $addr ) ) ) {
+				$billing_options[ trim( $addr ) ] = sprintf( __( 'Billing Address %d: %s', 'sycomp-b2b-portal' ), $index + 1, esc_html( wp_strip_all_tags( $addr ) ) );
+			}
 		}
 
+		$fields['billing']['sycomp_billing_address'] = array(
+			'type'        => 'select',
+			'label'       => __( 'Billing address', 'sycomp-b2b-portal' ),
+			'required'    => true,
+			'class'       => array( 'form-row-wide' ),
+			'priority'    => 20,
+			'options'     => $billing_options,
+			'default'     => $billing_default,
+			'placeholder' => __( '— Select a billing address —', 'sycomp-b2b-portal' ),
+		);
+
 		$fields['billing']['sycomp_delivery_address'] = array(
-			'type'              => 'textarea',
-			'label'             => __( 'Delivery address', 'sycomp-b2b-portal' ),
-			'required'          => true,
-			'class'             => array( 'form-row-wide' ),
-			'priority'          => 25,
-			'default'           => $default,
-			'placeholder'       => __( 'Where this purchase order should be delivered', 'sycomp-b2b-portal' ),
-			'custom_attributes' => array( 'rows' => '4' ),
+			'type'        => 'select',
+			'label'       => __( 'Delivery address', 'sycomp-b2b-portal' ),
+			'required'    => true,
+			'class'       => array( 'form-row-wide' ),
+			'priority'    => 25,
+			'options'     => $options,
+			'default'     => $default,
+			'placeholder' => __( '— Select a delivery address —', 'sycomp-b2b-portal' ),
 		);
 
 		return $fields;
@@ -747,26 +765,69 @@ class Sycomp_B2B_PO {
 	}
 
 	/**
-	 * Output inline Javascript on the checkout page to populate the delivery
-	 * address textarea when a predefined address is selected.
+	 * Render the checkout select field with optgroups.
+	 *
+	 * @param string $field HTML field.
+	 * @param string $key   Field key.
+	 * @param array  $args  Field args.
+	 * @param string $value Field value.
+	 * @return string
 	 */
-	public static function checkout_address_selector_script() {
-		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_wc_endpoint_url( 'order-received' ) ) {
-			return;
-		}
-		?>
-		<script type="text/javascript">
-		jQuery(function($) {
-			$(document.body).on('change', '#sycomp_delivery_address_select', function() {
-				var val = $(this).val();
-				if (val && val !== 'custom') {
-					$('#sycomp_delivery_address').val(val).trigger('change');
-				} else if (val === 'custom') {
-					$('#sycomp_delivery_address').val('').trigger('change');
+	public static function render_checkout_select_field( $field, $key, $args, $value ) {
+		if ( 'sycomp_delivery_address' === $key ) {
+			$location_id = Sycomp_B2B_Context::get_active_location_id();
+			$drop_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_drop_shipping_addresses( $location_id ) : array();
+			$msp_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_msp_shipping_addresses( $location_id ) : array();
+
+			// Generate our custom select
+			$custom_attributes = array();
+			if ( $args['required'] ) {
+				$custom_attributes[] = 'aria-required="true"';
+			}
+			if ( ! empty( $args['custom_attributes'] ) && is_array( $args['custom_attributes'] ) ) {
+				foreach ( $args['custom_attributes'] as $attribute => $attribute_value ) {
+					$custom_attributes[] = esc_attr( $attribute ) . '="' . esc_attr( $attribute_value ) . '"';
 				}
-			});
-		});
-		</script>
-		<?php
+			}
+
+			// We need a placeholder option as the first item
+			$placeholder_text = ! empty( $args['placeholder'] ) ? $args['placeholder'] : __( '— Select a delivery address —', 'sycomp-b2b-portal' );
+			$options_html = '<option value="" ' . selected( trim( (string) $value ), '', false ) . '>' . esc_html( $placeholder_text ) . '</option>';
+
+			// Add MSP Addresses Group
+			if ( ! empty( $msp_addresses ) ) {
+				$options_html .= '<optgroup label="' . esc_attr__( 'MSP Addresses', 'sycomp-b2b-portal' ) . '">';
+				foreach ( $msp_addresses as $index => $addr ) {
+					if ( ! empty( trim( $addr ) ) ) {
+						$addr_clean = trim( $addr );
+						$label = sprintf( __( 'MSP Address %d: %s', 'sycomp-b2b-portal' ), $index + 1, wp_strip_all_tags( $addr_clean ) );
+						$options_html .= '<option value="' . esc_attr( $addr_clean ) . '" ' . selected( trim( (string) $value ), $addr_clean, false ) . '>' . esc_html( $label ) . '</option>';
+					}
+				}
+				$options_html .= '</optgroup>';
+			}
+
+			// Add Drop Shipping Addresses Group
+			if ( ! empty( $drop_addresses ) ) {
+				$options_html .= '<optgroup label="' . esc_attr__( 'Drop Shipping Addresses', 'sycomp-b2b-portal' ) . '">';
+				foreach ( $drop_addresses as $index => $addr ) {
+					if ( ! empty( trim( $addr ) ) ) {
+						$addr_clean = trim( $addr );
+						$label = sprintf( __( 'Drop Shipping Address %d: %s', 'sycomp-b2b-portal' ), $index + 1, wp_strip_all_tags( $addr_clean ) );
+						$options_html .= '<option value="' . esc_attr( $addr_clean ) . '" ' . selected( trim( (string) $value ), $addr_clean, false ) . '>' . esc_html( $label ) . '</option>';
+					}
+				}
+				$options_html .= '</optgroup>';
+			}
+
+			$select_html = '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" class="select ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . implode( ' ', $custom_attributes ) . '>';
+			$select_html .= $options_html;
+			$select_html .= '</select>';
+
+			// Replace the default select tag in the generated field HTML
+			$pattern = '/<select\b[^>]*>([\s\S]*?)<\/select>/';
+			$field = preg_replace( $pattern, $select_html, $field );
+		}
+		return $field;
 	}
 }

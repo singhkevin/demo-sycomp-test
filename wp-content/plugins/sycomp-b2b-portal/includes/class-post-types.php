@@ -240,13 +240,35 @@ class Sycomp_B2B_Post_Types {
 	}
 
 	/**
-	 * A location's billing (bill-to) address.
+	 * A location's billing (bill-to) address (legacy fallback / first billing address).
 	 *
 	 * @param int $location_id Location post ID.
 	 * @return string
 	 */
 	public static function get_location_billing_address( $location_id ) {
+		$billing_addresses = self::get_location_billing_addresses( $location_id );
+		if ( ! empty( $billing_addresses ) ) {
+			return $billing_addresses[0];
+		}
 		return (string) get_post_meta( (int) $location_id, '_sycomp_billing_address', true );
+	}
+
+	/**
+	 * A location's billing addresses.
+	 *
+	 * @param int $location_id Location post ID.
+	 * @return array
+	 */
+	public static function get_location_billing_addresses( $location_id ) {
+		$addresses = get_post_meta( (int) $location_id, '_sycomp_billing_addresses', true );
+		if ( ! is_array( $addresses ) ) {
+			$legacy = (string) get_post_meta( (int) $location_id, '_sycomp_billing_address', true );
+			if ( ! empty( trim( $legacy ) ) ) {
+				return array( $legacy );
+			}
+			return array();
+		}
+		return $addresses;
 	}
 
 	/**

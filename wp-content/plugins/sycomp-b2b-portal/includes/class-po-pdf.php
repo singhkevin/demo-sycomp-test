@@ -286,7 +286,10 @@ class Sycomp_B2B_PO_PDF {
 		$company_id      = (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY );
 		$company         = $company_id ? get_the_title( $company_id ) : $order->get_billing_company();
 		$location_id     = (int) $order->get_meta( Sycomp_B2B_PO::META_LOCATION );
-		$billing_address = $location_id ? Sycomp_B2B_Post_Types::get_location_billing_address( $location_id ) : '';
+		$billing_address = (string) $order->get_meta( '_sycomp_billing_address' );
+		if ( empty( $billing_address ) && $location_id ) {
+			$billing_address = Sycomp_B2B_Post_Types::get_location_billing_address( $location_id );
+		}
 		if ( empty( $billing_address ) && $company_id ) {
 			$billing_address = Sycomp_B2B_Post_Types::get_company_billing_address( $company_id );
 		}
@@ -458,29 +461,40 @@ class Sycomp_B2B_PO_PDF {
 		// ---- Customer / Ship To / AE band ----
 		$banner_y = max( $sy, 44 + $total_tbl_h ) + 15;
 		$pdf->fill_rect( self::L, $banner_y, self::R - self::L, 15, self::STEEL_BLUE );
-		$pdf->text( self::L + 4, $banner_y + 11, 'CUSTOMER', 7.5, true, self::WHITE );
+		$pdf->text( self::L + 4, $banner_y + 11, 'Bill to', 7.5, true, self::WHITE );
 		$pdf->text( 210.0, $banner_y + 11, 'Ship to', 7.5, true, self::WHITE );
 		$pdf->text( 420.0, $banner_y + 11, 'ACCOUNT EXECUTIVE', 7.5, true, self::WHITE );
 
-		$comp_lines = $pdf->wrap( $company, 146, 9.5 );
 		$sy_comp = $banner_y + 27;
-		foreach ( $comp_lines as $line ) {
-			$pdf->text( self::L + 4, $sy_comp, $line, 9.5, true, self::INK );
-			$sy_comp += 11;
-		}
 
-		$checkout_name = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
-		if ( '' !== $checkout_name ) {
-			$name_lines = $pdf->wrap( $checkout_name, 146, 9.0 );
-			foreach ( $name_lines as $line ) {
-				$pdf->text( self::L + 4, $sy_comp, $line, 9.0, false, self::INK );
+		if ( '' !== $loc_name ) {
+			$loc_name_lines = $pdf->wrap( $loc_name, 146, 9.5 );
+			foreach ( $loc_name_lines as $line ) {
+				$pdf->text( self::L + 4, $sy_comp, $line, 9.5, true, self::INK );
 				$sy_comp += 11;
 			}
+		}
+
+		$bill_lines = array_values(
+			array_filter(
+				preg_split( '/\r\n|\r|\n/', (string) $billing_address ),
+				'strlen'
+			)
+		);
+		$wrapped_bill = array();
+		foreach ( $bill_lines as $line ) {
+			foreach ( $pdf->wrap( $line, 146, 9.0 ) as $w_line ) {
+				$wrapped_bill[] = $w_line;
+			}
+		}
+		foreach ( $wrapped_bill as $line ) {
+			$pdf->text( self::L + 4, $sy_comp, $line, 9.0, false, self::INK );
+			$sy_comp += 11;
 		}
 		
 		$ship_lines = array_values(
 			array_filter(
-				array_merge( array( $loc_name ), preg_split( '/\r\n|\r|\n/', (string) $loc_addr ) ),
+				preg_split( '/\r\n|\r|\n/', (string) $loc_addr ),
 				'strlen'
 			)
 		);
@@ -576,29 +590,59 @@ class Sycomp_B2B_PO_PDF {
 		}
 
 		// ---- Totals block ----
-		$fees       = $order->get_fees();
-		$shipping   = (float) $order->get_shipping_total();
-		$tax_totals = $order->get_tax_totals();
+		$fees            = $order->get_fees();
+		$shipping        = (float) $order->get_shipping_total();
+		$grand_total_val = (float) $order->get_total();
+
+		$tax_rate        = Sycomp_B2B_Tax::rate( $market );
+		$tax_label       = Sycomp_B2B_Tax::label( $market );
+		$tax_display     = Sycomp_B2B_Tax::display_label( $market );
 
 		$totals_rows = array();
 		$totals_rows[] = array( 'SubTotal', self::money( $order->get_subtotal(), $market ) );
 		// Shipping cost is always shown
-		$totals_rows[] = array( 'Shipping', self::money( $shipping, $market ) );
+		$totals_rows[] = array( 'Shipping', ( $shipping <= 0.0 ) ? 'TBD' : self::money( $shipping, $market ) );
 		
+		$tax_row = null;
+		$other_fees = array();
 		foreach ( $fees as $fee ) {
-			$totals_rows[] = array( $fee->get_name(), self::money( (float) $fee->get_total(), $market ) );
+			$fee_name = $fee->get_name();
+			$fee_total = (float) $fee->get_total();
+			
+			// Identify if this is a tax fee
+			$is_tax_fee = false;
+			$fee_name_lower = strtolower( $fee_name );
+			$tax_label_lower = strtolower( $tax_label );
+			if ( 
+				( '' !== $tax_label_lower && strpos( $fee_name_lower, $tax_label_lower ) !== false ) || 
+				strpos( $fee_name_lower, 'tax' ) !== false || 
+				strpos( $fee_name_lower, 'gst' ) !== false || 
+				strpos( $fee_name_lower, 'vat' ) !== false 
+			) {
+				$is_tax_fee = true;
+			}
+			
+			if ( $is_tax_fee ) {
+				$tax_row = array( $fee_name, self::money( $fee_total, $market ) );
+			} else {
+				$other_fees[] = array( $fee_name, self::money( $fee_total, $market ) );
+			}
 		}
-		foreach ( $tax_totals as $tax ) {
-			$totals_rows[] = array( $tax->label, self::money( $tax->amount, $market ) );
+
+		// Add tax row after Shipping
+		if ( $tax_row ) {
+			$totals_rows[] = $tax_row;
+		} elseif ( $tax_rate > 0 ) {
+			$tax_amount = Sycomp_B2B_Tax::calc( $order->get_subtotal(), $market );
+			$totals_rows[] = array( $tax_display, self::money( $tax_amount, $market ) );
+			$grand_total_val += $tax_amount;
 		}
-		if ( empty( $tax_totals ) && 'india' === $market ) {
-			$sub = (float) $order->get_subtotal();
-			$tax_val = ( $sub + $shipping ) * 0.18;
-			$totals_rows[] = array( 'Taxes 18%', self::money( $tax_val, $market ) );
-			$grand_total_val = $sub + $shipping + $tax_val;
-		} else {
-			$grand_total_val = (float) $order->get_total();
+
+		// Add any other fees
+		foreach ( $other_fees as $o_fee ) {
+			$totals_rows[] = $o_fee;
 		}
+
 		$totals_rows[] = array( 'Grand Total', self::money( $grand_total_val, $market ) );
 
 		$totals_h = count( $totals_rows ) * 13 + 10;
