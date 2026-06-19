@@ -898,3 +898,28 @@ select option {
   background-color: var(--sy-accent) !important;
   color: var(--sy-white) !important;
 }
+
+/* Responsive, wrapping select and Select2 containers for long addresses */
+.sy-field select {
+  max-width: 100%;
+}
+
+.select2-container--default .select2-results__option,
+.select2-container--classic .select2-results__option,
+.select2-results__option {
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+.select2-container .select2-selection--single {
+  height: auto !important;
+  min-height: 38px !important;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+  white-space: normal !important;
+  word-break: break-word !important;
+  line-height: 1.4 !important;
+  padding: 8px 12px !important;
+}
+

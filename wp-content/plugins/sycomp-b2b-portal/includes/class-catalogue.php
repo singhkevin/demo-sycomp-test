@@ -493,7 +493,6 @@ class Sycomp_B2B_Catalogue {
 							?>
 						</span>
 					<?php endif; ?>
-					<span class="sy-badge sy-badge--instock"><?php esc_html_e( 'In stock', 'sycomp-b2b-portal' ); ?></span>
 				</div>
 				<?php if ( $priced && ! $is_manager ) : ?>
 					<form class="sy-addform" method="post" action="<?php echo esc_url( $page_url ); ?>">

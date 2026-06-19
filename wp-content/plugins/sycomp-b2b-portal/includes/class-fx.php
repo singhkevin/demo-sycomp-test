@@ -45,8 +45,62 @@ class Sycomp_B2B_FX {
 	}
 
 	/**
+	 * Default fallback exchange rates (units of currency per 1 USD)
+	 * used if the manager hasn't configured a rate and the live fetch fails.
+	 *
+	 * @return array<string,float>
+	 */
+	public static function default_rates() {
+		return array(
+			'INR' => 83.0,
+			'USD' => 1.0,
+			'AUD' => 1.5,
+			'JPY' => 150.0,
+			'CNY' => 7.2,
+			'PHP' => 58.0,
+			'TWD' => 32.0,
+			'ZAR' => 18.0,
+			'AED' => 3.67,
+		);
+	}
+
+	/**
+	 * Fetch live exchange rates from the public API, cached for 12 hours.
+	 *
+	 * @return array<string,float>
+	 */
+	public static function get_live_rates() {
+		$cached = get_transient( 'sycomp_b2b_live_rates' );
+		if ( is_array( $cached ) && ! empty( $cached ) ) {
+			return $cached;
+		}
+
+		$response = wp_remote_get( 'https://open.er-api.com/v6/latest/USD', array( 'timeout' => 10 ) );
+		if ( is_wp_error( $response ) ) {
+			return array();
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( ! is_array( $data ) || empty( $data['rates'] ) ) {
+			return array();
+		}
+
+		$rates = array();
+		foreach ( self::currencies() as $cur ) {
+			if ( isset( $data['rates'][ $cur ] ) ) {
+				$rates[ $cur ] = (float) $data['rates'][ $cur ];
+			}
+		}
+
+		set_transient( 'sycomp_b2b_live_rates', $rates, 12 * HOUR_IN_SECONDS );
+		return $rates;
+	}
+
+	/**
 	 * The full rate map: currency code => units per 1 USD. USD is forced
-	 * to 1; any unset currency is 0 (meaning "not configured").
+	 * to 1; any unset currency falls back to live rates or default rates.
 	 *
 	 * @return array<string,float>
 	 */
@@ -55,9 +109,17 @@ class Sycomp_B2B_FX {
 		if ( ! is_array( $saved ) ) {
 			$saved = array();
 		}
-		$out = array();
+		$live     = self::get_live_rates();
+		$defaults = self::default_rates();
+		$out      = array();
 		foreach ( self::currencies() as $cur ) {
-			$out[ $cur ] = isset( $saved[ $cur ] ) ? (float) $saved[ $cur ] : 0.0;
+			if ( isset( $saved[ $cur ] ) && (float) $saved[ $cur ] > 0 ) {
+				$out[ $cur ] = (float) $saved[ $cur ];
+			} elseif ( isset( $live[ $cur ] ) && (float) $live[ $cur ] > 0 ) {
+				$out[ $cur ] = (float) $live[ $cur ];
+			} else {
+				$out[ $cur ] = isset( $defaults[ $cur ] ) ? $defaults[ $cur ] : 0.0;
+			}
 		}
 		$out[ self::BASE ] = 1.0;
 		return $out;
@@ -71,6 +133,7 @@ class Sycomp_B2B_FX {
 	 */
 	public static function rate( $currency ) {
 		$rates = self::rates();
+		$currency = strtoupper( trim( $currency ) );
 		return isset( $rates[ $currency ] ) ? (float) $rates[ $currency ] : 0.0;
 	}
 
@@ -89,6 +152,7 @@ class Sycomp_B2B_FX {
 			$clean[ $cur ] = $rate > 0 ? $rate : 0.0;
 		}
 		update_option( self::OPTION, $clean );
+		delete_transient( 'sycomp_b2b_live_rates' );
 	}
 
 	/**
@@ -105,6 +169,8 @@ class Sycomp_B2B_FX {
 	 */
 	public static function convert( $amount, $from, $to ) {
 		$amount = (float) $amount;
+		$from   = strtoupper( trim( $from ) );
+		$to     = strtoupper( trim( $to ) );
 		if ( $from === $to || '' === $from || '' === $to ) {
 			return $amount;
 		}

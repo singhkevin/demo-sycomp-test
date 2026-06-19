@@ -29,6 +29,8 @@ class Sycomp_B2B_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ), 9 );
 		add_action( 'admin_menu', array( __CLASS__, 'restrict_shop_manager_menu' ), 9999 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_filter( 'woocommerce_product_data_tabs', array( __CLASS__, 'remove_inventory_tab' ), 99 );
+		add_filter( 'manage_edit-product_columns', array( __CLASS__, 'remove_stock_column' ), 99 );
 	}
 
 	/**
@@ -316,5 +318,31 @@ class Sycomp_B2B_Admin {
 			)
 		);
 		return is_array( $orders ) ? count( $orders ) : 0;
+	}
+
+	/**
+	 * Remove the inventory tab from the WooCommerce product data metabox in WP Admin.
+	 *
+	 * @param array $tabs Product data tabs.
+	 * @return array
+	 */
+	public static function remove_inventory_tab( $tabs ) {
+		if ( isset( $tabs['inventory'] ) ) {
+			unset( $tabs['inventory'] );
+		}
+		return $tabs;
+	}
+
+	/**
+	 * Remove the stock status column from the products list page in WP Admin.
+	 *
+	 * @param array $columns Products list columns.
+	 * @return array
+	 */
+	public static function remove_stock_column( $columns ) {
+		if ( isset( $columns['is_in_stock'] ) ) {
+			unset( $columns['is_in_stock'] );
+		}
+		return $columns;
 	}
 }

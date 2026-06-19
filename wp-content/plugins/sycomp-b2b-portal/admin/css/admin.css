@@ -86,3 +86,15 @@
 .sycomp-pill--process   { background: #eef3fd; color: #1e4fd6; }
 .sycomp-pill--closed    { background: #e9f6ee; color: #1f8a4c; }
 .sycomp-pill--cancelled { background: #fbe9e7; color: #c0392b; }
+
+/* Hide stock-related fields in Quick Edit and Bulk Edit */
+.inline-edit-row-product .manage_stock_field,
+.inline-edit-row-product .stock_status_field,
+.inline-edit-row-product .stock_fields,
+.inline-edit-row-product .backorder_field,
+#bulk-edit label:has(select.stock_status),
+#bulk-edit label:has(select.manage_stock),
+#bulk-edit .inline-edit-group:has(select.change_stock),
+#bulk-edit label:has(select.backorders) {
+  display: none !important;
+}

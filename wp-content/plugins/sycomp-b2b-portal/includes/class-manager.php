@@ -349,14 +349,8 @@ class Sycomp_B2B_Manager {
 			if ( '' !== $base ) {
 				$product->set_regular_price( $base );
 			}
-			if ( '' !== $stock && is_numeric( $stock ) ) {
-				$product->set_manage_stock( true );
-				$product->set_stock_quantity( (int) $stock );
-				$product->set_stock_status( (int) $stock > 0 ? 'instock' : 'outofstock' );
-			} else {
-				$product->set_manage_stock( false );
-				$product->set_stock_status( 'instock' );
-			}
+			$product->set_manage_stock( false );
+			$product->set_stock_status( 'instock' );
 			$new_id = $product->save();
 		} catch ( Exception $e ) {
 			self::redirect( array( 'section' => 'products', 'pview' => ( $pid ? 'edit' : 'new' ), 'pid' => $pid, 'done' => 'product_error' ) );
@@ -1393,9 +1387,7 @@ class Sycomp_B2B_Manager {
 		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Brand', 'sycomp-b2b-portal' ) . '</span>';
 		echo '<input type="text" name="p_brand" value="' . esc_attr( $cur_brand ) . '" placeholder="' . esc_attr__( 'e.g. Logitech', 'sycomp-b2b-portal' ) . '"></label>';
 
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Stock quantity', 'sycomp-b2b-portal' ) . '</span>';
-		$cur_stock = ( $product && null !== $product->get_stock_quantity() ) ? (string) $product->get_stock_quantity() : '';
-		echo '<input type="number" name="p_stock" min="0" step="1" value="' . esc_attr( $cur_stock ) . '" placeholder="' . esc_attr__( 'Leave blank if not tracked', 'sycomp-b2b-portal' ) . '"></label>';
+
 
 		echo '<label class="sy-field sy-field--file"><span class="sy-field__label">' . esc_html__( 'Product image', 'sycomp-b2b-portal' ) . '</span>';
 		if ( $product && has_post_thumbnail( $pid ) ) {
