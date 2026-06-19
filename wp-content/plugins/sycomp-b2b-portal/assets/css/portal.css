@@ -874,6 +874,9 @@ select option {
   background-color: var(--sy-white) !important;
   color: var(--sy-text) !important;
   border-color: var(--sy-border) !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
 }
 .select2-container--default .select2-results__group,
 .select2-container--classic .select2-results__group,
@@ -904,13 +907,68 @@ select option {
   max-width: 100%;
 }
 
+/* Style the inline select container to span full width */
+.select2.select2-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* -------------------------------------------------------
+   Address dropdown (billing + delivery) — prevent overflow
+   The dropdown is appended to <body> by Select2, so we
+   target it via the data attribute Select2 sets on open.
+   JS sets --sy-dropdown-max-width on the element directly.
+------------------------------------------------------- */
+.select2-container--open.sy-address-dropdown {
+  /* JS will set max-width via inline style based on available viewport space */
+  max-width: 95vw !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.select2-container--open.sy-address-dropdown .select2-dropdown {
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+.select2-container--open.sy-address-dropdown .select2-results {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+.select2-container--open.sy-address-dropdown .select2-results__options {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+.select2-container--open.sy-address-dropdown .select2-results__option {
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  line-height: 1.4 !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+/* Fallback: all select2 options allow wrapping */
 .select2-container--default .select2-results__option,
 .select2-container--classic .select2-results__option,
 .select2-results__option {
   white-space: normal !important;
+  overflow-wrap: break-word !important;
   word-break: break-word !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  line-height: 1.4 !important;
 }
 
+/* Selected value display — wrap long addresses in the trigger button */
 .select2-container .select2-selection--single {
   height: auto !important;
   min-height: 38px !important;
@@ -918,8 +976,150 @@ select option {
 
 .select2-container .select2-selection--single .select2-selection__rendered {
   white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
   word-break: break-word !important;
   line-height: 1.4 !important;
-  padding: 8px 12px !important;
+  padding: 8px 30px 8px 12px !important;
+  display: block !important;
 }
+
+/* Custom checkout address UI styling */
+.sy-address-textarea-wrapper {
+  position: relative;
+  margin-top: 6px;
+}
+
+.sy-address-textarea-wrapper textarea {
+  padding-bottom: 44px !important; /* Leave room for controls */
+  transition: all 0.3s ease;
+  resize: vertical;
+  background-color: var(--sy-white);
+  border: 1px solid var(--sy-border);
+  border-radius: var(--sy-radius-md);
+  width: 100%;
+}
+
+/* Confirmed state */
+.sy-address-textarea-wrapper.is-confirmed textarea {
+  background-color: var(--sy-surface) !important;
+  border-color: var(--sy-border) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.sy-address-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none; /* Pass clicks through to textarea unless clicking buttons */
+}
+
+.sy-address-controls button,
+.sy-address-controls a {
+  pointer-events: auto; /* Re-enable pointer events for active buttons */
+}
+
+.sy-address-back-btn {
+  background: none !important;
+  border: none !important;
+  color: var(--sy-muted) !important;
+  font-size: var(--sy-text-2xs) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+  cursor: pointer;
+  padding: 4px 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: underline !important;
+  transition: color var(--sy-transition);
+}
+
+.sy-address-back-btn:hover {
+  color: var(--sy-navy) !important;
+}
+
+.sy-address-confirm-btn {
+  background: var(--sy-accent) !important; /* Company brand blue background */
+  color: #fff !important;
+  border: none !important;
+  border-radius: 50% !important; /* Circular button */
+  width: 28px !important;
+  height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 4px rgba(30, 79, 214, 0.2) !important;
+  transition: all var(--sy-transition) !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  padding: 0 !important;
+}
+
+.sy-address-confirm-btn:hover {
+  background: #0c3ab8 !important; /* Darker blue */
+  transform: scale(1.08) !important;
+  box-shadow: 0 4px 8px rgba(12, 58, 184, 0.3) !important;
+}
+
+/* Edit mode vs Confirmed mode */
+/* Edit mode vs Confirmed mode */
+.sy-address-textarea-wrapper.is-confirmed .sy-address-back-btn,
+.sy-address-textarea-wrapper.is-confirmed .sy-address-confirm-btn {
+  display: none !important; /* Hide both back and confirm buttons when confirmed */
+}
+
+/* Custom Select2 dropdown separator and option button styling */
+li.select2-results__option[id$="-separator"] {
+  padding: 0 !important;
+  margin: 6px 0 !important;
+  border-top: 1px solid var(--sy-border) !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  list-style: none !important;
+  pointer-events: none !important;
+}
+
+li.select2-results__option[id$="-custom"] {
+  background-color: var(--sy-accent) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  margin: 8px 12px 12px !important;
+  padding: 8px 16px !important;
+  border-radius: var(--sy-radius-md) !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(30, 79, 214, 0.25) !important;
+  transition: all var(--sy-transition) !important;
+  display: block !important;
+  font-size: var(--sy-text-2xs) !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+}
+
+li.select2-results__option[id$="-custom"]:hover,
+li.select2-results__option[id$="-custom"].select2-results__option--highlighted {
+  background-color: #0c3ab8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(12, 58, 184, 0.35) !important;
+  color: #fff !important;
+}
+
+/* Hide "(optional)" label suffix from address fields */
+#sycomp_billing_address_field label .optional,
+#sycomp_custom_billing_address_field label .optional,
+#sycomp_delivery_address_field label .optional,
+#sycomp_custom_delivery_address_field label .optional {
+  display: none !important;
+}
+
+
+
 

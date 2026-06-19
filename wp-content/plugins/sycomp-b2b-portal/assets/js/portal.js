@@ -261,3 +261,205 @@
 		stackify();
 	}
 })();
+
+/**
+ * Sycomp B2B Portal — premium custom address field transformation at checkout.
+ */
+(function ($) {
+	'use strict';
+
+	if (typeof $ === 'undefined') {
+		return;
+	}
+
+	function setupFieldPair($select, $customField) {
+		if (!$select.length || !$customField.length) {
+			return;
+		}
+
+		var $textarea = $customField.find('textarea');
+		if (!$textarea.length) {
+			return;
+		}
+
+		// Prevent multiple initializations
+		if ($customField.data('sycomp-address-initialized')) {
+			return;
+		}
+		$customField.data('sycomp-address-initialized', true);
+
+		// Wrap textarea
+		$textarea.wrap('<div class="sy-address-textarea-wrapper"></div>');
+		var $wrapper = $customField.find('.sy-address-textarea-wrapper');
+
+		// Append controls
+		var controlsHtml = 
+			'<div class="sy-address-controls">' +
+			'  <button type="button" class="sy-address-back-btn" title="Go back to dropdown">← Go back to select</button>' +
+			'  <button type="button" class="sy-address-confirm-btn" title="Confirm address">✓</button>' +
+			'</div>';
+		$wrapper.append(controlsHtml);
+
+		var $backBtn = $wrapper.find('.sy-address-back-btn');
+		var $confirmBtn = $wrapper.find('.sy-address-confirm-btn');
+
+
+		function enterEditMode() {
+			$textarea.prop('readonly', false);
+			$wrapper.removeClass('is-confirmed');
+			$confirmBtn.html('✓').attr('title', 'Confirm address');
+			$textarea.focus();
+		}
+
+		function enterConfirmedMode() {
+			if ($textarea.val().trim() !== '') {
+				$textarea.prop('readonly', true);
+				$wrapper.addClass('is-confirmed');
+				$confirmBtn.html('✓').attr('title', 'Confirm address');
+			}
+		}
+
+		// When confirm button is clicked
+		$confirmBtn.on('click', function (e) {
+			e.stopPropagation();
+			e.preventDefault();
+			if ($wrapper.hasClass('is-confirmed')) {
+				enterEditMode();
+			} else {
+				if ($textarea.val().trim() === '') {
+					$textarea.focus();
+				} else {
+					enterConfirmedMode();
+				}
+			}
+		});
+
+		// Clicking textarea when confirmed should edit
+		$textarea.on('click', function () {
+			if ($wrapper.hasClass('is-confirmed')) {
+				enterEditMode();
+			}
+		});
+
+		// Go back button (cancel)
+		$backBtn.on('click', function (e) {
+			e.stopPropagation();
+			e.preventDefault();
+			$textarea.val('');
+			enterEditMode();
+			$customField.slideUp(250);
+			$select.closest('.form-row').slideDown(250);
+			$select.val('').trigger('change');
+		});
+
+		// Listen to select change
+		$select.on('change', function () {
+			var val = $(this).val();
+			if (val === 'custom') {
+				$select.closest('.form-row').slideUp(250);
+				$customField.slideDown(250, function() {
+					$textarea.focus();
+				});
+			} else {
+				$customField.hide();
+				$select.closest('.form-row').show();
+			}
+		});
+
+		// Initial state
+		var currentSelectVal = $select.val();
+		if (currentSelectVal === 'custom') {
+			$select.closest('.form-row').hide();
+			$customField.show();
+			if ($textarea.val().trim() !== '') {
+				enterConfirmedMode();
+			} else {
+				enterEditMode();
+			}
+		} else {
+			$customField.hide();
+			$select.closest('.form-row').show();
+		}
+	}
+
+	function initCheckoutTransformation() {
+		setupFieldPair($('#sycomp_billing_address'), $('#sycomp_custom_billing_address_field'));
+		setupFieldPair($('#sycomp_delivery_address'), $('#sycomp_custom_delivery_address_field'));
+	}
+
+	// ── Address dropdown overflow fix ───────────────────────────────────────
+	// Select2 appends the dropdown to <body> with absolute positioning, so it
+	// can easily overflow the right edge of the viewport on small screens or
+	// when the field is wide.  We:
+	//   1. Tag the open container with .sy-address-dropdown so our CSS applies.
+	//   2. Calculate how much horizontal space is actually available from the
+	//      field's left edge to the viewport right edge (with a safety margin).
+	//   3. Set that as the max-width (and width) of the dropdown via inline style.
+	//   4. Force all option text to wrap so nothing overflows inside the list.
+	$(document.body).on('select2:open', '#sycomp_billing_address, #sycomp_delivery_address', function () {
+		var $select = $(this);
+
+		function constrainDropdown() {
+			var $openContainer = $('.select2-container--open');
+			if (!$openContainer.length) { return; }
+
+			// Tag for our targeted CSS rules
+			$openContainer.addClass('sy-address-dropdown');
+
+			// Field measurements
+			var $field    = $select.closest('.form-row');
+			var fieldEl   = ($field.length ? $field[0] : $select[0]);
+			var rect      = fieldEl.getBoundingClientRect();
+			var fieldLeft = rect.left;             // px from viewport left to field left edge
+			var fieldW    = rect.width || 300;     // field pixel width
+
+			// Available space: from field's left edge to viewport right edge, minus 16 px gutter
+			var viewportW   = window.innerWidth || document.documentElement.clientWidth;
+			var available   = viewportW - fieldLeft - 16;
+			// Use the field width, but cap it so we never go off-screen
+			var dropdownW   = Math.min(fieldW, available);
+			// Never smaller than 200 px so the dropdown is still usable on tiny screens
+			dropdownW = Math.max(dropdownW, 200);
+
+			// Apply to container
+			$openContainer.css({
+				'width'    : dropdownW + 'px',
+				'max-width': dropdownW + 'px',
+				'box-sizing': 'border-box',
+				'overflow' : 'hidden'
+			});
+
+			// Apply to dropdown panel
+			var $dropdown = $openContainer.find('.select2-dropdown');
+			$dropdown.css({
+				'width'    : dropdownW + 'px',
+				'max-width': dropdownW + 'px',
+				'box-sizing': 'border-box',
+				'overflow-x': 'hidden'
+			});
+
+			// Force each option to wrap — belt-and-suspenders over the CSS rule
+			$dropdown.find('.select2-results__options li').css({
+				'white-space'   : 'normal',
+				'overflow-wrap' : 'break-word',
+				'word-break'    : 'break-word',
+				'max-width'     : '100%',
+				'box-sizing'    : 'border-box'
+			});
+		}
+
+		// Run immediately and after brief delays to survive any layout reflows
+		constrainDropdown();
+		setTimeout(constrainDropdown, 50);
+		setTimeout(constrainDropdown, 200);
+	});
+
+	$(document.body).on('updated_checkout', function () {
+		initCheckoutTransformation();
+	});
+
+	$(function () {
+		initCheckoutTransformation();
+	});
+})(window.jQuery);
+
