@@ -101,7 +101,16 @@ class Sycomp_B2B_Storefront {
 					<img class="sy-locsw__flag" src="<?php echo esc_url( $active_flag ); ?>" alt="" aria-hidden="true">
 				<?php endif; ?>
 				<span class="sy-locsw__label">
-					<?php echo esc_html( $active_post ? get_the_title( $active_post ) : __( 'Select location', 'sycomp-b2b-portal' ) ); ?>
+					<?php
+					$active_label = __( 'Select market', 'sycomp-b2b-portal' );
+					if ( $active_market ) {
+						$m_details = Sycomp_B2B_Markets::get( $active_market );
+						if ( $m_details ) {
+							$active_label = $m_details['label'] . ' (' . $m_details['currency'] . ')';
+						}
+					}
+					echo esc_html( $active_label );
+					?>
 				</span>
 				<span class="sy-locsw__caret" aria-hidden="true">▾</span>
 			</button>
@@ -109,7 +118,7 @@ class Sycomp_B2B_Storefront {
 				<div class="sy-locsw__group-label">
 					<?php
 					/* translators: %s: company name. */
-					printf( esc_html__( '%s — switch location', 'sycomp-b2b-portal' ), esc_html( $company_name ) );
+					printf( esc_html__( '%s — switch market', 'sycomp-b2b-portal' ), esc_html( $company_name ) );
 					?>
 				</div>
 				<?php
@@ -129,9 +138,14 @@ class Sycomp_B2B_Storefront {
 						<?php if ( $market ) : ?>
 							<img class="sy-locsw__flag" src="<?php echo esc_url( $market['flag_url'] ); ?>" alt="" aria-hidden="true">
 						<?php endif; ?>
-						<span><?php echo esc_html( get_the_title( $location ) ); ?></span>
-						<span class="sy-locsw__item-meta">
-							<?php echo $market ? esc_html( $market['label'] . ' · ' . $market['currency'] ) : ''; ?>
+						<span>
+							<?php
+							$item_label = get_the_title( $location );
+							if ( $market ) {
+								$item_label = $market['label'] . ' (' . $market['currency'] . ')';
+							}
+							echo esc_html( $item_label );
+							?>
 						</span>
 					</a>
 				<?php endforeach; ?>
