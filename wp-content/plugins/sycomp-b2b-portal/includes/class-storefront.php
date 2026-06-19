@@ -208,10 +208,11 @@ class Sycomp_B2B_Storefront {
 			if ( $market ) {
 				echo '<img class="sy-cartswitch__flag" src="' . esc_url( $market['flag_url'] ) . '" alt="" aria-hidden="true">';
 			}
-			echo '<span class="sy-cartswitch__name">' . esc_html( get_the_title( $location ) ) . '</span>';
+			$name = $market ? $market['label'] : get_the_title( $location );
+			echo '<span class="sy-cartswitch__name">' . esc_html( $name ) . '</span>';
 			echo '</span>';
 
-			echo '<span class="sy-cartswitch__meta">' . ( $market ? esc_html( $market['label'] . ' · ' . $market['currency'] ) : '' ) . '</span>';
+			echo '<span class="sy-cartswitch__meta">' . ( $market ? esc_html( $market['currency'] ) : '' ) . '</span>';
 
 			echo '<span class="sy-cartswitch__foot">';
 			if ( $has_items ) {

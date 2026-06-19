@@ -881,13 +881,16 @@ select option {
 .select2-container--default .select2-results__group,
 .select2-container--classic .select2-results__group,
 .select2-results__group {
-  background-color: var(--sy-surface) !important;
+  background-color: #f1f5f9 !important; /* Soft distinct background */
   color: var(--sy-navy) !important;
   font-weight: 700 !important;
   font-size: var(--sy-text-xs) !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.03em !important;
-  padding: 6px 12px !important;
+  letter-spacing: 0.05em !important;
+  padding: 8px 12px !important;
+  border-left: 4px solid var(--sy-accent) !important;
+  margin-top: 6px !important;
+  margin-bottom: 2px !important;
 }
 .select2-container--default .select2-results__option,
 .select2-container--classic .select2-results__option,
@@ -920,17 +923,19 @@ select option {
    JS sets --sy-dropdown-max-width on the element directly.
 ------------------------------------------------------- */
 .select2-container--open.sy-address-dropdown {
-  /* JS will set max-width via inline style based on available viewport space */
-  max-width: 95vw !important;
+  width: var(--sy-address-dropdown-width) !important;
+  max-width: var(--sy-address-dropdown-width) !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
+  z-index: 999999 !important;
 }
 
 .select2-container--open.sy-address-dropdown .select2-dropdown {
-  max-width: 100% !important;
-  width: 100% !important;
+  width: var(--sy-address-dropdown-width) !important;
+  max-width: var(--sy-address-dropdown-width) !important;
   box-sizing: border-box !important;
   overflow-x: hidden !important;
+  z-index: 999999 !important;
+  background-color: #f4f7fc !important; /* Soft brand blue-tinted background */
 }
 
 .select2-container--open.sy-address-dropdown .select2-results {
@@ -945,24 +950,34 @@ select option {
   overflow-x: hidden !important;
 }
 
-.select2-container--open.sy-address-dropdown .select2-results__option {
+.select2-container--open.sy-address-dropdown .select2-results__option,
+.select2-container--open.sy-address-dropdown .select2-results__option * {
   white-space: normal !important;
   overflow-wrap: break-word !important;
   word-break: break-word !important;
+  text-overflow: clip !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
   line-height: 1.4 !important;
+}
+
+.select2-container--open.sy-address-dropdown .select2-results__option {
   padding-top: 7px !important;
   padding-bottom: 7px !important;
+  background-color: transparent !important; /* Let background flow from panel */
 }
 
 /* Fallback: all select2 options allow wrapping */
 .select2-container--default .select2-results__option,
 .select2-container--classic .select2-results__option,
-.select2-results__option {
+.select2-results__option,
+.select2-container--default .select2-results__option *,
+.select2-container--classic .select2-results__option *,
+.select2-results__option * {
   white-space: normal !important;
   overflow-wrap: break-word !important;
   word-break: break-word !important;
+  text-overflow: clip !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
   line-height: 1.4 !important;
@@ -1077,7 +1092,10 @@ select option {
 }
 
 /* Custom Select2 dropdown separator and option button styling */
-li.select2-results__option[id$="-separator"] {
+.select2-container--open.sy-address-dropdown li.select2-results__option.sy-select2-separator-option,
+.select2-container--open.sy-address-dropdown li.select2-results__option[id$="-separator"],
+li.select2-results__option[id$="-separator"],
+li.select2-results__option.sy-select2-separator-option {
   padding: 0 !important;
   margin: 6px 0 !important;
   border-top: 1px solid var(--sy-border) !important;
@@ -1087,7 +1105,10 @@ li.select2-results__option[id$="-separator"] {
   pointer-events: none !important;
 }
 
-li.select2-results__option[id$="-custom"] {
+.select2-container--open.sy-address-dropdown li.select2-results__option.sy-select2-custom-option,
+.select2-container--open.sy-address-dropdown li.select2-results__option[id$="-custom"],
+li.select2-results__option[id$="-custom"],
+li.select2-results__option.sy-select2-custom-option {
   background-color: var(--sy-accent) !important;
   color: #fff !important;
   font-weight: 700 !important;
@@ -1104,8 +1125,14 @@ li.select2-results__option[id$="-custom"] {
   letter-spacing: .04em !important;
 }
 
+.select2-container--open.sy-address-dropdown li.select2-results__option.sy-select2-custom-option:hover,
+.select2-container--open.sy-address-dropdown li.select2-results__option.sy-select2-custom-option.select2-results__option--highlighted,
+.select2-container--open.sy-address-dropdown li.select2-results__option[id$="-custom"]:hover,
+.select2-container--open.sy-address-dropdown li.select2-results__option[id$="-custom"].select2-results__option--highlighted,
 li.select2-results__option[id$="-custom"]:hover,
-li.select2-results__option[id$="-custom"].select2-results__option--highlighted {
+li.select2-results__option[id$="-custom"].select2-results__option--highlighted,
+li.select2-results__option.sy-select2-custom-option:hover,
+li.select2-results__option.sy-select2-custom-option.select2-results__option--highlighted {
   background-color: #0c3ab8 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 10px rgba(12, 58, 184, 0.35) !important;
@@ -1118,6 +1145,33 @@ li.select2-results__option[id$="-custom"].select2-results__option--highlighted {
 #sycomp_delivery_address_field label .optional,
 #sycomp_custom_delivery_address_field label .optional {
   display: none !important;
+}
+
+/* Brand styling for Select2 trigger box focus/open states */
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+  border-color: var(--sy-accent) !important;
+  box-shadow: 0 0 0 3px rgba(30, 79, 214, 0.15) !important;
+  outline: none !important;
+}
+
+/* Brand styling for dropdown arrow caret */
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: var(--sy-accent) transparent transparent transparent !important;
+}
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+  border-color: transparent transparent var(--sy-accent) transparent !important;
+}
+
+/* Brand styling for the active/selected option in the dropdown list */
+.select2-container--default .select2-results__option[aria-selected="true"] {
+  background-color: #e6efff !important; /* Soft brand blue highlight */
+  color: var(--sy-navy) !important;
+  font-weight: 600 !important;
+}
+.select2-container--default .select2-results__option[aria-selected="true"].select2-results__option--highlighted {
+  background-color: var(--sy-accent) !important; /* Standard brand hover blue */
+  color: var(--sy-white) !important;
 }
 
 

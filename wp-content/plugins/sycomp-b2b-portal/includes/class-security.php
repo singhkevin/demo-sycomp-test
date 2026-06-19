@@ -280,6 +280,16 @@ class Sycomp_B2B_Security {
 
 		// 3. The hidden staff login URL.
 		if ( self::is_staff_request() ) {
+			if ( is_user_logged_in() ) {
+				$user     = wp_get_current_user();
+				$roles    = $user ? (array) $user->roles : array();
+				$is_staff = in_array( 'administrator', $roles, true ) || in_array( 'shop_manager', $roles, true );
+				$redirect = $is_staff
+					? ( function_exists( 'sycomp_b2b_page_url' ) ? sycomp_b2b_page_url( 'manage' ) : admin_url() )
+					: home_url( '/' );
+				wp_safe_redirect( $redirect );
+				exit;
+			}
 			self::serve_login( 'staff' );
 		}
 

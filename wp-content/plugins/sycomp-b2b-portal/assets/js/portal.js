@@ -282,11 +282,10 @@
 			return;
 		}
 
-		// Prevent multiple initializations
-		if ($customField.data('sycomp-address-initialized')) {
+		// Prevent multiple wrapper additions
+		if ($textarea.parent().hasClass('sy-address-textarea-wrapper')) {
 			return;
 		}
-		$customField.data('sycomp-address-initialized', true);
 
 		// Wrap textarea
 		$textarea.wrap('<div class="sy-address-textarea-wrapper"></div>');
@@ -300,81 +299,14 @@
 			'</div>';
 		$wrapper.append(controlsHtml);
 
-		var $backBtn = $wrapper.find('.sy-address-back-btn');
-		var $confirmBtn = $wrapper.find('.sy-address-confirm-btn');
-
-
-		function enterEditMode() {
-			$textarea.prop('readonly', false);
-			$wrapper.removeClass('is-confirmed');
-			$confirmBtn.html('✓').attr('title', 'Confirm address');
-			$textarea.focus();
-		}
-
-		function enterConfirmedMode() {
-			if ($textarea.val().trim() !== '') {
-				$textarea.prop('readonly', true);
-				$wrapper.addClass('is-confirmed');
-				$confirmBtn.html('✓').attr('title', 'Confirm address');
-			}
-		}
-
-		// When confirm button is clicked
-		$confirmBtn.on('click', function (e) {
-			e.stopPropagation();
-			e.preventDefault();
-			if ($wrapper.hasClass('is-confirmed')) {
-				enterEditMode();
-			} else {
-				if ($textarea.val().trim() === '') {
-					$textarea.focus();
-				} else {
-					enterConfirmedMode();
-				}
-			}
-		});
-
-		// Clicking textarea when confirmed should edit
-		$textarea.on('click', function () {
-			if ($wrapper.hasClass('is-confirmed')) {
-				enterEditMode();
-			}
-		});
-
-		// Go back button (cancel)
-		$backBtn.on('click', function (e) {
-			e.stopPropagation();
-			e.preventDefault();
-			$textarea.val('');
-			enterEditMode();
-			$customField.slideUp(250);
-			$select.closest('.form-row').slideDown(250);
-			$select.val('').trigger('change');
-		});
-
-		// Listen to select change
-		$select.on('change', function () {
-			var val = $(this).val();
-			if (val === 'custom') {
-				$select.closest('.form-row').slideUp(250);
-				$customField.slideDown(250, function() {
-					$textarea.focus();
-				});
-			} else {
-				$customField.hide();
-				$select.closest('.form-row').show();
-			}
-		});
-
 		// Initial state
 		var currentSelectVal = $select.val();
 		if (currentSelectVal === 'custom') {
 			$select.closest('.form-row').hide();
 			$customField.show();
 			if ($textarea.val().trim() !== '') {
-				enterConfirmedMode();
-			} else {
-				enterEditMode();
+				$textarea.prop('readonly', true);
+				$wrapper.addClass('is-confirmed');
 			}
 		} else {
 			$customField.hide();
@@ -382,69 +314,97 @@
 		}
 	}
 
+	function initSelect2Backup() {
+		var initFn = null;
+		if (typeof $.fn.selectWoo !== 'undefined') {
+			initFn = 'selectWoo';
+		} else if (typeof $.fn.select2 !== 'undefined') {
+			initFn = 'select2';
+		}
+
+		if (initFn) {
+			$('#sycomp_billing_address, #sycomp_delivery_address').each(function() {
+				var $select = $(this);
+				if (!$select.hasClass('select2-hidden-accessible') && !$select.hasClass('selectwoo-hidden-accessible')) {
+					$select[initFn]({
+						placeholder: $select.attr('placeholder') || '',
+						minimumResultsForSearch: 10,
+						width: '100%'
+					});
+				}
+			});
+		}
+	}
+
 	function initCheckoutTransformation() {
+		initSelect2Backup();
 		setupFieldPair($('#sycomp_billing_address'), $('#sycomp_custom_billing_address_field'));
 		setupFieldPair($('#sycomp_delivery_address'), $('#sycomp_custom_delivery_address_field'));
 	}
 
 	// ── Address dropdown overflow fix ───────────────────────────────────────
-	// Select2 appends the dropdown to <body> with absolute positioning, so it
-	// can easily overflow the right edge of the viewport on small screens or
-	// when the field is wide.  We:
-	//   1. Tag the open container with .sy-address-dropdown so our CSS applies.
-	//   2. Calculate how much horizontal space is actually available from the
-	//      field's left edge to the viewport right edge (with a safety margin).
-	//   3. Set that as the max-width (and width) of the dropdown via inline style.
-	//   4. Force all option text to wrap so nothing overflows inside the list.
-	$(document.body).on('select2:open', '#sycomp_billing_address, #sycomp_delivery_address', function () {
+	$(document.body).on('select2:open selectwoo:open', '#sycomp_billing_address, #sycomp_delivery_address', function () {
 		var $select = $(this);
 
 		function constrainDropdown() {
-			var $openContainer = $('.select2-container--open');
+			// Select the actual floating dropdown container (not the inline selector container)
+			var $openContainer = $('.select2-dropdown').closest('.select2-container');
 			if (!$openContainer.length) { return; }
 
 			// Tag for our targeted CSS rules
 			$openContainer.addClass('sy-address-dropdown');
 
-			// Field measurements
-			var $field    = $select.closest('.form-row');
-			var fieldEl   = ($field.length ? $field[0] : $select[0]);
-			var rect      = fieldEl.getBoundingClientRect();
-			var fieldLeft = rect.left;             // px from viewport left to field left edge
-			var fieldW    = rect.width || 300;     // field pixel width
+			// Get the inline select2 container (the selector field)
+			var $selectorField = $select.next('.select2-container');
+			var dropdownW = $selectorField.length ? $selectorField.outerWidth() : 0;
 
-			// Available space: from field's left edge to viewport right edge, minus 16 px gutter
-			var viewportW   = window.innerWidth || document.documentElement.clientWidth;
-			var available   = viewportW - fieldLeft - 16;
-			// Use the field width, but cap it so we never go off-screen
-			var dropdownW   = Math.min(fieldW, available);
-			// Never smaller than 200 px so the dropdown is still usable on tiny screens
-			dropdownW = Math.max(dropdownW, 200);
+			if (!dropdownW) {
+				// Fallback to form row/field width
+				var $field = $select.closest('.form-row');
+				var fieldEl = ($field.length ? $field[0] : $select[0]);
+				var rect = fieldEl.getBoundingClientRect();
+				dropdownW = rect.width || 300;
+			}
 
-			// Apply to container
-			$openContainer.css({
-				'width'    : dropdownW + 'px',
-				'max-width': dropdownW + 'px',
-				'box-sizing': 'border-box',
-				'overflow' : 'hidden'
-			});
+			// Apply the width custom property
+			$openContainer[0].style.setProperty('--sy-address-dropdown-width', dropdownW + 'px');
 
-			// Apply to dropdown panel
+			// Force width on container and panel with !important to prevent Select2/selectWoo JS overrides
+			$openContainer[0].style.setProperty('width', dropdownW + 'px', 'important');
+			$openContainer[0].style.setProperty('max-width', dropdownW + 'px', 'important');
+
 			var $dropdown = $openContainer.find('.select2-dropdown');
-			$dropdown.css({
-				'width'    : dropdownW + 'px',
-				'max-width': dropdownW + 'px',
-				'box-sizing': 'border-box',
-				'overflow-x': 'hidden'
-			});
+			if ($dropdown.length) {
+				$dropdown[0].style.setProperty('width', dropdownW + 'px', 'important');
+				$dropdown[0].style.setProperty('max-width', dropdownW + 'px', 'important');
+			}
 
-			// Force each option to wrap — belt-and-suspenders over the CSS rule
-			$dropdown.find('.select2-results__options li').css({
-				'white-space'   : 'normal',
-				'overflow-wrap' : 'break-word',
-				'word-break'    : 'break-word',
-				'max-width'     : '100%',
-				'box-sizing'    : 'border-box'
+			// Force each option and any descendants to wrap & detect custom/separator elements
+			$dropdown.find('.select2-results__options li').each(function() {
+				var $li = $(this);
+				var text = $li.text();
+				if (text.indexOf('[ + ]') !== -1 || text.indexOf('Add new') !== -1) {
+					$li.addClass('sy-select2-custom-option');
+				} else if (text.indexOf('──') !== -1) {
+					$li.addClass('sy-select2-separator-option');
+				}
+
+				$li.css({
+					'white-space'   : 'normal',
+					'overflow-wrap' : 'break-word',
+					'word-break'    : 'break-word',
+					'text-overflow' : 'clip',
+					'max-width'     : '100%',
+					'box-sizing'    : 'border-box'
+				});
+				$li.find('*').css({
+					'white-space'   : 'normal',
+					'overflow-wrap' : 'break-word',
+					'word-break'    : 'break-word',
+					'text-overflow' : 'clip',
+					'max-width'     : '100%',
+					'box-sizing'    : 'border-box'
+				});
 			});
 		}
 
@@ -454,12 +414,95 @@
 		setTimeout(constrainDropdown, 200);
 	});
 
+	// ── Event delegation for address fields ───────────────────────────────
+	$(document.body).on('change', '#sycomp_billing_address, #sycomp_delivery_address', function () {
+		var $select = $(this);
+		var val = $select.val();
+		var isBilling = $select.attr('id') === 'sycomp_billing_address';
+		var $customField = isBilling ? $('#sycomp_custom_billing_address_field') : $('#sycomp_custom_delivery_address_field');
+		var $textarea = $customField.find('textarea');
+
+		if (val === 'separator') {
+			var initFn = typeof $.fn.selectWoo !== 'undefined' ? 'selectWoo' : 'select2';
+			$select.val('').trigger('change.' + initFn).trigger('change');
+			return;
+		}
+
+		if (val === 'custom') {
+			$select.closest('.form-row').slideUp(250);
+			$customField.slideDown(250, function() {
+				$textarea.focus();
+			});
+		} else {
+			$customField.hide();
+			$select.closest('.form-row').show();
+		}
+	});
+
+	$(document.body).on('click', '.sy-address-confirm-btn', function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		var $btn = $(this);
+		var $wrapper = $btn.closest('.sy-address-textarea-wrapper');
+		var $textarea = $wrapper.find('textarea');
+		if ($wrapper.hasClass('is-confirmed')) {
+			$textarea.prop('readonly', false);
+			$wrapper.removeClass('is-confirmed');
+			$btn.html('✓').attr('title', 'Confirm address');
+			$textarea.focus();
+		} else {
+			if ($textarea.val().trim() === '') {
+				$textarea.focus();
+			} else {
+				$textarea.prop('readonly', true);
+				$wrapper.addClass('is-confirmed');
+				$btn.html('✓').attr('title', 'Confirm address');
+			}
+		}
+	});
+
+	$(document.body).on('click', '.sy-address-textarea-wrapper textarea', function () {
+		var $textarea = $(this);
+		var $wrapper = $textarea.closest('.sy-address-textarea-wrapper');
+		if ($wrapper.hasClass('is-confirmed')) {
+			$textarea.prop('readonly', false);
+			$wrapper.removeClass('is-confirmed');
+			$wrapper.find('.sy-address-confirm-btn').html('✓').attr('title', 'Confirm address');
+		}
+	});
+
+	$(document.body).on('click', '.sy-address-back-btn', function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		var $btn = $(this);
+		var $wrapper = $btn.closest('.sy-address-textarea-wrapper');
+		var $textarea = $wrapper.find('textarea');
+		var $customField = $wrapper.closest('.form-row');
+		var isBilling = $customField.attr('id') === 'sycomp_custom_billing_address_field';
+		var $select = isBilling ? $('#sycomp_billing_address') : $('#sycomp_delivery_address');
+
+		$textarea.val('');
+		$textarea.prop('readonly', false);
+		$wrapper.removeClass('is-confirmed');
+		$wrapper.find('.sy-address-confirm-btn').html('✓').attr('title', 'Confirm address');
+
+		$customField.slideUp(250);
+		$select.closest('.form-row').slideDown(250);
+		
+		var initFn = typeof $.fn.selectWoo !== 'undefined' ? 'selectWoo' : 'select2';
+		$select.val('').trigger('change.' + initFn).trigger('change');
+	});
+
 	$(document.body).on('updated_checkout', function () {
 		initCheckoutTransformation();
+		setTimeout(initCheckoutTransformation, 100);
+		setTimeout(initCheckoutTransformation, 500);
 	});
 
 	$(function () {
 		initCheckoutTransformation();
+		setTimeout(initCheckoutTransformation, 100);
+		setTimeout(initCheckoutTransformation, 500);
 	});
 })(window.jQuery);
 
