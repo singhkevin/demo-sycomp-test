@@ -69,6 +69,42 @@ class Sycomp_B2B_Plugin {
 		// Keep the unused default roles out of the system.
 		add_action( 'admin_init', array( $this, 'maybe_clean_roles' ) );
 		add_filter( 'editable_roles', array( 'Sycomp_B2B_Install', 'restrict_editable_roles' ) );
+
+		// Allow SVG uploads for custom flags
+		add_filter( 'upload_mimes', array( $this, 'allow_svg_upload' ) );
+		add_filter( 'wp_check_filetype_and_ext', array( $this, 'check_svg_filetype' ), 10, 4 );
+	}
+
+	/**
+	 * Allow SVG uploads.
+	 *
+	 * @param array $mimes Mime types.
+	 * @return array
+	 */
+	public function allow_svg_upload( $mimes ) {
+		$mimes['svg']  = 'image/svg+xml';
+		$mimes['svgz'] = 'image/svg+xml';
+		return $mimes;
+	}
+
+	/**
+	 * Bypass security restrictions for SVG extension check.
+	 *
+	 * @param array  $data     Data.
+	 * @param string $file     File path.
+	 * @param string $filename Filename.
+	 * @param array  $mimes    Mime types.
+	 * @return array
+	 */
+	public function check_svg_filetype( $data, $file, $filename, $mimes ) {
+		$filetype = wp_check_filetype( $filename, $mimes );
+		$ext      = $filetype['ext'];
+		$type     = $filetype['type'];
+		if ( in_array( $ext, array( 'svg', 'svgz' ), true ) ) {
+			$data['ext']  = $ext;
+			$data['type'] = $type;
+		}
+		return $data;
 	}
 
 	/**

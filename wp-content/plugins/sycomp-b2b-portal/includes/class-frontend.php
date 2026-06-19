@@ -39,8 +39,8 @@ class Sycomp_B2B_Frontend {
 	 * Enqueue the portal stylesheet and script.
 	 */
 	public static function enqueue_assets() {
-		wp_enqueue_style( 'sycomp-b2b-portal', SYCOMP_B2B_URL . 'assets/css/portal.css', array(), SYCOMP_B2B_VERSION );
-		wp_enqueue_script( 'sycomp-b2b-portal', SYCOMP_B2B_URL . 'assets/js/portal.js', array(), SYCOMP_B2B_VERSION, true );
+		wp_enqueue_style( 'sycomp-b2b-portal', SYCOMP_B2B_URL . 'assets/css/portal.css', array( 'select2' ), SYCOMP_B2B_VERSION );
+		wp_enqueue_script( 'sycomp-b2b-portal', SYCOMP_B2B_URL . 'assets/js/portal.js', array( 'jquery' ), SYCOMP_B2B_VERSION, true );
 		wp_localize_script(
 			'sycomp-b2b-portal',
 			'SycompB2B',

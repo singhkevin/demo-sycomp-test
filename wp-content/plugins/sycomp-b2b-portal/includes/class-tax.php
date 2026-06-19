@@ -53,7 +53,7 @@ class Sycomp_B2B_Tax {
 				$entry,
 				array(
 					'label' => __( 'Tax', 'sycomp-b2b-portal' ),
-					'rate'  => 0.0,
+					'rate'  => 10.0,
 				)
 			);
 			$entry['rate']  = (float) $entry['rate'];

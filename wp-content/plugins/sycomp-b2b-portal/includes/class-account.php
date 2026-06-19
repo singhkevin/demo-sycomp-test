@@ -176,7 +176,7 @@ class Sycomp_B2B_Account {
 								
 								<?php if ( ! empty( $billing ) ) : ?>
 									<div class="sy-loccard__addr-sec" style="margin-top: 10px;">
-										<span style="font-size: var(--sy-text-2xs); text-transform: uppercase; font-weight: bold; color: var(--sy-muted); display: block; margin-bottom: 2px;"><?php esc_html_e( 'Billing Address', 'sycomp-b2b-portal' ); ?></span>
+										<span style="font-size: var(--sy-text-2xs); text-transform: uppercase; font-weight: bold; color: var(--sy-muted); display: block; margin-bottom: 2px;"><?php esc_html_e( 'Bill to', 'sycomp-b2b-portal' ); ?></span>
 										<address class="sy-loccard__addr" style="font-style: normal; font-size: var(--sy-text-sm); line-height: 1.4; color: var(--sy-text);"><?php echo nl2br( esc_html( $billing ) ); ?></address>
 									</div>
 								<?php endif; ?>

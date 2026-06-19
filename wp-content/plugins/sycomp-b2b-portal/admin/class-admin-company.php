@@ -172,7 +172,7 @@ class Sycomp_B2B_Admin_Company {
 
 			<!-- Row 2: Billing Addresses and Location Code -->
 			<div class="sy-admin-field">
-				<label><?php esc_html_e( 'Billing Addresses', 'sycomp-b2b-portal' ); ?></label>
+				<label><?php esc_html_e( 'Bill to', 'sycomp-b2b-portal' ); ?></label>
 				<div style="display: flex; gap: 8px; align-items: stretch;">
 					<textarea id="sycomp_billing_input" rows="1" style="flex-grow: 1; resize: none; min-height: 30px; padding: 6px;" placeholder="<?php esc_attr_e( 'Type address and press enter...', 'sycomp-b2b-portal' ); ?>"></textarea>
 					<button type="button" id="sycomp_billing_add_btn" class="button" style="display: flex; align-items: center; justify-content: center; font-size: 16px;" title="<?php esc_attr_e( 'Add address', 'sycomp-b2b-portal' ); ?>">↵</button>

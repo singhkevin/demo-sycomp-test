@@ -23,7 +23,17 @@ class Sycomp_B2B_Markets {
 	 *
 	 * @return array<string,array>
 	 */
+	/**
+	 * Raw market definitions.
+	 *
+	 * @return array<string,array>
+	 */
 	protected static function definitions() {
+		$saved = get_option( 'sycomp_b2b_custom_markets' );
+		if ( is_array( $saved ) ) {
+			return $saved;
+		}
+
 		return array(
 			'india' => array(
 				'label'        => 'India',
@@ -109,9 +119,13 @@ class Sycomp_B2B_Markets {
 		$markets = self::definitions();
 
 		foreach ( $markets as $key => &$market ) {
-			$market['key']       = $key;
-			$market['flag_url']  = SYCOMP_B2B_URL . 'assets/flags/' . $key . '.svg';
-			$market['flag_path'] = SYCOMP_B2B_DIR . 'assets/flags/' . $key . '.svg';
+			$market['key'] = $key;
+			if ( empty( $market['flag_url'] ) ) {
+				$market['flag_url'] = SYCOMP_B2B_URL . 'assets/flags/' . $key . '.svg';
+			}
+			if ( empty( $market['flag_path'] ) ) {
+				$market['flag_path'] = SYCOMP_B2B_DIR . 'assets/flags/' . $key . '.svg';
+			}
 		}
 		unset( $market );
 
@@ -128,6 +142,63 @@ class Sycomp_B2B_Markets {
 		 * @param array $markets Markets keyed by market key.
 		 */
 		return apply_filters( 'sycomp_b2b_markets', $markets );
+	}
+
+	/**
+	 * Save/Update a market in the custom registry.
+	 *
+	 * @param string $key  Market key.
+	 * @param array  $data Market data.
+	 */
+	public static function save_market( $key, $data ) {
+		$markets = self::definitions();
+		$markets[ $key ] = wp_parse_args(
+			$data,
+			array(
+				'label'        => '',
+				'currency'     => '',
+				'symbol'       => '',
+				'decimals'     => 2,
+				'country_code' => '',
+				'order'        => 100,
+				'flag_url'     => '',
+			)
+		);
+		update_option( 'sycomp_b2b_custom_markets', $markets );
+	}
+
+	/**
+	 * Delete a market from the custom registry.
+	 *
+	 * @param string $key Market key.
+	 */
+	public static function delete_market( $key ) {
+		$markets = self::definitions();
+		if ( isset( $markets[ $key ] ) ) {
+			unset( $markets[ $key ] );
+			update_option( 'sycomp_b2b_custom_markets', $markets );
+
+			// Clean up warehouse address
+			$warehouses = get_option( 'sycomp_b2b_warehouses', array() );
+			if ( is_array( $warehouses ) && isset( $warehouses[ $key ] ) ) {
+				unset( $warehouses[ $key ] );
+				update_option( 'sycomp_b2b_warehouses', $warehouses );
+			}
+
+			// Clean up tax configuration
+			$taxes = get_option( 'sycomp_b2b_taxes', array() );
+			if ( is_array( $taxes ) && isset( $taxes[ $key ] ) ) {
+				unset( $taxes[ $key ] );
+				update_option( 'sycomp_b2b_taxes', $taxes );
+			}
+
+			// Clean up quote formats
+			$quote_formats = get_option( 'sycomp_b2b_quote_formats', array() );
+			if ( is_array( $quote_formats ) && isset( $quote_formats[ $key ] ) ) {
+				unset( $quote_formats[ $key ] );
+				update_option( 'sycomp_b2b_quote_formats', $quote_formats );
+			}
+		}
 	}
 
 	/**

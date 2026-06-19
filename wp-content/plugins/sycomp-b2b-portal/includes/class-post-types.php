@@ -44,6 +44,7 @@ class Sycomp_B2B_Post_Types {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register' ) );
+		add_filter( 'the_title', array( __CLASS__, 'location_title_fallback' ), 10, 2 );
 	}
 
 	/**
@@ -95,7 +96,8 @@ class Sycomp_B2B_Post_Types {
 			array_merge(
 				$shared,
 				array(
-					'labels' => array(
+					'supports' => array(),
+					'labels'   => array(
 						'name'          => __( 'Locations', 'sycomp-b2b-portal' ),
 						'singular_name' => __( 'Location', 'sycomp-b2b-portal' ),
 						'add_new'       => __( 'Add Location', 'sycomp-b2b-portal' ),
@@ -291,5 +293,36 @@ class Sycomp_B2B_Post_Types {
 	public static function get_location_msp_shipping_addresses( $location_id ) {
 		$addresses = get_post_meta( (int) $location_id, '_sycomp_msp_shipping_addresses', true );
 		return is_array( $addresses ) ? $addresses : array();
+	}
+
+	public static function location_title_fallback( $title, $post_id = 0 ) {
+		if ( ! empty( $post_id ) && self::LOCATION === get_post_type( $post_id ) ) {
+			// Try first billing address
+			$billing = self::get_location_billing_address( $post_id );
+			if ( ! empty( $billing ) ) {
+				$first_line = strtok( $billing, "\r\n" );
+				$fallback = trim( $first_line );
+				if ( strlen( $fallback ) > 50 ) {
+					$fallback = substr( $fallback, 0, 47 ) . '...';
+				}
+				return $fallback;
+			}
+
+			// Try location code
+			$code = get_post_meta( $post_id, self::META_LOCATION_CODE, true );
+			if ( ! empty( $code ) ) {
+				return sprintf( __( 'Location Code: %s', 'sycomp-b2b-portal' ), $code );
+			}
+
+			// Try market/currency
+			$market = self::get_location_market( $post_id );
+			if ( ! empty( $market ) ) {
+				return sprintf( __( 'Location (%s)', 'sycomp-b2b-portal' ), Sycomp_B2B_Markets::label( $market ) );
+			}
+
+			return __( 'Unnamed Location', 'sycomp-b2b-portal' );
+		}
+
+		return $title;
 	}
 }

@@ -63,6 +63,7 @@ class Sycomp_B2B_PO {
 		add_filter( 'woocommerce_order_button_text', array( __CLASS__, 'order_button_text' ) );
 		add_action( 'woocommerce_after_order_notes', array( __CLASS__, 'po_reference_field' ) );
 		add_action( 'woocommerce_checkout_create_order', array( __CLASS__, 'attach_location_to_order' ), 10, 2 );
+		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'validate_checkout_fields' ) );
 		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'customise_checkout_fields' ) );
 		add_filter( 'woocommerce_form_field_select', array( __CLASS__, 'render_checkout_select_field' ), 10, 4 );
 		add_filter( 'woocommerce_thankyou_order_received_text', array( __CLASS__, 'thankyou_text' ), 10, 2 );
@@ -246,10 +247,17 @@ class Sycomp_B2B_PO {
 			);
 		}
 
-		// Set order billing address from checkout selection or the location's default billing address.
+		// Set order billing address from checkout selection, custom field, or the location's default billing address.
 		$billing = '';
 		if ( ! empty( $_POST['sycomp_billing_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$billing = sanitize_textarea_field( wp_unslash( $_POST['sycomp_billing_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			$select_val = sanitize_textarea_field( wp_unslash( $_POST['sycomp_billing_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			if ( 'custom' === $select_val ) {
+				if ( ! empty( $_POST['sycomp_custom_billing_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+					$billing = sanitize_textarea_field( wp_unslash( $_POST['sycomp_custom_billing_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+				}
+			} else {
+				$billing = $select_val;
+			}
 		}
 
 		if ( empty( $billing ) && $location_id ) {
@@ -264,12 +272,22 @@ class Sycomp_B2B_PO {
 			$order->set_billing_address_1( str_replace( array( "\r\n", "\r", "\n" ), ', ', $billing ) );
 		}
 
-		// Delivery address - defaults to the location, editable at checkout.
-		if ( isset( $_POST['sycomp_delivery_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$delivery = sanitize_textarea_field( wp_unslash( $_POST['sycomp_delivery_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-			if ( '' !== trim( $delivery ) ) {
-				$order->update_meta_data( self::META_DELIVERY, $delivery );
+		// Delivery address - defaults to the location selection or custom input, editable at checkout.
+		$delivery = '';
+		if ( ! empty( $_POST['sycomp_delivery_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$select_val = sanitize_textarea_field( wp_unslash( $_POST['sycomp_delivery_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			if ( 'custom' === $select_val ) {
+				if ( ! empty( $_POST['sycomp_custom_delivery_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+					$delivery = sanitize_textarea_field( wp_unslash( $_POST['sycomp_custom_delivery_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+				}
+			} else {
+				$delivery = $select_val;
 			}
+		}
+
+		if ( '' !== trim( $delivery ) ) {
+			$order->update_meta_data( self::META_DELIVERY, $delivery );
+			$order->set_shipping_address_1( str_replace( array( "\r\n", "\r", "\n" ), ', ', $delivery ) );
 		}
 		if ( $company_id ) {
 			$order->set_billing_company( (string) Sycomp_B2B_User::get_company_name() );
@@ -340,29 +358,43 @@ class Sycomp_B2B_PO {
 
 		// Build choices for billing dropdown
 		$billing_options = array(
-			'' => __( '— Select a billing address —', 'sycomp-b2b-portal' ),
+			'' => __( '— Select a Billing Address —', 'sycomp-b2b-portal' ),
 		);
 		foreach ( $billing_addresses as $index => $addr ) {
 			if ( ! empty( trim( $addr ) ) ) {
 				$billing_options[ trim( $addr ) ] = sprintf( __( 'Billing Address %d: %s', 'sycomp-b2b-portal' ), $index + 1, esc_html( wp_strip_all_tags( $addr ) ) );
 			}
 		}
+		$billing_options['separator'] = '────────────────────────────────';
+		$billing_options['custom'] = __( '[ + ] Add new Billing Address', 'sycomp-b2b-portal' );
+
+		$options['separator'] = '────────────────────────────────';
+		$options['custom'] = __( '[ + ] Add new delivery address', 'sycomp-b2b-portal' );
 
 		$fields['billing']['sycomp_billing_address'] = array(
 			'type'        => 'select',
-			'label'       => __( 'Billing address', 'sycomp-b2b-portal' ),
-			'required'    => true,
+			'label'       => __( 'Billing Address', 'sycomp-b2b-portal' ),
+			'required'    => false,
 			'class'       => array( 'form-row-wide' ),
 			'priority'    => 20,
 			'options'     => $billing_options,
 			'default'     => $billing_default,
-			'placeholder' => __( '— Select a billing address —', 'sycomp-b2b-portal' ),
+			'placeholder' => __( '— Select a Billing Address —', 'sycomp-b2b-portal' ),
+		);
+
+		$fields['billing']['sycomp_custom_billing_address'] = array(
+			'type'        => 'textarea',
+			'label'       => __( 'Billing Address', 'sycomp-b2b-portal' ),
+			'required'    => false,
+			'class'       => array( 'form-row-wide' ),
+			'priority'    => 21,
+			'placeholder' => __( 'Enter Billing Address', 'sycomp-b2b-portal' ),
 		);
 
 		$fields['billing']['sycomp_delivery_address'] = array(
 			'type'        => 'select',
 			'label'       => __( 'Delivery address', 'sycomp-b2b-portal' ),
-			'required'    => true,
+			'required'    => false,
 			'class'       => array( 'form-row-wide' ),
 			'priority'    => 25,
 			'options'     => $options,
@@ -370,7 +402,43 @@ class Sycomp_B2B_PO {
 			'placeholder' => __( '— Select a delivery address —', 'sycomp-b2b-portal' ),
 		);
 
+		$fields['billing']['sycomp_custom_delivery_address'] = array(
+			'type'        => 'textarea',
+			'label'       => __( 'Delivery address', 'sycomp-b2b-portal' ),
+			'required'    => false,
+			'class'       => array( 'form-row-wide' ),
+			'priority'    => 26,
+			'placeholder' => __( 'Enter delivery address', 'sycomp-b2b-portal' ),
+		);
+
 		return $fields;
+	}
+
+	/**
+	 * Validate that if dropdown addresses are not selected, custom addresses are provided.
+	 */
+	public static function validate_checkout_fields() {
+		$billing_select = ! empty( $_POST['sycomp_billing_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sycomp_billing_address'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$billing_custom = ! empty( $_POST['sycomp_custom_billing_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sycomp_custom_billing_address'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( 'custom' === $billing_select ) {
+			if ( empty( trim( $billing_custom ) ) ) {
+				wc_add_notice( __( 'Please enter your Billing Address.', 'sycomp-b2b-portal' ), 'error' );
+			}
+		} elseif ( empty( $billing_select ) || 'separator' === $billing_select ) {
+			wc_add_notice( __( 'Please select a Billing Address.', 'sycomp-b2b-portal' ), 'error' );
+		}
+
+		$delivery_select = ! empty( $_POST['sycomp_delivery_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sycomp_delivery_address'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$delivery_custom = ! empty( $_POST['sycomp_custom_delivery_address'] ) ? sanitize_textarea_field( wp_unslash( $_POST['sycomp_custom_delivery_address'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( 'custom' === $delivery_select ) {
+			if ( empty( trim( $delivery_custom ) ) ) {
+				wc_add_notice( __( 'Please enter your delivery address.', 'sycomp-b2b-portal' ), 'error' );
+			}
+		} elseif ( empty( $delivery_select ) || 'separator' === $delivery_select ) {
+			wc_add_notice( __( 'Please select a delivery address.', 'sycomp-b2b-portal' ), 'error' );
+		}
 	}
 
 	/**
@@ -774,6 +842,47 @@ class Sycomp_B2B_PO {
 	 * @return string
 	 */
 	public static function render_checkout_select_field( $field, $key, $args, $value ) {
+		if ( 'sycomp_billing_address' === $key ) {
+			$location_id = Sycomp_B2B_Context::get_active_location_id();
+			$billing_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_billing_addresses( $location_id ) : array();
+
+			// Generate our custom select
+			$custom_attributes = array();
+			if ( $args['required'] ) {
+				$custom_attributes[] = 'aria-required="true"';
+			}
+			if ( ! empty( $args['custom_attributes'] ) && is_array( $args['custom_attributes'] ) ) {
+				foreach ( $args['custom_attributes'] as $attribute => $attribute_value ) {
+					$custom_attributes[] = esc_attr( $attribute ) . '="' . esc_attr( $attribute_value ) . '"';
+				}
+			}
+
+			// We need a placeholder option as the first item
+			$placeholder_text = ! empty( $args['placeholder'] ) ? $args['placeholder'] : __( '— Select a Billing Address —', 'sycomp-b2b-portal' );
+			$options_html = '<option value="" ' . selected( trim( (string) $value ), '', false ) . '>' . esc_html( $placeholder_text ) . '</option>';
+
+			// Add Billing Addresses
+			foreach ( $billing_addresses as $index => $addr ) {
+				if ( ! empty( trim( $addr ) ) ) {
+					$addr_clean = trim( $addr );
+					$label = sprintf( __( 'Billing Address %d: %s', 'sycomp-b2b-portal' ), $index + 1, wp_strip_all_tags( $addr_clean ) );
+					$options_html .= '<option value="' . esc_attr( $addr_clean ) . '" ' . selected( trim( (string) $value ), $addr_clean, false ) . '>' . esc_html( $label ) . '</option>';
+				}
+			}
+
+			// Add separator and custom button at the bottom
+			$options_html .= '<option value="separator" disabled>────────────────────────────────</option>';
+			$options_html .= '<option value="custom" ' . selected( trim( (string) $value ), 'custom', false ) . ' style="font-weight: bold; color: #1e4fd6;">' . __( '[ + ] Add new Billing Address', 'sycomp-b2b-portal' ) . '</option>';
+
+			$select_html = '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" class="select ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . implode( ' ', $custom_attributes ) . '>';
+			$select_html .= $options_html;
+			$select_html .= '</select>';
+
+			// Replace the default select tag in the generated field HTML
+			$pattern = '/<select\b[^>]*>([\s\S]*?)<\/select>/';
+			$field = preg_replace( $pattern, $select_html, $field );
+		}
+
 		if ( 'sycomp_delivery_address' === $key ) {
 			$location_id = Sycomp_B2B_Context::get_active_location_id();
 			$drop_addresses = $location_id ? Sycomp_B2B_Post_Types::get_location_drop_shipping_addresses( $location_id ) : array();
@@ -819,6 +928,10 @@ class Sycomp_B2B_PO {
 				}
 				$options_html .= '</optgroup>';
 			}
+
+			// Add separator and custom button at the bottom
+			$options_html .= '<option value="separator" disabled>────────────────────────────────</option>';
+			$options_html .= '<option value="custom" ' . selected( trim( (string) $value ), 'custom', false ) . ' style="font-weight: bold; color: #1e4fd6;">' . __( '[ + ] Add new delivery address', 'sycomp-b2b-portal' ) . '</option>';
 
 			$select_html = '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" class="select ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . implode( ' ', $custom_attributes ) . '>';
 			$select_html .= $options_html;

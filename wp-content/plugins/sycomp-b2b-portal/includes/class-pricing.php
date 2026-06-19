@@ -356,4 +356,52 @@ class Sycomp_B2B_Pricing {
 			update_post_meta( (int) $product_id, $meta_key, $clean );
 		}
 	}
+
+	/**
+	 * Initialize prices for a new market using the Indian market prices and exchange rates.
+	 *
+	 * @param string $new_market_key New market key.
+	 * @param string $new_market_currency New market currency code.
+	 */
+	public static function initialize_new_market_prices( $new_market_key, $new_market_currency ) {
+		$product_ids = wc_get_products(
+			array(
+				'limit'  => -1,
+				'return' => 'ids',
+				'status' => array( 'publish', 'draft', 'pending', 'private' ),
+			)
+		);
+
+		if ( ! is_array( $product_ids ) || empty( $product_ids ) ) {
+			return;
+		}
+
+		foreach ( $product_ids as $product_id ) {
+			$india_price = self::get_market_price( $product_id, 'india' );
+			if ( '' === $india_price ) {
+				continue; // Skip products not priced in India.
+			}
+
+			$india_currency = self::get_price_currency( $product_id, 'india' );
+			if ( ! $india_currency ) {
+				$india_currency = 'INR';
+			}
+
+			// Convert to the new market's currency using exchange rates.
+			$converted_price = Sycomp_B2B_FX::convert( $india_price, $india_currency, $new_market_currency );
+
+			// Format/round price to the new market's decimal places.
+			$decimals    = Sycomp_B2B_Markets::decimals( $new_market_key );
+			$final_price = round( $converted_price, $decimals );
+
+			// Save the new price.
+			self::set_market_price( $product_id, $new_market_key, $final_price );
+
+			// Copy the GP margin if set.
+			$india_gp = get_post_meta( $product_id, '_sycomp_gp_india', true );
+			if ( '' !== $india_gp ) {
+				update_post_meta( $product_id, '_sycomp_gp_' . sanitize_key( $new_market_key ), $india_gp );
+			}
+		}
+	}
 }

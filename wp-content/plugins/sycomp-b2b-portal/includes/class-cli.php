@@ -190,7 +190,7 @@ class Sycomp_B2B_CLI {
 			}
 		}
 
-		WP_CLI::success( sprintf( 'Import complete. Price lists loaded for %d of 9 markets.', count( $done ) ) );
+		WP_CLI::success( sprintf( 'Import complete. Price lists loaded for %d of %d markets.', count( $done ), count( Sycomp_B2B_Markets::keys() ) ) );
 	}
 
 	/**

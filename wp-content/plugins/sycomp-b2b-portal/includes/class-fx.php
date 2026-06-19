@@ -61,6 +61,7 @@ class Sycomp_B2B_FX {
 			'TWD' => 32.0,
 			'ZAR' => 18.0,
 			'AED' => 3.67,
+			'SAR' => 3.75,
 		);
 	}
 

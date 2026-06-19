@@ -37,6 +37,7 @@ class Sycomp_B2B_Manager {
 		add_shortcode( 'sycomp_manager', array( __CLASS__, 'shortcode' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_export' ), 3 );
 		add_action( 'template_redirect', array( __CLASS__, 'handle_actions' ), 4 );
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_initialize_saudi_arabia_prices' ), 5 );
 	}
 
 	/**
@@ -251,6 +252,12 @@ class Sycomp_B2B_Manager {
 				break;
 			case 'fx_save':
 				self::do_fx_save();
+				break;
+			case 'market_save':
+				self::do_market_save();
+				break;
+			case 'market_delete':
+				self::do_market_delete();
 				break;
 			case 'bulkprice_apply':
 				self::do_bulkprice();
@@ -585,6 +592,70 @@ class Sycomp_B2B_Manager {
 	}
 
 	/**
+	 * Save/Update a market.
+	 */
+	protected static function do_market_save() {
+		if ( ! self::verify( 'sycomp_market_save' ) ) {
+			return;
+		}
+
+		$key = isset( $_POST['market_key'] ) ? sanitize_key( wp_unslash( $_POST['market_key'] ) ) : '';
+
+		if ( empty( $key ) ) {
+			self::redirect( array( 'section' => 'company', 'done' => 'market_error' ) );
+		}
+
+		$existing = Sycomp_B2B_Markets::get( $key );
+		$is_new   = ! $existing;
+		$flag_url = $existing ? ( isset( $existing['flag_url'] ) ? $existing['flag_url'] : '' ) : '';
+
+		// Process flag file upload if provided
+		if ( ! empty( $_FILES['flag_file']['name'] ) ) {
+			self::ensure_media();
+			$att = media_handle_upload( 'flag_file', 0 );
+			if ( ! is_wp_error( $att ) ) {
+				$flag_url = wp_get_attachment_url( (int) $att );
+			}
+		}
+
+		$data = array(
+			'label'        => isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '',
+			'currency'     => isset( $_POST['currency'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_POST['currency'] ) ) ) : '',
+			'symbol'       => isset( $_POST['symbol'] ) ? sanitize_text_field( wp_unslash( $_POST['symbol'] ) ) : '',
+			'decimals'     => isset( $_POST['decimals'] ) ? max( 0, (int) $_POST['decimals'] ) : 2,
+			'country_code' => isset( $_POST['country_code'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_POST['country_code'] ) ) ) : '',
+			'order'        => isset( $_POST['order'] ) ? (int) $_POST['order'] : 100,
+			'flag_url'     => $flag_url,
+		);
+
+		Sycomp_B2B_Markets::save_market( $key, $data );
+
+		if ( $is_new ) {
+			Sycomp_B2B_Pricing::initialize_new_market_prices( $key, $data['currency'] );
+		}
+
+		self::redirect( array( 'section' => 'company', 'done' => 'market_saved' ) );
+	}
+
+	/**
+	 * Delete a custom market.
+	 */
+	protected static function do_market_delete() {
+		if ( ! self::verify( 'sycomp_market_delete' ) ) {
+			return;
+		}
+
+		$key = isset( $_POST['market_key'] ) ? sanitize_key( wp_unslash( $_POST['market_key'] ) ) : '';
+
+		if ( ! empty( $key ) ) {
+			Sycomp_B2B_Markets::delete_market( $key );
+			self::redirect( array( 'section' => 'company', 'done' => 'market_deleted' ) );
+		}
+
+		self::redirect( array( 'section' => 'company', 'done' => 'market_error' ) );
+	}
+
+	/**
 	 * Run a CSV import (products or per-market prices).
 	 */
 	protected static function do_import() {
@@ -787,8 +858,11 @@ class Sycomp_B2B_Manager {
 			'po_created'      => __( 'Purchase order created.', 'sycomp-b2b-portal' ),
 			'po_updated'      => __( 'Purchase order updated.', 'sycomp-b2b-portal' ),
 			'bulkprice_done'  => __( 'Market prices adjusted.', 'sycomp-b2b-portal' ),
+			'market_saved'    => __( 'Market settings saved.', 'sycomp-b2b-portal' ),
+			'market_deleted'  => __( 'Market deleted.', 'sycomp-b2b-portal' ),
 		);
 		$warn = array(
+			'market_error'       => __( 'Could not save or delete the market. Check if the key is valid.', 'sycomp-b2b-portal' ),
 			'product_error'      => __( 'Could not save the product. Check the name and that the SKU is not already in use.', 'sycomp-b2b-portal' ),
 			'profile_error'      => __( 'Could not update your profile — the email address may already be in use.', 'sycomp-b2b-portal' ),
 			'profile_pass_error' => __( 'Passwords did not match or were shorter than 6 characters. Other changes were not saved.', 'sycomp-b2b-portal' ),
@@ -2991,5 +3065,138 @@ class Sycomp_B2B_Manager {
 		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Save exchange rates', 'sycomp-b2b-portal' ) . '</button></div>';
 		echo '</form>';
 		echo '</div></section>';
+
+		// --- Manage Markets ------------------------------------------------
+		$sycomp_all_markets = Sycomp_B2B_Markets::all();
+		$default_keys = array( 'india', 'united_states', 'australia', 'japan', 'china', 'philippines', 'taiwan', 'south_africa', 'uae' );
+
+		echo '<section class="sy-panel" style="max-width:640px;"><h2 class="sy-panel__title">' . esc_html__( 'Manage Markets & Countries', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
+		echo '<p class="sy-muted">' . esc_html__( 'Add, edit, or delete markets. Note that deleting a market will clean up its configurations and prices.', 'sycomp-b2b-portal' ) . '</p>';
+
+		// Markets list table
+		echo '<table class="sy-table" style="width:100%; border-collapse:collapse; margin-bottom:24px;">';
+		echo '<thead><tr style="border-bottom:2px solid var(--sy-border, #e3e6e8); text-align:left;">';
+		echo '<th style="padding:8px 4px;">' . esc_html__( 'Flag', 'sycomp-b2b-portal' ) . '</th>';
+		echo '<th style="padding:8px 4px;">' . esc_html__( 'Label', 'sycomp-b2b-portal' ) . '</th>';
+		echo '<th style="padding:8px 4px;">' . esc_html__( 'Key', 'sycomp-b2b-portal' ) . '</th>';
+		echo '<th style="padding:8px 4px;">' . esc_html__( 'Currency', 'sycomp-b2b-portal' ) . '</th>';
+		echo '<th style="padding:8px 4px;">' . esc_html__( 'Country', 'sycomp-b2b-portal' ) . '</th>';
+		echo '<th style="padding:8px 4px;">' . esc_html__( 'Order', 'sycomp-b2b-portal' ) . '</th>';
+		echo '<th style="padding:8px 4px; text-align:right;">' . esc_html__( 'Actions', 'sycomp-b2b-portal' ) . '</th>';
+		echo '</tr></thead><tbody>';
+
+		foreach ( $sycomp_all_markets as $m_key => $m_data ) {
+			echo '<tr style="border-bottom:1px solid var(--sy-border, #e3e6e8);" data-key="' . esc_attr( $m_key ) . '" data-label="' . esc_attr( $m_data['label'] ) . '" data-currency="' . esc_attr( $m_data['currency'] ) . '" data-symbol="' . esc_attr( $m_data['symbol'] ) . '" data-decimals="' . esc_attr( $m_data['decimals'] ) . '" data-country-code="' . esc_attr( $m_data['country_code'] ) . '" data-order="' . esc_attr( $m_data['order'] ) . '">';
+			echo '<td style="padding:8px 4px; vertical-align:middle;"><img src="' . esc_url( $m_data['flag_url'] ) . '" style="width:24px; height:auto; display:block;" alt=""></td>';
+			echo '<td style="padding:8px 4px; vertical-align:middle; font-weight:600;">' . esc_html( $m_data['label'] ) . '</td>';
+			echo '<td style="padding:8px 4px; vertical-align:middle; font-family:monospace; font-size:0.85rem;">' . esc_html( $m_key ) . '</td>';
+			echo '<td style="padding:8px 4px; vertical-align:middle;">' . esc_html( $m_data['currency'] . ' (' . $m_data['symbol'] . ')' ) . '</td>';
+			echo '<td style="padding:8px 4px; vertical-align:middle;">' . esc_html( $m_data['country_code'] ) . '</td>';
+			echo '<td style="padding:8px 4px; vertical-align:middle;">' . esc_html( $m_data['order'] ) . '</td>';
+			echo '<td style="padding:8px 4px; vertical-align:middle; text-align:right; white-space:nowrap;">';
+			echo '<button type="button" class="sy-btn sy-btn--sm" style="margin-right:4px; padding:3px 8px; font-size:0.8rem;" onclick="editMarket(this.closest(\'tr\'))">' . esc_html__( 'Edit', 'sycomp-b2b-portal' ) . '</button>';
+			echo '<form method="post" style="display:inline-block;" onsubmit="return confirm(\'' . esc_js( __( 'Are you sure you want to delete this market? All prices and configs for this market will be lost.', 'sycomp-b2b-portal' ) ) . '\');">';
+			wp_nonce_field( 'sycomp_market_delete', 'sycomp_nonce' );
+			echo '<input type="hidden" name="sycomp_admin_action" value="market_delete">';
+			echo '<input type="hidden" name="market_key" value="' . esc_attr( $m_key ) . '">';
+			echo '<button type="submit" class="sy-btn sy-btn--sm sy-btn--danger" style="padding:3px 8px; font-size:0.8rem; background-color:#c0392b; color:#fff; border:none; border-radius:4px; cursor:pointer;">' . esc_html__( 'Delete', 'sycomp-b2b-portal' ) . '</button>';
+			echo '</form>';
+			echo '</td>';
+			echo '</tr>';
+		}
+		echo '</tbody></table>';
+
+		// Form panel to add/edit market
+		echo '<div id="m_form_panel" style="background:#f7f9fa; border:1px solid var(--sy-border, #e3e6e8); padding:16px; border-radius:6px; margin-top:20px;">';
+		echo '<h3 id="m_action_title" style="margin:0 0 16px; font-size:1.05rem; font-weight:600;">' . esc_html__( 'Add New Market', 'sycomp-b2b-portal' ) . '</h3>';
+		echo '<form method="post" enctype="multipart/form-data" class="sy-form">';
+		wp_nonce_field( 'sycomp_market_save', 'sycomp_nonce' );
+		echo '<input type="hidden" name="sycomp_admin_action" value="market_save">';
+		echo '<input type="hidden" id="m_is_edit" name="is_edit" value="0">';
+
+		echo '<div class="sy-form__grid">';
+		echo '<label class="sy-field" id="m_key_container"><span class="sy-field__label">' . esc_html__( 'Market Key (lowercase, underscores only)', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="text" id="m_key" name="market_key" required pattern="[a-z0-9_]+" title="' . esc_attr__( 'Only lowercase letters, numbers, and underscores', 'sycomp-b2b-portal' ) . '" placeholder="e.g. canada"></label>';
+
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Market Name/Label', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="text" id="m_label" name="label" required placeholder="e.g. Canada"></label>';
+		echo '</div>';
+
+		echo '<div class="sy-form__grid">';
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Currency (e.g. CAD)', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="text" id="m_currency" name="currency" required maxlength="3" style="text-transform:uppercase;" placeholder="CAD"></label>';
+
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Currency Symbol (e.g. C$)', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="text" id="m_symbol" name="symbol" required placeholder="C$"></label>';
+		echo '</div>';
+
+		echo '<div class="sy-form__grid">';
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Decimal Places', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="number" id="m_decimals" name="decimals" required min="0" max="6" value="2"></label>';
+
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Country Code (2-letter ISO, e.g. CA)', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="text" id="m_country_code" name="country_code" required maxlength="2" style="text-transform:uppercase;" placeholder="CA"></label>';
+
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Display Order', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="number" id="m_order" name="order" required min="0" value="100"></label>';
+		echo '</div>';
+
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Flag Image (SVG / PNG / JPG)', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<input type="file" name="flag_file" accept="image/*"></label>';
+
+		echo '<div class="sy-form__actions" style="margin-top:16px;">';
+		echo '<button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Save Market', 'sycomp-b2b-portal' ) . '</button>';
+		echo '<button class="sy-btn" type="button" id="m_cancel_edit" style="display:none; margin-left:8px;" onclick="cancelEditMarket()">' . esc_html__( 'Cancel Edit', 'sycomp-b2b-portal' ) . '</button>';
+		echo '</div>';
+		echo '</form></div>';
+
+		echo '</div></section>';
+
+		// JavaScript uploader and data copier
+		?>
+		<script>
+		function editMarket(row) {
+			document.getElementById('m_action_title').innerText = 'Edit Market: ' + row.dataset.label;
+			document.getElementById('m_key').value = row.dataset.key;
+			document.getElementById('m_key').readOnly = true;
+			document.getElementById('m_label').value = row.dataset.label;
+			document.getElementById('m_currency').value = row.dataset.currency;
+			document.getElementById('m_symbol').value = row.dataset.symbol;
+			document.getElementById('m_decimals').value = row.dataset.decimals;
+			document.getElementById('m_country_code').value = row.dataset.countryCode;
+			document.getElementById('m_order').value = row.dataset.order;
+			document.getElementById('m_cancel_edit').style.display = 'inline-block';
+			document.getElementById('m_is_edit').value = '1';
+			document.getElementById('m_key_container').style.opacity = '0.6';
+			
+			document.getElementById('m_form_panel').scrollIntoView({ behavior: 'smooth' });
+		}
+
+		function cancelEditMarket() {
+			document.getElementById('m_action_title').innerText = 'Add New Market';
+			document.getElementById('m_key').value = '';
+			document.getElementById('m_key').readOnly = false;
+			document.getElementById('m_label').value = '';
+			document.getElementById('m_currency').value = '';
+			document.getElementById('m_symbol').value = '';
+			document.getElementById('m_decimals').value = '2';
+			document.getElementById('m_country_code').value = '';
+			document.getElementById('m_order').value = '100';
+			document.getElementById('m_cancel_edit').style.display = 'none';
+			document.getElementById('m_is_edit').value = '0';
+			document.getElementById('m_key_container').style.opacity = '1';
+		}
+		</script>
+		<?php
+	}
+
+	/**
+	 * Run a one-time initialization of Saudi Arabia prices if they are missing.
+	 */
+	public static function maybe_initialize_saudi_arabia_prices() {
+		if ( ! get_option( 'sycomp_b2b_saudi_initialized' ) && Sycomp_B2B_Markets::exists( 'saudi_arabia' ) ) {
+			Sycomp_B2B_Pricing::initialize_new_market_prices( 'saudi_arabia', 'SAR' );
+			update_option( 'sycomp_b2b_saudi_initialized', 1 );
+		}
 	}
 }
