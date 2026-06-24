@@ -846,7 +846,7 @@ class Sycomp_B2B_Manager {
 			'profile_saved'   => __( 'Your profile has been updated.', 'sycomp-b2b-portal' ),
 			'company_saved'   => __( 'Company details saved.', 'sycomp-b2b-portal' ),
 			'ae_saved'        => __( 'Account Executive details saved.', 'sycomp-b2b-portal' ),
-			'warehouses_saved' => __( 'Warehouse addresses saved.', 'sycomp-b2b-portal' ),
+			'warehouses_saved' => __( 'Bill From addresses saved.', 'sycomp-b2b-portal' ),
 			'quote_formats_saved' => __( 'Quote number formats saved.', 'sycomp-b2b-portal' ),
 			'taxes_saved'     => __( 'Tax rates saved.', 'sycomp-b2b-portal' ),
 			'fx_saved'        => __( 'Exchange rates saved.', 'sycomp-b2b-portal' ),
@@ -2997,10 +2997,10 @@ class Sycomp_B2B_Manager {
 		</script>
 		<?php
 
-		// --- Warehouse (ship-from) addresses, one per market ---------------
+		// --- Bill From addresses, one per market ---------------
 		$sycomp_warehouses = Sycomp_B2B_Warehouses::all();
-		echo '<section class="sy-panel" style="max-width:640px;"><h2 class="sy-panel__title">' . esc_html__( 'Warehouse addresses', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
-		echo '<p class="sy-muted">' . esc_html__( 'The Sycomp ship-from address for each market. A proposal shows the warehouse for its market as the supplier.', 'sycomp-b2b-portal' ) . '</p>';
+		echo '<section class="sy-panel" style="max-width:640px;"><h2 class="sy-panel__title">' . esc_html__( 'Bill From', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
+		echo '<p class="sy-muted">' . esc_html__( 'The Sycomp bill-from address for each market. A proposal shows the bill-from address for its market as the supplier.', 'sycomp-b2b-portal' ) . '</p>';
 		echo '<form method="post" class="sy-form">';
 		wp_nonce_field( 'sycomp_warehouses', 'sycomp_nonce' );
 		echo '<input type="hidden" name="sycomp_admin_action" value="warehouses_save">';
@@ -3009,13 +3009,13 @@ class Sycomp_B2B_Manager {
 			echo '<div style="border-top:1px solid var(--sy-border);padding-top:14px;margin-top:14px;">';
 			echo '<h3 style="font-size:.95rem;margin:0 0 8px;">' . esc_html( $sycomp_wmarket['label'] ) . '</h3>';
 			echo '<div class="sy-form__grid">';
-			echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Warehouse name', 'sycomp-b2b-portal' ) . '</span>';
+			echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Company name', 'sycomp-b2b-portal' ) . '</span>';
 			echo '<input type="text" name="wh[' . esc_attr( $sycomp_wkey ) . '][name]" value="' . esc_attr( $sycomp_wh['name'] ) . '"></label>';
 			echo '<label class="sy-field sy-field--wide"><span class="sy-field__label">' . esc_html__( 'Address', 'sycomp-b2b-portal' ) . '</span>';
 			echo '<textarea name="wh[' . esc_attr( $sycomp_wkey ) . '][address]" rows="3">' . esc_textarea( $sycomp_wh['address'] ) . '</textarea></label>';
 			echo '</div></div>';
 		}
-		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Save warehouse addresses', 'sycomp-b2b-portal' ) . '</button></div>';
+		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Save addresses', 'sycomp-b2b-portal' ) . '</button></div>';
 		echo '</form>';
 		echo '</div></section>';
 
