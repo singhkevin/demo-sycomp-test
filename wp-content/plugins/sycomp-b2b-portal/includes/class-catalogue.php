@@ -115,11 +115,11 @@ class Sycomp_B2B_Catalogue {
 		// get_permalink() would return the current product's URL instead.
 		$page_url = get_permalink();
 
-		$query = self::query_products( $brand, $cat, $search, $paged, $as_company );
-
 		// Which market prices the grid shows: the buyer's active market, or
 		// (for a manager) the market chosen in the preview bar.
 		$grid_market = $is_manager ? $preview_market : Sycomp_B2B_Context::get_active_market();
+
+		$query = self::query_products( $brand, $cat, $search, $paged, $as_company, $grid_market );
 
 		ob_start();
 
@@ -166,9 +166,10 @@ class Sycomp_B2B_Catalogue {
 	 * @param string $search     Name search.
 	 * @param int    $paged      Page number.
 	 * @param int    $as_company Manager preview: restrict to this company's products.
+	 * @param string $market_key Market to check for pricing.
 	 * @return WP_Query
 	 */
-	protected static function query_products( $brand, $cat, $search, $paged, $as_company = 0 ) {
+	protected static function query_products( $brand, $cat, $search, $paged, $as_company = 0, $market_key = '' ) {
 		$args = array(
 			'post_type'           => 'product',
 			'post_status'         => 'publish',
@@ -192,11 +193,23 @@ class Sycomp_B2B_Catalogue {
 			$filter_company = (int) Sycomp_B2B_User::get_company();
 		}
 		if ( $filter_company ) {
-			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery
-				array(
-					'key'   => '_sycomp_company',
-					'value' => $filter_company,
-				),
+			if ( ! isset( $args['meta_query'] ) ) {
+				$args['meta_query'] = array();
+			}
+			$args['meta_query'][] = array(
+				'key'   => '_sycomp_company',
+				'value' => $filter_company,
+			);
+		}
+
+		if ( $market_key && Sycomp_B2B_Markets::exists( $market_key ) ) {
+			if ( ! isset( $args['meta_query'] ) ) {
+				$args['meta_query'] = array();
+			}
+			$args['meta_query'][] = array(
+				'key'     => Sycomp_B2B_Markets::price_meta_key( $market_key ),
+				'value'   => '',
+				'compare' => '!=',
 			);
 		}
 
@@ -477,9 +490,7 @@ class Sycomp_B2B_Catalogue {
 					<?php if ( $show_price ) : ?>
 						<span class="sy-prod-card__price">
 							<?php
-							if ( ! $priced ) {
-								echo '<span class="sy-price-na">' . esc_html__( 'On request', 'sycomp-b2b-portal' ) . '</span>';
-							} elseif ( $is_manager ) {
+							if ( $is_manager ) {
 								// Manager preview: price explicitly in the chosen market.
 								echo wp_kses_post(
 									Sycomp_B2B_Pricing::format_in_market(

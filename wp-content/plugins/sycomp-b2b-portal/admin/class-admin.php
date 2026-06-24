@@ -2,7 +2,7 @@
 /**
  * Admin menu and dashboard.
  *
- * The dashboard is the Shop Manager's home: open purchase orders are
+ * The dashboard is the Shop Manager's home: open proposals are
  * listed and actionable on it, with quick links to products, categories,
  * brands and companies. For the shop_manager role the wp-admin sidebar is
  * trimmed to the portal's own items only.
@@ -177,7 +177,7 @@ class Sycomp_B2B_Admin {
 		<div class="wrap sycomp-admin">
 			<h1><?php esc_html_e( 'Sycomp B2B Portal', 'sycomp-b2b-portal' ); ?></h1>
 			<p class="sycomp-admin__lede">
-				<?php esc_html_e( 'Review purchase orders, manage the catalogue and per-market pricing, and set up customer companies.', 'sycomp-b2b-portal' ); ?>
+				<?php esc_html_e( 'Review proposals, manage the catalogue and per-market pricing, and set up customer companies.', 'sycomp-b2b-portal' ); ?>
 			</p>
 
 			<div class="sycomp-stats">
@@ -203,9 +203,9 @@ class Sycomp_B2B_Admin {
 				</div>
 			</div>
 
-			<h2><?php esc_html_e( 'Open purchase orders', 'sycomp-b2b-portal' ); ?></h2>
+			<h2><?php esc_html_e( 'Open proposals', 'sycomp-b2b-portal' ); ?></h2>
 			<?php if ( empty( $pending ) ) : ?>
-				<p><?php esc_html_e( 'All caught up — no open purchase orders.', 'sycomp-b2b-portal' ); ?></p>
+				<p><?php esc_html_e( 'All caught up — no open proposals.', 'sycomp-b2b-portal' ); ?></p>
 			<?php else : ?>
 				<table class="wp-list-table widefat fixed striped">
 					<thead>
@@ -249,7 +249,7 @@ class Sycomp_B2B_Admin {
 											<?php esc_html_e( 'Accept', 'sycomp-b2b-portal' ); ?>
 										</button>
 										<button type="submit" name="sycomp_po_action" value="cancel" class="button button-small"
-											onclick="return confirm('<?php echo esc_js( __( 'Cancel this purchase order?', 'sycomp-b2b-portal' ) ); ?>');">
+											onclick="return confirm('<?php echo esc_js( __( 'Cancel this proposal?', 'sycomp-b2b-portal' ) ); ?>');">
 											<?php esc_html_e( 'Cancel', 'sycomp-b2b-portal' ); ?>
 										</button>
 									</form>
@@ -261,7 +261,7 @@ class Sycomp_B2B_Admin {
 			<?php endif; ?>
 			<p>
 				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . Sycomp_B2B_Admin_PO::PAGE ) ); ?>">
-					<?php esc_html_e( 'Open all purchase orders', 'sycomp-b2b-portal' ); ?>
+					<?php esc_html_e( 'Open all proposals', 'sycomp-b2b-portal' ); ?>
 				</a>
 			</p>
 

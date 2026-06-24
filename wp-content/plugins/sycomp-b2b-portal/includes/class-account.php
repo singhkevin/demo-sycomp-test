@@ -103,7 +103,7 @@ class Sycomp_B2B_Account {
 				self::render_order_detail( $order );
 			} else {
 				echo '<div class="sy-notice sy-notice--warn">'
-					. esc_html__( 'That purchase order could not be found.', 'sycomp-b2b-portal' )
+					. esc_html__( 'That proposal could not be found.', 'sycomp-b2b-portal' )
 					. '</div>';
 				self::render_orders_panel();
 			}
@@ -230,7 +230,7 @@ class Sycomp_B2B_Account {
 	}
 
 	/**
-	 * Render a single purchase order's detail, inline on the Orders page.
+	 * Render a single proposal's detail, inline on the Orders page.
 	 *
 	 * @param WC_Order $order Order.
 	 */
@@ -249,7 +249,7 @@ class Sycomp_B2B_Account {
 		echo '<section class="sy-panel">';
 		echo '<h2 class="sy-panel__title">';
 		/* translators: %s: PO number. */
-		echo esc_html( sprintf( __( 'Purchase order #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ) );
+		echo esc_html( sprintf( __( 'Proposal #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ) );
 		echo ' <span class="sy-badge ' . esc_attr( $badge ) . '">' . esc_html( $status_name ) . '</span>';
 		echo '</h2>';
 		echo '<div class="sy-panel__body sy-deflist">';
@@ -309,7 +309,7 @@ class Sycomp_B2B_Account {
 		printf(
 			'<p class="sy-po-pdf-actions"><a class="sy-btn sy-btn--primary" href="%s">%s</a></p>',
 			esc_url( Sycomp_B2B_PO_PDF::pdf_url( $order ) ),
-			esc_html__( 'Download purchase order (PDF)', 'sycomp-b2b-portal' )
+			esc_html__( 'Download proposal (PDF)', 'sycomp-b2b-portal' )
 		);
 	}
 
@@ -337,12 +337,12 @@ class Sycomp_B2B_Account {
 		);
 		?>
 		<section class="sy-panel">
-			<h2 class="sy-panel__title"><?php esc_html_e( 'Company purchase orders', 'sycomp-b2b-portal' ); ?></h2>
+			<h2 class="sy-panel__title"><?php esc_html_e( 'Company proposals', 'sycomp-b2b-portal' ); ?></h2>
 			<div class="sy-panel__body">
 				<?php if ( empty( $orders ) ) : ?>
-					<div class="sy-notice"><?php esc_html_e( 'No purchase orders have been raised for your company yet.', 'sycomp-b2b-portal' ); ?></div>
+					<div class="sy-notice"><?php esc_html_e( 'No proposals have been raised for your company yet.', 'sycomp-b2b-portal' ); ?></div>
 				<?php else : ?>
-					<p class="sy-muted"><?php esc_html_e( 'Every purchase order for your company, across all locations, raised by any team member.', 'sycomp-b2b-portal' ); ?></p>
+					<p class="sy-muted"><?php esc_html_e( 'Every proposal for your company, across all locations, raised by any team member.', 'sycomp-b2b-portal' ); ?></p>
 					<table class="sy-table sy-table--stack">
 						<thead>
 							<tr>

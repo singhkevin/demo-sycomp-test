@@ -33,23 +33,23 @@ class Sycomp_B2B_Storefront {
 	 * Handle a header location switch and homepage market jumps.
 	 */
 	public static function handle_requests() {
-		// --- Header location switcher --------------------------------------
-		if ( isset( $_GET['sycomp_switch_location'] ) ) {
-			$location_id = absint( wp_unslash( $_GET['sycomp_switch_location'] ) );
-			$nonce       = isset( $_GET['_syc'] ) ? sanitize_text_field( wp_unslash( $_GET['_syc'] ) ) : '';
+		// --- Header market switcher --------------------------------------
+		if ( isset( $_GET['sycomp_switch_market'] ) ) {
+			$market_key = sanitize_key( wp_unslash( $_GET['sycomp_switch_market'] ) );
+			$nonce      = isset( $_GET['_syc'] ) ? sanitize_text_field( wp_unslash( $_GET['_syc'] ) ) : '';
 
 			if ( wp_verify_nonce( $nonce, 'sycomp_switch' ) ) {
-				Sycomp_B2B_Context::set_active_location_id( $location_id );
+				Sycomp_B2B_Context::set_active_market( $market_key );
 			}
 
-			wp_safe_redirect( remove_query_arg( array( 'sycomp_switch_location', '_syc' ) ) );
+			wp_safe_redirect( remove_query_arg( array( 'sycomp_switch_market', '_syc' ) ) );
 			exit;
 		}
 
 		// --- Homepage market selector --------------------------------------
 		if ( isset( $_GET['sycomp_market'] ) ) {
-			$market_key   = sanitize_key( wp_unslash( $_GET['sycomp_market'] ) );
-			$catalogue    = sycomp_b2b_page_url( 'catalogue' );
+			$market_key = sanitize_key( wp_unslash( $_GET['sycomp_market'] ) );
+			$catalogue  = sycomp_b2b_page_url( 'catalogue' );
 
 			if ( ! is_user_logged_in() ) {
 				// Public visitor — send to login, then back to this market.
@@ -58,13 +58,10 @@ class Sycomp_B2B_Storefront {
 				exit;
 			}
 
-			$location_id = Sycomp_B2B_Context::get_location_for_market( $market_key );
-
-			if ( $location_id ) {
-				Sycomp_B2B_Context::set_active_location_id( $location_id );
+			if ( Sycomp_B2B_Context::set_active_market( $market_key ) ) {
 				wp_safe_redirect( $catalogue );
 			} else {
-				// The buyer's company has no location in this market.
+				// The buyer's company does not have access to this market (no priced products).
 				wp_safe_redirect( add_query_arg( 'sycomp_market_unavailable', $market_key, $catalogue ) );
 			}
 			exit;
@@ -83,17 +80,18 @@ class Sycomp_B2B_Storefront {
 			return;
 		}
 
-		$locations = Sycomp_B2B_User::get_locations();
-		if ( empty( $locations ) ) {
-			echo '<span class="sy-header__user">' . esc_html__( 'No locations assigned', 'sycomp-b2b-portal' ) . '</span>';
+		$user_id    = get_current_user_id();
+		$company_id = Sycomp_B2B_User::get_company( $user_id );
+		$markets    = Sycomp_B2B_Markets::get_available_markets( $company_id );
+		
+		if ( empty( $markets ) ) {
+			echo '<span class="sy-header__user">' . esc_html__( 'No markets available', 'sycomp-b2b-portal' ) . '</span>';
 			return;
 		}
 
-		$active_id     = Sycomp_B2B_Context::get_active_location_id();
 		$active_market = Sycomp_B2B_Context::get_active_market();
-		$active_post   = $active_id ? get_post( $active_id ) : null;
 		$company_name  = Sycomp_B2B_User::get_company_name();
-		$active_flag   = $active_market ? Sycomp_B2B_Markets::get( $active_market )['flag_url'] : '';
+		$active_flag   = $active_market && Sycomp_B2B_Markets::exists( $active_market ) ? Sycomp_B2B_Markets::get( $active_market )['flag_url'] : '';
 		?>
 		<div class="sy-locsw">
 			<button type="button" class="sy-locsw__btn">
@@ -122,25 +120,24 @@ class Sycomp_B2B_Storefront {
 					?>
 				</div>
 				<?php
-				foreach ( $locations as $location ) :
-					$market_key = Sycomp_B2B_Post_Types::get_location_market( $location->ID );
+				foreach ( $markets as $market_key ) :
 					$market     = Sycomp_B2B_Markets::get( $market_key );
-					$is_active  = ( (int) $location->ID === (int) $active_id );
+					$is_active  = ( $market_key === $active_market );
 					$switch_url = add_query_arg(
 						array(
-							'sycomp_switch_location' => (int) $location->ID,
-							'_syc'                   => wp_create_nonce( 'sycomp_switch' ),
+							'sycomp_switch_market' => $market_key,
+							'_syc'                 => wp_create_nonce( 'sycomp_switch' ),
 						)
 					);
 					?>
 					<a class="sy-locsw__item <?php echo $is_active ? 'is-active' : ''; ?>"
 						href="<?php echo esc_url( $switch_url ); ?>" role="menuitem">
-						<?php if ( $market ) : ?>
+						<?php if ( $market && ! empty( $market['flag_url'] ) ) : ?>
 							<img class="sy-locsw__flag" src="<?php echo esc_url( $market['flag_url'] ); ?>" alt="" aria-hidden="true">
 						<?php endif; ?>
 						<span>
 							<?php
-							$item_label = get_the_title( $location );
+							$item_label = '';
 							if ( $market ) {
 								$item_label = $market['label'] . ' (' . $market['currency'] . ')';
 							}
@@ -167,23 +164,26 @@ class Sycomp_B2B_Storefront {
 		if ( ! is_user_logged_in() || ! Sycomp_B2B_User::is_portal_user() ) {
 			return;
 		}
-		$locations = Sycomp_B2B_User::get_locations();
-		if ( count( $locations ) < 2 ) {
+
+		$user_id    = get_current_user_id();
+		$company_id = Sycomp_B2B_User::get_company( $user_id );
+		$markets    = Sycomp_B2B_Markets::get_available_markets( $company_id );
+
+		if ( count( $markets ) < 2 ) {
 			return;
 		}
-		$active_id = (int) Sycomp_B2B_Context::get_active_location_id();
+		
+		$active_market = Sycomp_B2B_Context::get_active_market();
 
 		echo '<section class="sy-cartswitch">';
-		echo '<h2 class="sy-cartswitch__title">' . esc_html__( 'Your location carts', 'sycomp-b2b-portal' ) . '</h2>';
-		echo '<p class="sy-cartswitch__hint">' . esc_html__( "Each location keeps its own cart and is submitted as its own purchase order. Switch to review or build another location's order.", 'sycomp-b2b-portal' ) . '</p>';
+		echo '<h2 class="sy-cartswitch__title">' . esc_html__( 'Your market carts', 'sycomp-b2b-portal' ) . '</h2>';
+		echo '<p class="sy-cartswitch__hint">' . esc_html__( "Each market keeps its own cart. Switch to review or build another market's order.", 'sycomp-b2b-portal' ) . '</p>';
 		echo '<div class="sy-cartswitch__grid">';
 
-		foreach ( $locations as $location ) {
-			$lid        = (int) $location->ID;
-			$count      = (int) Sycomp_B2B_Cart::get_location_item_count( $lid );
-			$market_key = Sycomp_B2B_Post_Types::get_location_market( $lid );
+		foreach ( $markets as $market_key ) {
+			$count      = (int) Sycomp_B2B_Cart::get_market_item_count( $market_key );
 			$market     = Sycomp_B2B_Markets::get( $market_key );
-			$is_active  = ( $lid === $active_id );
+			$is_active  = ( $market_key === $active_market );
 			$has_items  = ( $count > 0 );
 
 			$classes = 'sy-cartswitch__card';
@@ -197,18 +197,18 @@ class Sycomp_B2B_Storefront {
 			} else {
 				$url = add_query_arg(
 					array(
-						'sycomp_switch_location' => $lid,
-						'_syc'                   => wp_create_nonce( 'sycomp_switch' ),
+						'sycomp_switch_market' => $market_key,
+						'_syc'                 => wp_create_nonce( 'sycomp_switch' ),
 					)
 				);
 				echo '<a class="' . esc_attr( $classes ) . '" href="' . esc_url( $url ) . '">';
 			}
 
 			echo '<span class="sy-cartswitch__head">';
-			if ( $market ) {
+			if ( $market && ! empty( $market['flag_url'] ) ) {
 				echo '<img class="sy-cartswitch__flag" src="' . esc_url( $market['flag_url'] ) . '" alt="" aria-hidden="true">';
 			}
-			$name = $market ? $market['label'] : get_the_title( $location );
+			$name = $market ? $market['label'] : $market_key;
 			echo '<span class="sy-cartswitch__name">' . esc_html( $name ) . '</span>';
 			echo '</span>';
 
@@ -247,14 +247,12 @@ class Sycomp_B2B_Storefront {
 		$catalogue_url = sycomp_b2b_page_url( 'catalogue' );
 		$logged_in     = is_user_logged_in();
 
-		// Markets the current buyer's company actually operates in.
+		// Markets the current buyer's company actually operates in (has priced products).
 		$available = array();
 		if ( $logged_in ) {
-			foreach ( Sycomp_B2B_User::get_locations() as $location ) {
-				$mk = Sycomp_B2B_Post_Types::get_location_market( $location->ID );
-				if ( $mk ) {
-					$available[ $mk ] = true;
-				}
+			$available_keys = Sycomp_B2B_Markets::get_available_markets( Sycomp_B2B_User::get_company() );
+			foreach ( $available_keys as $k ) {
+				$available[ $k ] = true;
 			}
 		}
 

@@ -59,7 +59,7 @@ $sy_is_admin = function_exists( 'sycomp_b2b_use_manager_chrome' ) && sycomp_b2b_
 		array( 'products', __( 'Products', 'sycomp-portal' ), add_query_arg( 'section', 'products', $sy_manage ) ),
 		array( 'categories', __( 'Categories', 'sycomp-portal' ), add_query_arg( 'section', 'categories', $sy_manage ) ),
 		array( 'customers', __( 'Customers', 'sycomp-portal' ), add_query_arg( 'section', 'customers', $sy_manage ) ),
-		array( 'po', __( 'Purchase Orders', 'sycomp-portal' ), add_query_arg( array( 'section' => 'po' ), $sy_manage ) ),
+		array( 'po', __( 'Proposals', 'sycomp-portal' ), add_query_arg( array( 'section' => 'po' ), $sy_manage ) ),
 		array( 'catalogue', __( 'View Catalogue', 'sycomp-portal' ), $sy_cat ),
 	);
 	?>
@@ -80,7 +80,7 @@ $sy_is_admin = function_exists( 'sycomp_b2b_use_manager_chrome' ) && sycomp_b2b_
 				</form>
 				<div class="sy-admin__tools">
 					<a class="sy-admin__bell" href="<?php echo esc_url( add_query_arg( array( 'section' => 'po', 'po' => 'open' ), $sy_manage ) ); ?>"
-						aria-label="<?php echo esc_attr( sprintf( _n( '%d open purchase order', '%d open purchase orders', $sy_open_pos, 'sycomp-portal' ), $sy_open_pos ) ); ?>">
+						aria-label="<?php echo esc_attr( sprintf( _n( '%d open proposal', '%d open proposals', $sy_open_pos, 'sycomp-portal' ), $sy_open_pos ) ); ?>">
 						<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
 						<?php if ( $sy_open_pos > 0 ) : ?><span class="sy-admin__bell-dot"><?php echo esc_html( number_format_i18n( $sy_open_pos ) ); ?></span><?php endif; ?>
 					</a>

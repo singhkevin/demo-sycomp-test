@@ -4,8 +4,8 @@
  *
  * Each of the nine markets has its own tax label and rate, managed by a
  * Shop Manager on the Company Details screen. Prices are tax-exclusive;
- * the tax is added to a purchase order as an estimated fee line in the
- * buyer's market. A PO remains a purchase order, not a tax invoice — the
+ * the tax is added to a proposal as an estimated fee line in the
+ * buyer's market. A PO remains a proposal, not a tax invoice — the
  * tax shown is an estimate.
  *
  * @package Sycomp_B2B_Portal
@@ -178,7 +178,7 @@ class Sycomp_B2B_Tax {
 	 * Add the estimated tax for the buyer's active market as a cart fee.
 	 *
 	 * Running on woocommerce_cart_calculate_fees means the tax flows into
-	 * the cart total, the checkout, the submitted purchase order and its
+	 * the cart total, the checkout, the submitted proposal and its
 	 * emails automatically — no WooCommerce tax tables involved.
 	 *
 	 * @param WC_Cart $cart Cart being calculated.

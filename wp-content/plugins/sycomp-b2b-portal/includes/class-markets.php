@@ -284,4 +284,54 @@ class Sycomp_B2B_Markets {
 	public static function price_meta_key( $key ) {
 		return '_sycomp_price_' . sanitize_key( $key );
 	}
+
+	/**
+	 * Get markets that have at least one product priced for them,
+	 * limited to products assigned to the given company.
+	 *
+	 * @param int $company_id Company ID.
+	 * @return string[] Array of market keys.
+	 */
+	public static function get_available_markets( $company_id ) {
+		$company_id = (int) $company_id;
+		if ( ! $company_id ) {
+			return array();
+		}
+
+		global $wpdb;
+		$like = $wpdb->esc_like( '_sycomp_price_' ) . '%';
+		$sql = "
+			SELECT DISTINCT pm2.meta_key
+			FROM {$wpdb->postmeta} pm1
+			JOIN {$wpdb->postmeta} pm2 ON pm1.post_id = pm2.post_id
+			WHERE pm1.meta_key = '_sycomp_company'
+			AND pm1.meta_value = %d
+			AND pm2.meta_key LIKE %s
+			AND pm2.meta_value != ''
+		";
+		$keys = $wpdb->get_col( $wpdb->prepare( $sql, $company_id, $like ) );
+
+		$markets = array();
+		foreach ( $keys as $meta_key ) {
+			$market = str_replace( '_sycomp_price_', '', $meta_key );
+			if ( self::exists( $market ) ) {
+				$markets[] = $market;
+			}
+		}
+
+		// Sort by order/label
+		usort(
+			$markets,
+			function ( $a, $b ) {
+				$ma = self::get( $a );
+				$mb = self::get( $b );
+				if ( $ma['order'] === $mb['order'] ) {
+					return strnatcasecmp( $ma['label'], $mb['label'] );
+				}
+				return $ma['order'] - $mb['order'];
+			}
+		);
+
+		return $markets;
+	}
 }

@@ -167,7 +167,7 @@ remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_upsell_d
 
 /**
  * Shop Managers browse the catalogue but never buy — they do not add
- * products to a cart or raise purchase orders. Remove the add-to-cart
+ * products to a cart or raise proposals. Remove the add-to-cart
  * button (quantity + button) from the single product page for them.
  * Buyers are unaffected.
  */

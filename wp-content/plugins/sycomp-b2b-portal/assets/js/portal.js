@@ -289,7 +289,11 @@
 
 		// Wrap textarea
 		$textarea.wrap('<div class="sy-address-textarea-wrapper"></div>');
-		var $wrapper = $customField.find('.sy-address-textarea-wrapper');
+		var $wrapper = $textarea.parent();
+		$wrapper.attr('data-sy-select-id', $select.attr('id'));
+		$wrapper.attr('data-sy-custom-field-id', $customField.attr('id') || $customField.prop('id'));
+		
+		console.log('[Sycomp B2B] setupFieldPair bound:', $select.attr('id'), 'to', $customField.attr('id'), $wrapper);
 
 		// Append controls
 		var controlsHtml = 
@@ -298,6 +302,53 @@
 			'  <button type="button" class="sy-address-confirm-btn" title="Confirm address">✓</button>' +
 			'</div>';
 		$wrapper.append(controlsHtml);
+
+		// Bind click handlers directly to avoid event delegation blockages
+		$wrapper.find('.sy-address-back-btn').on('click', function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+			console.log('[Sycomp B2B] Direct back button clicked!');
+
+			$textarea.val('');
+			$textarea.prop('readonly', false);
+			$wrapper.removeClass('is-confirmed');
+			$wrapper.find('.sy-address-confirm-btn').html('✓').attr('title', 'Confirm address');
+
+			var firstVal = $select.find('option:first').val() || '';
+			var initFn = typeof $.fn.selectWoo !== 'undefined' ? 'selectWoo' : 'select2';
+			console.log('[Sycomp B2B] Setting select to:', firstVal, 'using initFn:', initFn);
+			$select.val(firstVal).trigger('change.' + initFn).trigger('change');
+		});
+
+		$wrapper.find('.sy-address-confirm-btn').on('click', function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+			console.log('[Sycomp B2B] Direct confirm button clicked!');
+			var $btn = $(this);
+			if ($wrapper.hasClass('is-confirmed')) {
+				$textarea.prop('readonly', false);
+				$wrapper.removeClass('is-confirmed');
+				$btn.html('✓').attr('title', 'Confirm address');
+				$textarea.focus();
+			} else {
+				if ($textarea.val().trim() === '') {
+					$textarea.focus();
+				} else {
+					$textarea.prop('readonly', true);
+					$wrapper.addClass('is-confirmed');
+					$btn.html('✓').attr('title', 'Confirm address');
+				}
+			}
+		});
+
+		$textarea.on('click', function() {
+			console.log('[Sycomp B2B] Direct textarea clicked!');
+			if ($wrapper.hasClass('is-confirmed')) {
+				$textarea.prop('readonly', false);
+				$wrapper.removeClass('is-confirmed');
+				$wrapper.find('.sy-address-confirm-btn').html('✓').attr('title', 'Confirm address');
+			}
+		});
 
 		// Initial state
 		var currentSelectVal = $select.val();
@@ -428,70 +479,25 @@
 			return;
 		}
 
+		console.log('[Sycomp B2B] change handler triggered on:', $select.attr('id'), 'value:', val);
+
 		if (val === 'custom') {
 			$select.closest('.form-row').slideUp(250);
 			$customField.slideDown(250, function() {
 				$textarea.focus();
 			});
 		} else {
-			$customField.hide();
-			$select.closest('.form-row').show();
-		}
-	});
-
-	$(document.body).on('click', '.sy-address-confirm-btn', function (e) {
-		e.stopPropagation();
-		e.preventDefault();
-		var $btn = $(this);
-		var $wrapper = $btn.closest('.sy-address-textarea-wrapper');
-		var $textarea = $wrapper.find('textarea');
-		if ($wrapper.hasClass('is-confirmed')) {
-			$textarea.prop('readonly', false);
-			$wrapper.removeClass('is-confirmed');
-			$btn.html('✓').attr('title', 'Confirm address');
-			$textarea.focus();
-		} else {
-			if ($textarea.val().trim() === '') {
-				$textarea.focus();
+			if ($customField.is(':visible')) {
+				console.log('[Sycomp B2B] sliding up custom field:', $customField.attr('id'));
+				$customField.slideUp(250);
+				$select.closest('.form-row').slideDown(250);
 			} else {
-				$textarea.prop('readonly', true);
-				$wrapper.addClass('is-confirmed');
-				$btn.html('✓').attr('title', 'Confirm address');
+				$customField.hide();
+				$select.closest('.form-row').show();
 			}
 		}
 	});
 
-	$(document.body).on('click', '.sy-address-textarea-wrapper textarea', function () {
-		var $textarea = $(this);
-		var $wrapper = $textarea.closest('.sy-address-textarea-wrapper');
-		if ($wrapper.hasClass('is-confirmed')) {
-			$textarea.prop('readonly', false);
-			$wrapper.removeClass('is-confirmed');
-			$wrapper.find('.sy-address-confirm-btn').html('✓').attr('title', 'Confirm address');
-		}
-	});
-
-	$(document.body).on('click', '.sy-address-back-btn', function (e) {
-		e.stopPropagation();
-		e.preventDefault();
-		var $btn = $(this);
-		var $wrapper = $btn.closest('.sy-address-textarea-wrapper');
-		var $textarea = $wrapper.find('textarea');
-		var $customField = $wrapper.closest('.form-row');
-		var isBilling = $customField.attr('id') === 'sycomp_custom_billing_address_field';
-		var $select = isBilling ? $('#sycomp_billing_address') : $('#sycomp_delivery_address');
-
-		$textarea.val('');
-		$textarea.prop('readonly', false);
-		$wrapper.removeClass('is-confirmed');
-		$wrapper.find('.sy-address-confirm-btn').html('✓').attr('title', 'Confirm address');
-
-		$customField.slideUp(250);
-		$select.closest('.form-row').slideDown(250);
-		
-		var initFn = typeof $.fn.selectWoo !== 'undefined' ? 'selectWoo' : 'select2';
-		$select.val('').trigger('change.' + initFn).trigger('change');
-	});
 
 	$(document.body).on('updated_checkout', function () {
 		initCheckoutTransformation();

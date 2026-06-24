@@ -37,7 +37,6 @@ class Sycomp_B2B_Manager {
 		add_shortcode( 'sycomp_manager', array( __CLASS__, 'shortcode' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_export' ), 3 );
 		add_action( 'template_redirect', array( __CLASS__, 'handle_actions' ), 4 );
-		add_action( 'template_redirect', array( __CLASS__, 'maybe_initialize_saudi_arabia_prices' ), 5 );
 	}
 
 	/**
@@ -630,10 +629,6 @@ class Sycomp_B2B_Manager {
 
 		Sycomp_B2B_Markets::save_market( $key, $data );
 
-		if ( $is_new ) {
-			Sycomp_B2B_Pricing::initialize_new_market_prices( $key, $data['currency'] );
-		}
-
 		self::redirect( array( 'section' => 'company', 'done' => 'market_saved' ) );
 	}
 
@@ -840,9 +835,9 @@ class Sycomp_B2B_Manager {
 		}
 
 		$ok = array(
-			'accepted'        => __( 'Purchase order accepted — it is now In-Process. The buyer has been notified.', 'sycomp-b2b-portal' ),
-			'closed'          => __( 'Purchase order closed. The buyer has been notified.', 'sycomp-b2b-portal' ),
-			'cancelled'       => __( 'Purchase order cancelled. The buyer has been notified.', 'sycomp-b2b-portal' ),
+			'accepted'        => __( 'Proposal accepted — it is now In-Process. The buyer has been notified.', 'sycomp-b2b-portal' ),
+			'closed'          => __( 'Proposal closed. The buyer has been notified.', 'sycomp-b2b-portal' ),
+			'cancelled'       => __( 'Proposal cancelled. The buyer has been notified.', 'sycomp-b2b-portal' ),
 			'product_deleted' => __( 'Product moved to Trash.', 'sycomp-b2b-portal' ),
 			'product_saved'   => __( 'Product saved.', 'sycomp-b2b-portal' ),
 			'cat_created'     => __( 'Category created.', 'sycomp-b2b-portal' ),
@@ -855,8 +850,8 @@ class Sycomp_B2B_Manager {
 			'quote_formats_saved' => __( 'Quote number formats saved.', 'sycomp-b2b-portal' ),
 			'taxes_saved'     => __( 'Tax rates saved.', 'sycomp-b2b-portal' ),
 			'fx_saved'        => __( 'Exchange rates saved.', 'sycomp-b2b-portal' ),
-			'po_created'      => __( 'Purchase order created.', 'sycomp-b2b-portal' ),
-			'po_updated'      => __( 'Purchase order updated.', 'sycomp-b2b-portal' ),
+			'po_created'      => __( 'Proposal created.', 'sycomp-b2b-portal' ),
+			'po_updated'      => __( 'Proposal updated.', 'sycomp-b2b-portal' ),
 			'bulkprice_done'  => __( 'Market prices adjusted.', 'sycomp-b2b-portal' ),
 			'market_saved'    => __( 'Market settings saved.', 'sycomp-b2b-portal' ),
 			'market_deleted'  => __( 'Market deleted.', 'sycomp-b2b-portal' ),
@@ -866,8 +861,8 @@ class Sycomp_B2B_Manager {
 			'product_error'      => __( 'Could not save the product. Check the name and that the SKU is not already in use.', 'sycomp-b2b-portal' ),
 			'profile_error'      => __( 'Could not update your profile — the email address may already be in use.', 'sycomp-b2b-portal' ),
 			'profile_pass_error' => __( 'Passwords did not match or were shorter than 6 characters. Other changes were not saved.', 'sycomp-b2b-portal' ),
-			'po_error'           => __( 'Could not create the purchase order — please check the location and try again.', 'sycomp-b2b-portal' ),
-			'po_nolines'         => __( 'Add at least one product line before creating the purchase order.', 'sycomp-b2b-portal' ),
+			'po_error'           => __( 'Could not create the proposal — please check the location and try again.', 'sycomp-b2b-portal' ),
+			'po_nolines'         => __( 'Add at least one product line before creating the proposal.', 'sycomp-b2b-portal' ),
 		);
 
 		if ( isset( $ok[ $done ] ) ) {
@@ -952,7 +947,7 @@ class Sycomp_B2B_Manager {
 			$co = 0;
 		}
 
-		// Pull every purchase order, then (optionally) narrow to one company.
+		// Pull every proposal, then (optionally) narrow to one company.
 		$orders = wc_get_orders(
 			array(
 				'status'  => array( Sycomp_B2B_PO::STATUS_OPEN, Sycomp_B2B_PO::STATUS_PROCESS, Sycomp_B2B_PO::STATUS_CLOSED ),
@@ -1032,8 +1027,8 @@ class Sycomp_B2B_Manager {
 				? sprintf( __( 'Dashboard — %s', 'sycomp-b2b-portal' ), get_the_title( $co ) )
 				: __( 'Dashboard Overview', 'sycomp-b2b-portal' ),
 			$co
-				? __( 'Purchase orders and spend for this customer.', 'sycomp-b2b-portal' )
-				: __( 'Review purchase orders and manage the Sycomp catalogue.', 'sycomp-b2b-portal' )
+				? __( 'Proposals and spend for this customer.', 'sycomp-b2b-portal' )
+				: __( 'Review proposals and manage the Sycomp catalogue.', 'sycomp-b2b-portal' )
 		);
 		self::notice();
 
@@ -1135,7 +1130,7 @@ class Sycomp_B2B_Manager {
 	 * ================================================================== */
 
 	/**
-	 * Render global search results — products, purchase orders and
+	 * Render global search results — products, proposals and
 	 * customer companies matching the query.
 	 */
 	protected static function render_search() {
@@ -1146,7 +1141,7 @@ class Sycomp_B2B_Manager {
 			'' !== $q
 				/* translators: %s: search term. */
 				? sprintf( __( 'Results for “%s”', 'sycomp-b2b-portal' ), $q )
-				: __( 'Search products, purchase orders and customers.', 'sycomp-b2b-portal' )
+				: __( 'Search products, proposals and customers.', 'sycomp-b2b-portal' )
 		);
 		self::notice();
 
@@ -1183,7 +1178,7 @@ class Sycomp_B2B_Manager {
 		wp_reset_postdata();
 		echo '</div></section>';
 
-		// Purchase orders — matched by number or PO reference.
+		// Proposals — matched by number or PO reference.
 		$pos = wc_get_orders(
 			array(
 				'status'  => array( Sycomp_B2B_PO::STATUS_OPEN, Sycomp_B2B_PO::STATUS_PROCESS, Sycomp_B2B_PO::STATUS_CLOSED, Sycomp_B2B_PO::STATUS_CANCELLED ),
@@ -1203,9 +1198,9 @@ class Sycomp_B2B_Manager {
 				break;
 			}
 		}
-		echo '<section class="sy-panel"><h2 class="sy-panel__title">' . esc_html__( 'Purchase orders', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body sy-panel__body--flush">';
+		echo '<section class="sy-panel"><h2 class="sy-panel__title">' . esc_html__( 'Proposals', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body sy-panel__body--flush">';
 		if ( empty( $po_hits ) ) {
-			echo '<p class="sy-empty">' . esc_html__( 'No matching purchase orders.', 'sycomp-b2b-portal' ) . '</p>';
+			echo '<p class="sy-empty">' . esc_html__( 'No matching proposals.', 'sycomp-b2b-portal' ) . '</p>';
 		} else {
 			echo '<table class="sy-table sy-table--admin"><tbody>';
 			foreach ( $po_hits as $po ) {
@@ -1856,7 +1851,7 @@ class Sycomp_B2B_Manager {
 	}
 
 	/* =====================================================================
-	 * Section: Purchase orders.
+	 * Section: Proposals.
 	 * ================================================================== */
 
 	/**
@@ -1883,7 +1878,7 @@ class Sycomp_B2B_Manager {
 	}
 
 	/**
-	 * One product line row on the New Purchase Order builder.
+	 * One product line row on the New Proposal builder.
 	 *
 	 * @param WP_Post[]  $products Published products.
 	 * @param int|string $index    Row index (or the JS placeholder '__i__').
@@ -1909,7 +1904,7 @@ class Sycomp_B2B_Manager {
 	}
 
 	/**
-	 * Render the New Purchase Order builder — a two-step screen: choose a
+	 * Render the New Proposal builder — a two-step screen: choose a
 	 * customer location, then build the order.
 	 */
 	protected static function render_po_new() {
@@ -1918,13 +1913,13 @@ class Sycomp_B2B_Manager {
 		$location  = $loc ? get_post( $loc ) : null;
 		$valid_loc = $location && Sycomp_B2B_Post_Types::LOCATION === $location->post_type;
 
-		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to purchase orders', 'sycomp-b2b-portal' ) . '</a></p>';
+		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to proposals', 'sycomp-b2b-portal' ) . '</a></p>';
 
 		// --- Step 1: choose a location ------------------------------------
 		if ( ! $valid_loc ) {
 			self::page_head(
-				__( 'New purchase order', 'sycomp-b2b-portal' ),
-				__( 'Raise a purchase order on behalf of a customer. Start by choosing the delivery location.', 'sycomp-b2b-portal' )
+				__( 'New proposal', 'sycomp-b2b-portal' ),
+				__( 'Raise a proposal on behalf of a customer. Start by choosing the delivery location.', 'sycomp-b2b-portal' )
 			);
 			self::notice();
 
@@ -1966,7 +1961,7 @@ class Sycomp_B2B_Manager {
 
 		self::page_head(
 			/* translators: %s: company name. */
-			sprintf( __( 'New purchase order — %s', 'sycomp-b2b-portal' ), $company_id ? get_the_title( $company_id ) : '' ),
+			sprintf( __( 'New proposal — %s', 'sycomp-b2b-portal' ), $company_id ? get_the_title( $company_id ) : '' ),
 			sprintf(
 				/* translators: 1: location, 2: market, 3: currency. */
 				__( '%1$s · pricing in %2$s', 'sycomp-b2b-portal' ),
@@ -2028,7 +2023,7 @@ class Sycomp_B2B_Manager {
 		echo '</div></section>';
 
 		echo '<div class="sy-form__actions">';
-		echo '<button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Create purchase order', 'sycomp-b2b-portal' ) . '</button>';
+		echo '<button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Create proposal', 'sycomp-b2b-portal' ) . '</button>';
 		echo '<a class="sy-btn sy-btn--ghost" href="' . esc_url( $back ) . '">' . esc_html__( 'Cancel', 'sycomp-b2b-portal' ) . '</a>';
 		echo '</div>';
 		echo '</form>';
@@ -2066,7 +2061,7 @@ class Sycomp_B2B_Manager {
 	}
 
 	/**
-	 * Create a purchase order on behalf of a customer.
+	 * Create a proposal on behalf of a customer.
 	 */
 	protected static function do_po_create() {
 		if ( ! self::verify( 'sycomp_po_create' ) ) {
@@ -2172,14 +2167,14 @@ class Sycomp_B2B_Manager {
 		$order->calculate_totals( false );
 		$order->set_status( $status );
 		$order->save();
-		$order->add_order_note( __( 'Purchase order raised by Sycomp staff on behalf of the customer.', 'sycomp-b2b-portal' ) );
+		$order->add_order_note( __( 'Proposal raised by Sycomp staff on behalf of the customer.', 'sycomp-b2b-portal' ) );
 
 		$stage = ( Sycomp_B2B_PO::STATUS_OPEN === $status ) ? 'open' : 'process';
 		self::redirect( array( 'section' => 'po', 'po' => $stage, 'detail' => $order->get_id(), 'done' => 'po_created' ) );
 	}
 
 	/**
-	 * Duplicate an existing purchase order into a new Open PO.
+	 * Duplicate an existing proposal into a new Open PO.
 	 */
 	protected static function do_po_duplicate() {
 		if ( ! self::verify( 'sycomp_po' ) ) {
@@ -2252,13 +2247,13 @@ class Sycomp_B2B_Manager {
 		$order->set_status( Sycomp_B2B_PO::STATUS_OPEN );
 		$order->save();
 		/* translators: %s: source PO number. */
-		$order->add_order_note( sprintf( __( 'Duplicated from purchase order #%s.', 'sycomp-b2b-portal' ), $src->get_order_number() ) );
+		$order->add_order_note( sprintf( __( 'Duplicated from proposal #%s.', 'sycomp-b2b-portal' ), $src->get_order_number() ) );
 
 		self::redirect( array( 'section' => 'po', 'po' => 'open', 'detail' => $order->get_id(), 'done' => 'po_created' ) );
 	}
 
 	/**
-	 * Render the edit-items screen for an Open purchase order.
+	 * Render the edit-items screen for an Open proposal.
 	 *
 	 * @param WC_Order $order Order.
 	 */
@@ -2267,10 +2262,10 @@ class Sycomp_B2B_Manager {
 		$market = (string) $order->get_meta( Sycomp_B2B_PO::META_MARKET );
 		$back   = add_query_arg( array( 'section' => 'po', 'po' => $stage, 'detail' => $order->get_id() ), self::manage_url() );
 
-		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to purchase order', 'sycomp-b2b-portal' ) . '</a></p>';
+		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to proposal', 'sycomp-b2b-portal' ) . '</a></p>';
 		self::page_head(
 			/* translators: %s: PO number. */
-			sprintf( __( 'Edit purchase order #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ),
+			sprintf( __( 'Edit proposal #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ),
 			__( 'Adjust quantities, remove lines or add products. Only open POs can be edited.', 'sycomp-b2b-portal' )
 		);
 		self::notice();
@@ -2365,7 +2360,7 @@ class Sycomp_B2B_Manager {
 	}
 
 	/**
-	 * Apply edits to an Open purchase order's line items.
+	 * Apply edits to an Open proposal's line items.
 	 */
 	protected static function do_po_edit() {
 		if ( ! self::verify( 'sycomp_po_edit' ) ) {
@@ -2444,7 +2439,7 @@ class Sycomp_B2B_Manager {
 
 		$order->calculate_totals( false );
 		$order->save();
-		$order->add_order_note( __( 'Purchase order items edited by Sycomp staff.', 'sycomp-b2b-portal' ) );
+		$order->add_order_note( __( 'Proposal items edited by Sycomp staff.', 'sycomp-b2b-portal' ) );
 
 		self::redirect( array( 'section' => 'po', 'po' => $stage, 'detail' => $order->get_id(), 'done' => 'po_updated' ) );
 	}
@@ -2455,10 +2450,10 @@ class Sycomp_B2B_Manager {
 	 */
 	protected static function render_po_list() {
 		$stages = array(
-			'open'      => array( Sycomp_B2B_PO::STATUS_OPEN, __( 'Open Purchase Orders', 'sycomp-b2b-portal' ) ),
-			'process'   => array( Sycomp_B2B_PO::STATUS_PROCESS, __( 'In-Process Purchase Orders', 'sycomp-b2b-portal' ) ),
-			'closed'    => array( Sycomp_B2B_PO::STATUS_CLOSED, __( 'Closed Purchase Orders', 'sycomp-b2b-portal' ) ),
-			'cancelled' => array( Sycomp_B2B_PO::STATUS_CANCELLED, __( 'Cancelled Purchase Orders', 'sycomp-b2b-portal' ) ),
+			'open'      => array( Sycomp_B2B_PO::STATUS_OPEN, __( 'Open Proposals', 'sycomp-b2b-portal' ) ),
+			'process'   => array( Sycomp_B2B_PO::STATUS_PROCESS, __( 'In-Process Proposals', 'sycomp-b2b-portal' ) ),
+			'closed'    => array( Sycomp_B2B_PO::STATUS_CLOSED, __( 'Closed Proposals', 'sycomp-b2b-portal' ) ),
+			'cancelled' => array( Sycomp_B2B_PO::STATUS_CANCELLED, __( 'Cancelled Proposals', 'sycomp-b2b-portal' ) ),
 			'all'       => array(
 				array(
 					Sycomp_B2B_PO::STATUS_OPEN,
@@ -2466,7 +2461,7 @@ class Sycomp_B2B_Manager {
 					Sycomp_B2B_PO::STATUS_CLOSED,
 					Sycomp_B2B_PO::STATUS_CANCELLED,
 				),
-				__( 'All Purchase Orders', 'sycomp-b2b-portal' ),
+				__( 'All Proposals', 'sycomp-b2b-portal' ),
 			),
 		);
 		$stage = isset( $_GET['po'] ) ? sanitize_key( wp_unslash( $_GET['po'] ) ) : 'open'; // phpcs:ignore WordPress.Security.NonceVerification
@@ -2491,7 +2486,7 @@ class Sycomp_B2B_Manager {
 				self::manage_url()
 			)
 		) . '">' . esc_html__( 'Export CSV', 'sycomp-b2b-portal' ) . '</a>';
-		$sycomp_newpo = '<a class="sy-btn sy-btn--accent sy-btn--sm" href="' . esc_url( add_query_arg( array( 'section' => 'po', 'new' => 1 ), self::manage_url() ) ) . '">' . esc_html__( 'New purchase order', 'sycomp-b2b-portal' ) . '</a>';
+		$sycomp_newpo = '<a class="sy-btn sy-btn--accent sy-btn--sm" href="' . esc_url( add_query_arg( array( 'section' => 'po', 'new' => 1 ), self::manage_url() ) ) . '">' . esc_html__( 'New proposal', 'sycomp-b2b-portal' ) . '</a>';
 		self::page_head( $stages[ $stage ][1], '', $sycomp_export . ' ' . $sycomp_newpo );
 		self::notice();
 
@@ -2510,7 +2505,7 @@ class Sycomp_B2B_Manager {
 		if ( $mk ) {
 			$sycomp_status_base['mk'] = $mk;
 		}
-		echo '<nav class="sy-mkfilter sy-postatus" aria-label="' . esc_attr__( 'Purchase order status', 'sycomp-b2b-portal' ) . '">';
+		echo '<nav class="sy-mkfilter sy-postatus" aria-label="' . esc_attr__( 'Proposal status', 'sycomp-b2b-portal' ) . '">';
 		echo '<span class="sy-mkfilter__label">' . esc_html__( 'Status', 'sycomp-b2b-portal' ) . '</span>';
 		foreach ( $sycomp_status_labels as $sycomp_sk => $sycomp_slabel ) {
 			$sycomp_scount = count( wc_get_orders( array( 'status' => $stages[ $sycomp_sk ][0], 'limit' => -1, 'return' => 'ids' ) ) );
@@ -2589,7 +2584,7 @@ class Sycomp_B2B_Manager {
 		echo '</h2>';
 		echo '<div class="sy-panel__body sy-panel__body--flush">';
 		if ( empty( $orders ) ) {
-			echo '<p class="sy-empty">' . esc_html__( 'No purchase orders in this view.', 'sycomp-b2b-portal' ) . '</p>';
+			echo '<p class="sy-empty">' . esc_html__( 'No proposals in this view.', 'sycomp-b2b-portal' ) . '</p>';
 		} else {
 			echo '<table class="sy-table sy-table--admin sy-table--stack"><thead><tr>';
 			echo '<th>' . esc_html__( 'PO Number', 'sycomp-b2b-portal' ) . '</th>';
@@ -2652,14 +2647,14 @@ class Sycomp_B2B_Manager {
 			} else {
 				echo '<button class="sy-btn sy-btn--accent sy-btn--sm" type="submit" name="sycomp_admin_action" value="po_close">' . esc_html__( 'Close', 'sycomp-b2b-portal' ) . '</button>';
 			}
-			echo '<button class="sy-btn sy-btn--danger sy-btn--sm" type="submit" name="sycomp_admin_action" value="po_cancel" onclick="return confirm(\'' . esc_js( __( 'Cancel this purchase order?', 'sycomp-b2b-portal' ) ) . '\');">' . esc_html__( 'Cancel', 'sycomp-b2b-portal' ) . '</button>';
+			echo '<button class="sy-btn sy-btn--danger sy-btn--sm" type="submit" name="sycomp_admin_action" value="po_cancel" onclick="return confirm(\'' . esc_js( __( 'Cancel this proposal?', 'sycomp-b2b-portal' ) ) . '\');">' . esc_html__( 'Cancel', 'sycomp-b2b-portal' ) . '</button>';
 			echo '</form>';
 		}
 		echo '</div></td></tr>';
 	}
 
 	/**
-	 * Render a single purchase order in full.
+	 * Render a single proposal in full.
 	 *
 	 * @param WC_Order $order Order.
 	 */
@@ -2679,11 +2674,11 @@ class Sycomp_B2B_Manager {
 		$is_process = $order->has_status( Sycomp_B2B_PO::STATUS_PROCESS );
 
 		$back = add_query_arg( array( 'section' => 'po', 'po' => $stage ), self::manage_url() );
-		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to purchase orders', 'sycomp-b2b-portal' ) . '</a></p>';
+		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to proposals', 'sycomp-b2b-portal' ) . '</a></p>';
 
 		echo '<div class="sy-adm-head"><div class="sy-adm-head__text"><h1>';
 		/* translators: %s: PO number. */
-		echo esc_html( sprintf( __( 'Purchase Order #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ) );
+		echo esc_html( sprintf( __( 'Proposal #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ) );
 		echo ' <span class="sy-badge ' . esc_attr( Sycomp_B2B_PO::status_badge_class( $status ) ) . '">' . esc_html( Sycomp_B2B_PO::status_label( $status ) ) . '</span>';
 		echo '</h1></div><div class="sy-adm-head__actions">';
 		if ( $is_open || $is_process ) {
@@ -2696,7 +2691,7 @@ class Sycomp_B2B_Manager {
 			} else {
 				echo '<button class="sy-btn sy-btn--accent sy-btn--sm" type="submit" name="sycomp_admin_action" value="po_close">' . esc_html__( 'Close', 'sycomp-b2b-portal' ) . '</button> ';
 			}
-			echo '<button class="sy-btn sy-btn--danger sy-btn--sm" type="submit" name="sycomp_admin_action" value="po_cancel" onclick="return confirm(\'' . esc_js( __( 'Cancel this purchase order?', 'sycomp-b2b-portal' ) ) . '\');">' . esc_html__( 'Cancel', 'sycomp-b2b-portal' ) . '</button>';
+			echo '<button class="sy-btn sy-btn--danger sy-btn--sm" type="submit" name="sycomp_admin_action" value="po_cancel" onclick="return confirm(\'' . esc_js( __( 'Cancel this proposal?', 'sycomp-b2b-portal' ) ) . '\');">' . esc_html__( 'Cancel', 'sycomp-b2b-portal' ) . '</button>';
 			echo '</form>';
 		}
 		if ( $is_open ) {
@@ -3005,7 +3000,7 @@ class Sycomp_B2B_Manager {
 		// --- Warehouse (ship-from) addresses, one per market ---------------
 		$sycomp_warehouses = Sycomp_B2B_Warehouses::all();
 		echo '<section class="sy-panel" style="max-width:640px;"><h2 class="sy-panel__title">' . esc_html__( 'Warehouse addresses', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
-		echo '<p class="sy-muted">' . esc_html__( 'The Sycomp ship-from address for each market. A purchase order shows the warehouse for its market as the supplier.', 'sycomp-b2b-portal' ) . '</p>';
+		echo '<p class="sy-muted">' . esc_html__( 'The Sycomp ship-from address for each market. A proposal shows the warehouse for its market as the supplier.', 'sycomp-b2b-portal' ) . '</p>';
 		echo '<form method="post" class="sy-form">';
 		wp_nonce_field( 'sycomp_warehouses', 'sycomp_nonce' );
 		echo '<input type="hidden" name="sycomp_admin_action" value="warehouses_save">';
@@ -3027,7 +3022,7 @@ class Sycomp_B2B_Manager {
 		// --- Tax rates, one per market -------------------------------------
 		$sycomp_taxes = Sycomp_B2B_Tax::all();
 		echo '<section class="sy-panel" style="max-width:640px;"><h2 class="sy-panel__title">' . esc_html__( 'Tax rates', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
-		echo '<p class="sy-muted">' . esc_html__( 'The tax applied to purchase orders in each market. Prices are tax-exclusive — tax is added as an estimated line on the PO. A rate of 0 applies no tax.', 'sycomp-b2b-portal' ) . '</p>';
+		echo '<p class="sy-muted">' . esc_html__( 'The tax applied to proposals in each market. Prices are tax-exclusive — tax is added as an estimated line on the PO. A rate of 0 applies no tax.', 'sycomp-b2b-portal' ) . '</p>';
 		echo '<form method="post" class="sy-form">';
 		wp_nonce_field( 'sycomp_taxes', 'sycomp_nonce' );
 		echo '<input type="hidden" name="sycomp_admin_action" value="taxes_save">';
@@ -3114,6 +3109,13 @@ class Sycomp_B2B_Manager {
 		echo '<input type="hidden" name="sycomp_admin_action" value="market_save">';
 		echo '<input type="hidden" id="m_is_edit" name="is_edit" value="0">';
 
+		echo '<div class="sy-form__grid" style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--sy-border, #e3e6e8);">';
+		echo '<label class="sy-field"><span class="sy-field__label" style="font-weight: 600; color: var(--sy-accent, #005A9C);">' . esc_html__( 'Quick Add Preset (Select Country)', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<select id="m_country_preset" onchange="applyCountryPreset(this.value)">';
+		echo '<option value="">-- ' . esc_html__( 'Select a country to autofill', 'sycomp-b2b-portal' ) . ' --</option>';
+		echo '</select></label>';
+		echo '</div>';
+
 		echo '<div class="sy-form__grid">';
 		echo '<label class="sy-field" id="m_key_container"><span class="sy-field__label">' . esc_html__( 'Market Key (lowercase, underscores only)', 'sycomp-b2b-portal' ) . '</span>';
 		echo '<input type="text" id="m_key" name="market_key" required pattern="[a-z0-9_]+" title="' . esc_attr__( 'Only lowercase letters, numbers, and underscores', 'sycomp-b2b-portal' ) . '" placeholder="e.g. canada"></label>';
@@ -3123,8 +3125,8 @@ class Sycomp_B2B_Manager {
 		echo '</div>';
 
 		echo '<div class="sy-form__grid">';
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Currency (e.g. CAD)', 'sycomp-b2b-portal' ) . '</span>';
-		echo '<input type="text" id="m_currency" name="currency" required maxlength="3" style="text-transform:uppercase;" placeholder="CAD"></label>';
+		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Currency', 'sycomp-b2b-portal' ) . '</span>';
+		echo '<select id="m_currency" name="currency" required><option value="">' . esc_html__( 'Select Currency', 'sycomp-b2b-portal' ) . '</option></select></label>';
 
 		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Currency Symbol (e.g. C$)', 'sycomp-b2b-portal' ) . '</span>';
 		echo '<input type="text" id="m_symbol" name="symbol" required placeholder="C$"></label>';
@@ -3155,6 +3157,63 @@ class Sycomp_B2B_Manager {
 		// JavaScript uploader and data copier
 		?>
 		<script>
+		const sycompCountryData = <?php echo file_get_contents( SYCOMP_B2B_DIR . 'assets/country_data.json' ); ?>;
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const presetSelect = document.getElementById('m_country_preset');
+			const currencySelect = document.getElementById('m_currency');
+
+			if (presetSelect || currencySelect) {
+				const sortedKeys = Object.keys(sycompCountryData).sort((a, b) => {
+					return sycompCountryData[a].name.localeCompare(sycompCountryData[b].name);
+				});
+
+				const uniqueCurrencies = [...new Set(Object.values(sycompCountryData).map(d => d.currency))].filter(Boolean).sort();
+
+				if (presetSelect) {
+					sortedKeys.forEach(k => {
+						const opt = document.createElement('option');
+						opt.value = k;
+						opt.textContent = sycompCountryData[k].name;
+						presetSelect.appendChild(opt);
+					});
+				}
+
+				if (currencySelect) {
+					uniqueCurrencies.forEach(curr => {
+						const opt = document.createElement('option');
+						opt.value = curr;
+						opt.textContent = curr;
+						currencySelect.appendChild(opt);
+					});
+
+					// Update symbol and decimals if currency is manually changed
+					currencySelect.addEventListener('change', function() {
+						const selectedCurr = this.value;
+						if (selectedCurr) {
+							const match = Object.values(sycompCountryData).find(d => d.currency === selectedCurr);
+							if (match) {
+								document.getElementById('m_symbol').value = match.symbol;
+								document.getElementById('m_decimals').value = match.decimals;
+							}
+						}
+					});
+				}
+			}
+		});
+
+		function applyCountryPreset(countryCode) {
+			if (!countryCode || !sycompCountryData[countryCode]) return;
+			const data = sycompCountryData[countryCode];
+			
+			document.getElementById('m_key').value = data.key;
+			document.getElementById('m_label').value = data.name;
+			document.getElementById('m_currency').value = data.currency;
+			document.getElementById('m_symbol').value = data.symbol;
+			document.getElementById('m_decimals').value = data.decimals;
+			document.getElementById('m_country_code').value = data.code;
+		}
+
 		function editMarket(row) {
 			document.getElementById('m_action_title').innerText = 'Edit Market: ' + row.dataset.label;
 			document.getElementById('m_key').value = row.dataset.key;
@@ -3169,6 +3228,9 @@ class Sycomp_B2B_Manager {
 			document.getElementById('m_is_edit').value = '1';
 			document.getElementById('m_key_container').style.opacity = '0.6';
 			
+			const presetSelect = document.getElementById('m_country_preset');
+			if (presetSelect) presetSelect.value = '';
+
 			document.getElementById('m_form_panel').scrollIntoView({ behavior: 'smooth' });
 		}
 
@@ -3185,18 +3247,11 @@ class Sycomp_B2B_Manager {
 			document.getElementById('m_cancel_edit').style.display = 'none';
 			document.getElementById('m_is_edit').value = '0';
 			document.getElementById('m_key_container').style.opacity = '1';
+
+			const presetSelect = document.getElementById('m_country_preset');
+			if (presetSelect) presetSelect.value = '';
 		}
 		</script>
 		<?php
-	}
-
-	/**
-	 * Run a one-time initialization of Saudi Arabia prices if they are missing.
-	 */
-	public static function maybe_initialize_saudi_arabia_prices() {
-		if ( ! get_option( 'sycomp_b2b_saudi_initialized' ) && Sycomp_B2B_Markets::exists( 'saudi_arabia' ) ) {
-			Sycomp_B2B_Pricing::initialize_new_market_prices( 'saudi_arabia', 'SAR' );
-			update_option( 'sycomp_b2b_saudi_initialized', 1 );
-		}
 	}
 }

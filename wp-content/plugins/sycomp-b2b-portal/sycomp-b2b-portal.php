@@ -3,7 +3,7 @@
  * Plugin Name:       Sycomp B2B Portal
  * Plugin URI:        https://sycomp.com
  * Description:       Private B2B procurement portal for Sycomp. Adds multi-company / multi-location accounts, per-market pricing in 9 currencies, a text-first catalogue, location switching, and a purchase-order workflow on top of WooCommerce.
- * Version:           1.17.5
+ * Version:           1.17.8
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Viral Inbound
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* -------------------------------------------------------------------------
  * Constants
  * ---------------------------------------------------------------------- */
-define( 'SYCOMP_B2B_VERSION', '1.17.5' );
+define( 'SYCOMP_B2B_VERSION', '1.17.7' );
 define( 'SYCOMP_B2B_FILE', __FILE__ );
 define( 'SYCOMP_B2B_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SYCOMP_B2B_URL', plugin_dir_url( __FILE__ ) );

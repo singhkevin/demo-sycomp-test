@@ -3,7 +3,7 @@
  * Uninstall routine for the Sycomp B2B Portal.
  *
  * Removes plugin settings and the buyer role. Customer-facing DATA —
- * companies, locations, products, per-market pricing and purchase orders —
+ * companies, locations, products, per-market pricing and proposals —
  * is intentionally preserved so that uninstalling never destroys the
  * catalogue or order history.
  *

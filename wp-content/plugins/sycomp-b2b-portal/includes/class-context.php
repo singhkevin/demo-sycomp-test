@@ -21,13 +21,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Sycomp_B2B_Context {
 
-	const SESSION_KEY = 'sycomp_active_location';
-	const META_KEY    = '_sycomp_active_location';
+	const SESSION_KEY = 'sycomp_active_market';
+	const META_KEY    = '_sycomp_active_market';
 
 	/**
-	 * Runtime cache of the resolved active location ID.
+	 * Runtime cache of the resolved active market key.
 	 *
-	 * @var int|null
+	 * @var string|null
 	 */
 	protected static $cache = null;
 
@@ -44,41 +44,40 @@ class Sycomp_B2B_Context {
 	}
 
 	/**
-	 * The currently active location ID for the logged-in user.
+	 * The currently active market for the logged-in user.
 	 *
-	 * Falls back to the user's last-used location, then to the first
-	 * accessible location. Always returns a location the user may access,
-	 * or 0 if the user has no accessible locations.
-	 *
-	 * @return int
+	 * @return string Market key or empty string.
 	 */
-	public static function get_active_location_id() {
+	public static function get_active_market() {
 		if ( null !== self::$cache ) {
 			return self::$cache;
 		}
 
 		if ( ! is_user_logged_in() ) {
-			self::$cache = 0;
-			return 0;
+			self::$cache = '';
+			return '';
 		}
 
 		$user_id   = get_current_user_id();
-		$candidate = 0;
+		$candidate = '';
 
 		// 1. Session.
 		$session = self::session();
 		if ( $session ) {
-			$candidate = (int) $session->get( self::SESSION_KEY, 0 );
+			$candidate = (string) $session->get( self::SESSION_KEY, '' );
 		}
 
 		// 2. User meta (last used).
 		if ( ! $candidate ) {
-			$candidate = (int) get_user_meta( $user_id, self::META_KEY, true );
+			$candidate = (string) get_user_meta( $user_id, self::META_KEY, true );
 		}
 
 		// Validate access; otherwise resolve a default.
-		if ( ! $candidate || ! Sycomp_B2B_User::can_access_location( $candidate, $user_id ) ) {
-			$candidate = self::resolve_default_location( $user_id );
+		$company_id = Sycomp_B2B_User::get_company( $user_id );
+		$available  = Sycomp_B2B_Markets::get_available_markets( $company_id );
+		
+		if ( ! $candidate || ! in_array( $candidate, $available, true ) ) {
+			$candidate = empty( $available ) ? '' : $available[0];
 			if ( $candidate ) {
 				self::persist( $candidate, $user_id );
 			}
@@ -89,52 +88,73 @@ class Sycomp_B2B_Context {
 	}
 
 	/**
-	 * Set the active location.
+	 * Set the active market.
 	 *
-	 * @param int $location_id Location post ID.
+	 * @param string $market_key Market key.
 	 * @return bool True on success.
 	 */
-	public static function set_active_location_id( $location_id ) {
-		$location_id = (int) $location_id;
-		$user_id     = get_current_user_id();
+	public static function set_active_market( $market_key ) {
+		$user_id    = get_current_user_id();
+		$company_id = Sycomp_B2B_User::get_company( $user_id );
+		$available  = Sycomp_B2B_Markets::get_available_markets( $company_id );
 
-		if ( ! $user_id || ! Sycomp_B2B_User::can_access_location( $location_id, $user_id ) ) {
+		if ( ! $user_id || ! in_array( $market_key, $available, true ) ) {
 			return false;
 		}
 
-		$previous = self::get_active_location_id();
-		if ( $previous === $location_id ) {
+		$previous = self::get_active_market();
+		if ( $previous === $market_key ) {
 			return true;
 		}
 
-		self::persist( $location_id, $user_id );
-		self::$cache = $location_id;
+		self::persist( $market_key, $user_id );
+		self::$cache = $market_key;
 
 		/**
-		 * Fires after the active location changes.
+		 * Fires after the active market changes.
 		 *
-		 * The cart module listens to this to swap the per-location cart.
-		 *
-		 * @param int $location_id New active location ID.
-		 * @param int $previous    Previous active location ID.
+		 * @param string $market_key New active market key.
+		 * @param string $previous   Previous active market key.
 		 */
-		do_action( 'sycomp_b2b_location_changed', $location_id, $previous );
+		do_action( 'sycomp_b2b_market_changed', $market_key, $previous );
 
 		return true;
 	}
 
 	/**
-	 * Persist the active location to session + user meta.
+	 * Persist the active market to session + user meta.
 	 *
-	 * @param int $location_id Location post ID.
-	 * @param int $user_id     User ID.
+	 * @param string $market_key Market key.
+	 * @param int    $user_id    User ID.
 	 */
-	protected static function persist( $location_id, $user_id ) {
+	protected static function persist( $market_key, $user_id ) {
 		$session = self::session();
 		if ( $session ) {
-			$session->set( self::SESSION_KEY, (int) $location_id );
+			$session->set( self::SESSION_KEY, $market_key );
 		}
-		update_user_meta( (int) $user_id, self::META_KEY, (int) $location_id );
+		update_user_meta( (int) $user_id, self::META_KEY, $market_key );
+	}
+
+	/**
+	 * The currently active location ID for the logged-in user.
+	 * Returns 0 if the user is shopping in a market where they have no assigned location.
+	 *
+	 * @return int
+	 */
+	public static function get_active_location_id() {
+		$market = self::get_active_market();
+		return $market ? self::get_location_for_market( $market ) : 0;
+	}
+
+	/**
+	 * Set the active location (wrapper for legacy calls).
+	 *
+	 * @param int $location_id Location post ID.
+	 * @return bool True on success.
+	 */
+	public static function set_active_location_id( $location_id ) {
+		$market = Sycomp_B2B_Post_Types::get_location_market( $location_id );
+		return $market ? self::set_active_market( $market ) : false;
 	}
 
 	/**
@@ -148,40 +168,24 @@ class Sycomp_B2B_Context {
 	}
 
 	/**
-	 * Whether a usable active location is set.
+	 * Whether a usable active market is set.
 	 *
 	 * @return bool
 	 */
 	public static function has_active_location() {
-		return self::get_active_location_id() > 0;
+		return self::get_active_market() !== '';
 	}
 
 	/**
-	 * The market key for the active location.
-	 *
-	 * @return string Market key, or '' if none.
-	 */
-	public static function get_active_market() {
-		$id = self::get_active_location_id();
-		if ( ! $id ) {
-			return '';
-		}
-		$market = Sycomp_B2B_Post_Types::get_location_market( $id );
-		return Sycomp_B2B_Markets::exists( $market ) ? $market : '';
-	}
-
-	/**
-	 * The first accessible location for a user, used as the default.
+	 * Resolve default market (fallback).
 	 *
 	 * @param int $user_id User ID.
-	 * @return int Location post ID, or 0.
+	 * @return string Market key or ''.
 	 */
 	public static function resolve_default_location( $user_id = 0 ) {
-		$locations = Sycomp_B2B_User::get_locations( $user_id );
-		if ( empty( $locations ) ) {
-			return 0;
-		}
-		return (int) $locations[0]->ID;
+		$company_id = Sycomp_B2B_User::get_company( $user_id );
+		$available  = Sycomp_B2B_Markets::get_available_markets( $company_id );
+		return empty( $available ) ? '' : $available[0];
 	}
 
 	/**

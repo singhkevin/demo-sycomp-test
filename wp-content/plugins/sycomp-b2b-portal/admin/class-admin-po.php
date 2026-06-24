@@ -3,7 +3,7 @@
  * Admin: purchase-order review and the Open -> In-Process -> Closed
  * lifecycle, with Cancelled as the exit.
  *
- * Provides the Purchase Orders review screen and the Accept / Close /
+ * Provides the Proposals review screen and the Accept / Close /
  * Cancel actions on the native WooCommerce order screen.
  *
  * @package Sycomp_B2B_Portal
@@ -35,13 +35,13 @@ class Sycomp_B2B_Admin_PO {
 	}
 
 	/**
-	 * Register the Purchase Orders submenu.
+	 * Register the Proposals submenu.
 	 */
 	public static function register_menu() {
 		add_submenu_page(
 			Sycomp_B2B_Admin::MENU_SLUG,
-			__( 'Purchase Orders', 'sycomp-b2b-portal' ),
-			__( 'Purchase Orders', 'sycomp-b2b-portal' ),
+			__( 'Proposals', 'sycomp-b2b-portal' ),
+			__( 'Proposals', 'sycomp-b2b-portal' ),
 			'manage_woocommerce',
 			self::PAGE,
 			array( __CLASS__, 'render_page' )
@@ -99,7 +99,7 @@ class Sycomp_B2B_Admin_PO {
 	}
 
 	/**
-	 * Accept an Open purchase order — moves it to In-Process.
+	 * Accept an Open proposal — moves it to In-Process.
 	 *
 	 * @param WC_Order $order Order.
 	 */
@@ -109,13 +109,13 @@ class Sycomp_B2B_Admin_PO {
 		}
 		$order->update_status(
 			Sycomp_B2B_PO::STATUS_PROCESS,
-			__( 'Purchase order accepted by Sycomp; now in process.', 'sycomp-b2b-portal' )
+			__( 'Proposal accepted by Sycomp; now in process.', 'sycomp-b2b-portal' )
 		);
 		self::notify_buyer( $order, 'accepted' );
 	}
 
 	/**
-	 * Close an In-Process purchase order — marks it complete.
+	 * Close an In-Process proposal — marks it complete.
 	 *
 	 * @param WC_Order $order Order.
 	 */
@@ -125,13 +125,13 @@ class Sycomp_B2B_Admin_PO {
 		}
 		$order->update_status(
 			Sycomp_B2B_PO::STATUS_CLOSED,
-			__( 'Purchase order completed and closed by Sycomp.', 'sycomp-b2b-portal' )
+			__( 'Proposal completed and closed by Sycomp.', 'sycomp-b2b-portal' )
 		);
 		self::notify_buyer( $order, 'closed' );
 	}
 
 	/**
-	 * Cancel an Open or In-Process purchase order.
+	 * Cancel an Open or In-Process proposal.
 	 *
 	 * @param WC_Order $order Order.
 	 */
@@ -141,7 +141,7 @@ class Sycomp_B2B_Admin_PO {
 		}
 		$order->update_status(
 			Sycomp_B2B_PO::STATUS_CANCELLED,
-			__( 'Purchase order cancelled by Sycomp.', 'sycomp-b2b-portal' )
+			__( 'Proposal cancelled by Sycomp.', 'sycomp-b2b-portal' )
 		);
 		self::notify_buyer( $order, 'cancelled' );
 	}
@@ -161,21 +161,21 @@ class Sycomp_B2B_Admin_PO {
 
 		if ( 'accepted' === $what ) {
 			/* translators: %s: PO number. */
-			$subject = sprintf( __( 'Your purchase order #%s has been accepted', 'sycomp-b2b-portal' ), $number );
-			$body    = __( 'Sycomp has accepted your purchase order. It is now in process and our team will be in touch regarding fulfilment.', 'sycomp-b2b-portal' );
+			$subject = sprintf( __( 'Your proposal #%s has been accepted', 'sycomp-b2b-portal' ), $number );
+			$body    = __( 'Sycomp has accepted your proposal. It is now in process and our team will be in touch regarding fulfilment.', 'sycomp-b2b-portal' );
 		} elseif ( 'closed' === $what ) {
 			/* translators: %s: PO number. */
-			$subject = sprintf( __( 'Your purchase order #%s is complete', 'sycomp-b2b-portal' ), $number );
-			$body    = __( 'Your purchase order has been completed and closed by Sycomp.', 'sycomp-b2b-portal' );
+			$subject = sprintf( __( 'Your proposal #%s is complete', 'sycomp-b2b-portal' ), $number );
+			$body    = __( 'Your proposal has been completed and closed by Sycomp.', 'sycomp-b2b-portal' );
 		} else {
 			/* translators: %s: PO number. */
-			$subject = sprintf( __( 'Your purchase order #%s has been cancelled', 'sycomp-b2b-portal' ), $number );
-			$body    = __( 'Your purchase order has been cancelled by Sycomp. Please contact your Sycomp representative for details.', 'sycomp-b2b-portal' );
+			$subject = sprintf( __( 'Your proposal #%s has been cancelled', 'sycomp-b2b-portal' ), $number );
+			$body    = __( 'Your proposal has been cancelled by Sycomp. Please contact your Sycomp representative for details.', 'sycomp-b2b-portal' );
 		}
 
 		$body .= "\n\n" . sprintf(
 			/* translators: %s: order view URL. */
-			__( 'View your purchase order: %s', 'sycomp-b2b-portal' ),
+			__( 'View your proposal: %s', 'sycomp-b2b-portal' ),
 			$order->get_view_order_url()
 		);
 
@@ -198,11 +198,11 @@ class Sycomp_B2B_Admin_PO {
 			return $actions;
 		}
 		if ( $theorder->has_status( Sycomp_B2B_PO::STATUS_OPEN ) ) {
-			$actions['sycomp_accept_po'] = __( 'Accept purchase order (In-Process)', 'sycomp-b2b-portal' );
-			$actions['sycomp_cancel_po'] = __( 'Cancel purchase order', 'sycomp-b2b-portal' );
+			$actions['sycomp_accept_po'] = __( 'Accept proposal (In-Process)', 'sycomp-b2b-portal' );
+			$actions['sycomp_cancel_po'] = __( 'Cancel proposal', 'sycomp-b2b-portal' );
 		} elseif ( $theorder->has_status( Sycomp_B2B_PO::STATUS_PROCESS ) ) {
-			$actions['sycomp_close_po']  = __( 'Close purchase order (complete)', 'sycomp-b2b-portal' );
-			$actions['sycomp_cancel_po'] = __( 'Cancel purchase order', 'sycomp-b2b-portal' );
+			$actions['sycomp_close_po']  = __( 'Close proposal (complete)', 'sycomp-b2b-portal' );
+			$actions['sycomp_cancel_po'] = __( 'Cancel proposal', 'sycomp-b2b-portal' );
 		}
 		return $actions;
 	}
@@ -239,7 +239,7 @@ class Sycomp_B2B_Admin_PO {
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * Render the Purchase Orders review screen.
+	 * Render the Proposals review screen.
 	 */
 	public static function render_page() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -272,7 +272,7 @@ class Sycomp_B2B_Admin_PO {
 		);
 		?>
 		<div class="wrap sycomp-admin">
-			<h1><?php esc_html_e( 'Purchase Orders', 'sycomp-b2b-portal' ); ?></h1>
+			<h1><?php esc_html_e( 'Proposals', 'sycomp-b2b-portal' ); ?></h1>
 
 			<?php self::render_done_notice(); ?>
 
@@ -286,7 +286,7 @@ class Sycomp_B2B_Admin_PO {
 			</h2>
 
 			<?php if ( empty( $orders ) ) : ?>
-				<p><?php esc_html_e( 'No purchase orders in this view.', 'sycomp-b2b-portal' ); ?></p>
+				<p><?php esc_html_e( 'No proposals in this view.', 'sycomp-b2b-portal' ); ?></p>
 			<?php else : ?>
 				<table class="wp-list-table widefat fixed striped">
 					<thead>
@@ -372,7 +372,7 @@ class Sycomp_B2B_Admin_PO {
 							</button>
 						<?php endif; ?>
 						<button type="submit" name="sycomp_po_action" value="cancel" class="button button-small"
-							onclick="return confirm('<?php echo esc_js( __( 'Cancel this purchase order?', 'sycomp-b2b-portal' ) ); ?>');">
+							onclick="return confirm('<?php echo esc_js( __( 'Cancel this proposal?', 'sycomp-b2b-portal' ) ); ?>');">
 							<?php esc_html_e( 'Cancel', 'sycomp-b2b-portal' ); ?>
 						</button>
 					</form>
@@ -394,11 +394,11 @@ class Sycomp_B2B_Admin_PO {
 
 		$map = array(
 			/* translators: %s: PO number. */
-			'accepted'  => __( 'Purchase order #%s accepted — it is now In-Process. The buyer has been notified.', 'sycomp-b2b-portal' ),
+			'accepted'  => __( 'Proposal #%s accepted — it is now In-Process. The buyer has been notified.', 'sycomp-b2b-portal' ),
 			/* translators: %s: PO number. */
-			'closed'    => __( 'Purchase order #%s closed. The buyer has been notified.', 'sycomp-b2b-portal' ),
+			'closed'    => __( 'Proposal #%s closed. The buyer has been notified.', 'sycomp-b2b-portal' ),
 			/* translators: %s: PO number. */
-			'cancelled' => __( 'Purchase order #%s cancelled. The buyer has been notified.', 'sycomp-b2b-portal' ),
+			'cancelled' => __( 'Proposal #%s cancelled. The buyer has been notified.', 'sycomp-b2b-portal' ),
 		);
 		if ( ! isset( $map[ $done ] ) ) {
 			return;

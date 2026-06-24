@@ -145,7 +145,7 @@ class Sycomp_B2B_Install {
 	 * Ensure the WooCommerce Cart and Checkout pages use the classic
 	 * shortcodes.
 	 *
-	 * The Sycomp purchase-order workflow (the "Submit Purchase Order"
+	 * The Sycomp proposal workflow (the "Submit Proposal"
 	 * button, the PO reference field, location stamping on the order) is
 	 * built on the classic checkout hooks, which the block-based Cart and
 	 * Checkout do not fire. Modern WooCommerce ships those pages as blocks,

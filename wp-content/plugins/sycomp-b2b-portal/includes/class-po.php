@@ -1,9 +1,9 @@
 <?php
 /**
- * Purchase Order workflow.
+ * Proposal workflow.
  *
  * The portal does not take payment. A buyer builds a cart for one location
- * and submits it as a Purchase Order, which is created as a WooCommerce
+ * and submits it as a Proposal, which is created as a WooCommerce
  * order in the custom "PO — In Review" status. Sycomp staff review the PO
  * from the admin and approve or reject it.
  *
@@ -55,7 +55,7 @@ class Sycomp_B2B_PO {
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'only_po_gateway' ) );
 
-		// No payment language and no coupon codes - a purchase order is not a sale.
+		// No payment language and no coupon codes - a proposal is not a sale.
 		add_filter( 'woocommerce_coupons_enabled', '__return_false' );
 		add_filter( 'woocommerce_get_order_item_totals', array( __CLASS__, 'filter_order_totals' ), 10, 2 );
 
@@ -156,7 +156,7 @@ class Sycomp_B2B_PO {
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * Register the Purchase Order gateway class.
+	 * Register the Proposal gateway class.
 	 *
 	 * The gateway file is required here (inside the WooCommerce filter) so
 	 * that the abstract WC_Payment_Gateway class is guaranteed to be loaded
@@ -195,7 +195,7 @@ class Sycomp_B2B_PO {
 	 * @return string
 	 */
 	public static function order_button_text( $text ) {
-		return __( 'Submit Purchase Order', 'sycomp-b2b-portal' );
+		return __( 'Submit Proposal', 'sycomp-b2b-portal' );
 	}
 
 	/**
@@ -464,7 +464,7 @@ class Sycomp_B2B_PO {
 	 */
 	public static function thankyou_text( $text, $order ) {
 		if ( $order && $order->has_status( self::STATUS_OPEN ) ) {
-			return __( 'Your purchase order has been submitted and is now awaiting review by Sycomp. You can track its status under My Account.', 'sycomp-b2b-portal' );
+			return __( 'Your proposal has been submitted and is now awaiting review by Sycomp. You can track its status under My Account.', 'sycomp-b2b-portal' );
 		}
 		return $text;
 	}
@@ -486,7 +486,7 @@ class Sycomp_B2B_PO {
 			exit;
 		}
 		if ( ! Sycomp_B2B_User::is_portal_user() || ! Sycomp_B2B_Context::has_active_location() ) {
-			wc_add_notice( __( 'Select a company location before submitting a purchase order.', 'sycomp-b2b-portal' ), 'error' );
+			wc_add_notice( __( 'Select a company location before submitting a proposal.', 'sycomp-b2b-portal' ), 'error' );
 			wp_safe_redirect( wc_get_cart_url() );
 			exit;
 		}
@@ -509,7 +509,7 @@ class Sycomp_B2B_PO {
 	}
 
 	/**
-	 * Whether a user may view a purchase order.
+	 * Whether a user may view a proposal.
 	 *
 	 * Sycomp staff may view any PO. A buyer may view every PO belonging to
 	 * their own company — raised by any colleague, at any location, in any
@@ -621,7 +621,7 @@ class Sycomp_B2B_PO {
 		$time_str     = $date_created ? $date_created->date_i18n( 'g:i a' ) : '';
 
 		// Subject.
-		$subject = sprintf( __( 'Purchase order #%s submitted', 'sycomp-b2b-portal' ), $number );
+		$subject = sprintf( __( 'Proposal #%s submitted', 'sycomp-b2b-portal' ), $number );
 
 		// Reset embedded images array.
 		self::$embedded_images = array();
@@ -753,13 +753,13 @@ class Sycomp_B2B_PO {
 								<!-- Top Notification Text -->
 								<tr>
 									<td style="font-size: 15px; line-height: 1.5; color: #1a1f29; padding: 24px 0 20px 0;">
-										<strong>' . esc_html( $buyer_name ) . '</strong> submitted purchase order <strong>#' . esc_html( $number ) . '</strong> on ' . esc_html( $date_str ) . ' at ' . esc_html( $time_str ) . '.
+										<strong>' . esc_html( $buyer_name ) . '</strong> submitted proposal <strong>#' . esc_html( $number ) . '</strong> on ' . esc_html( $date_str ) . ' at ' . esc_html( $time_str ) . '.
 									</td>
 								</tr>
 								<!-- Review Button -->
 								<tr>
 									<td style="padding-bottom: 24px;">
-										<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display: inline-block; background-color: #1e4fd6; color: #ffffff; text-decoration: none; padding: 12px 20px; font-size: 14px; font-weight: 600; border-radius: 4px;">Review purchase order</a>
+										<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display: inline-block; background-color: #1e4fd6; color: #ffffff; text-decoration: none; padding: 12px 20px; font-size: 14px; font-weight: 600; border-radius: 4px;">Review proposal</a>
 									</td>
 								</tr>
 								<!-- Divider -->

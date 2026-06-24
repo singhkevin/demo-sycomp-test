@@ -2,7 +2,7 @@
 /**
  * Purchase-order PDF.
  *
- * Lets a buyer download a PDF copy of a submitted purchase order. The PDF
+ * Lets a buyer download a PDF copy of a submitted proposal. The PDF
  * is generated on demand by Sycomp_B2B_PDF and streamed from a nonce-
  * protected, ownership-checked endpoint. It carries the Sycomp logo and,
  * when one has been uploaded, the customer company's logo.
@@ -66,7 +66,7 @@ class Sycomp_B2B_PO_PDF {
 	}
 
 	/**
-	 * Render the "Download purchase order (PDF)" button below the order
+	 * Render the "Download proposal (PDF)" button below the order
 	 * details table on the order-received and view-order pages.
 	 *
 	 * @param WC_Order $order Order.
@@ -81,7 +81,7 @@ class Sycomp_B2B_PO_PDF {
 		printf(
 			'<p class="sy-po-pdf-actions"><a class="sy-btn sy-btn--primary" href="%s">%s</a></p>',
 			esc_url( self::pdf_url( $order ) ),
-			esc_html__( 'Download purchase order (PDF)', 'sycomp-b2b-portal' )
+			esc_html__( 'Download proposal (PDF)', 'sycomp-b2b-portal' )
 		);
 	}
 
@@ -106,7 +106,7 @@ class Sycomp_B2B_PO_PDF {
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
 			wp_die(
-				esc_html__( 'Purchase order not found.', 'sycomp-b2b-portal' ),
+				esc_html__( 'Proposal not found.', 'sycomp-b2b-portal' ),
 				'',
 				array( 'response' => 404 )
 			);
@@ -114,7 +114,7 @@ class Sycomp_B2B_PO_PDF {
 
 		if ( ! Sycomp_B2B_PO::user_can_view( $order ) ) {
 			wp_die(
-				esc_html__( 'You are not allowed to download this purchase order.', 'sycomp-b2b-portal' ),
+				esc_html__( 'You are not allowed to download this proposal.', 'sycomp-b2b-portal' ),
 				'',
 				array( 'response' => 403 )
 			);
@@ -414,7 +414,7 @@ class Sycomp_B2B_PO_PDF {
 
 		$total_tbl_h = $h_date + $h_quote + $h_cust + $h_valid;
 
-		$pdf->text_right( self::R, 36, 'QUOTE', 11, true, array( 0.2, 0.6, 0.8 ) );
+		$pdf->text_right( self::R, 36, 'PROPOSAL', 11, true, array( 0.2, 0.6, 0.8 ) );
 
 		// Table borders (outer box)
 		$pdf->line( $tbl_x, $tbl_y, self::R, $tbl_y, 0.6, self::INK );
@@ -432,7 +432,7 @@ class Sycomp_B2B_PO_PDF {
 
 		$q_rows = array(
 			array( 'DATE', array( $date_str ), $h_date ),
-			array( 'QUOTE #', $quote_lines, $h_quote ),
+			array( 'PROPOSAL #', $quote_lines, $h_quote ),
 			array( 'CUSTOMER ID', array( $customer_id ? (string) $customer_id : 'N/A' ), $h_cust ),
 			array( 'VALID UNTIL', array( $valid_str ), $h_valid ),
 		);
@@ -550,7 +550,7 @@ class Sycomp_B2B_PO_PDF {
 
 			if ( $y + $row_h > self::BOTTOM - 60 ) {
 				$pdf->add_page();
-				$pdf->text( self::L, 66, 'Purchase order #' . $order->get_order_number() . ' (continued)', 10, true, self::GRAY );
+				$pdf->text( self::L, 66, 'Proposal #' . $order->get_order_number() . ' (continued)', 10, true, self::GRAY );
 				$y = self::items_head( $pdf, 84 );
 			}
 

@@ -2,7 +2,7 @@
 /**
  * Per-location carts.
  *
- * Each location keeps its own independent cart so that a purchase order is
+ * Each location keeps its own independent cart so that a proposal is
  * always scoped to exactly one location — no cross-location overlap. The
  * live WooCommerce cart always represents the *active* location; carts for
  * the buyer's other locations are parked in user meta and swapped in when
@@ -21,36 +21,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Sycomp_B2B_Cart {
 
 	/**
-	 * User meta key storing parked carts: array<location_id, item[]>.
+	 * User meta key storing parked carts: array<market_key, item[]>.
 	 */
-	const META_CARTS = '_sycomp_location_carts';
+	const META_CARTS = '_sycomp_market_carts';
 
 	/**
 	 * Register hooks.
 	 */
 	public static function init() {
-		add_action( 'sycomp_b2b_location_changed', array( __CLASS__, 'on_location_changed' ), 10, 2 );
+		add_action( 'sycomp_b2b_market_changed', array( __CLASS__, 'on_market_changed' ), 10, 2 );
 		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'tag_cart_item' ), 10, 2 );
 	}
 
 	/**
-	 * Tag every cart item with the location it was added under.
+	 * Tag every cart item with the market it was added under.
 	 *
 	 * @param array $cart_item_data Cart item data.
 	 * @return array
 	 */
 	public static function tag_cart_item( $cart_item_data ) {
-		$cart_item_data['sycomp_location'] = Sycomp_B2B_Context::get_active_location_id();
+		$cart_item_data['sycomp_market'] = Sycomp_B2B_Context::get_active_market();
 		return $cart_item_data;
 	}
 
 	/**
-	 * Swap carts when the active location changes.
+	 * Swap carts when the active market changes.
 	 *
-	 * @param int $new_location      New active location ID.
-	 * @param int $previous_location Previous active location ID.
+	 * @param string $new_market      New active market key.
+	 * @param string $previous_market Previous active market key.
 	 */
-	public static function on_location_changed( $new_location, $previous_location ) {
+	public static function on_market_changed( $new_market, $previous_market ) {
 		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
 			return;
 		}
@@ -62,20 +62,20 @@ class Sycomp_B2B_Cart {
 
 		$parked = self::get_parked_carts( $user_id );
 
-		// 1. Snapshot the current (previous location's) cart.
-		if ( $previous_location ) {
-			$parked[ (int) $previous_location ] = self::snapshot_live_cart();
+		// 1. Snapshot the current (previous market's) cart.
+		if ( $previous_market ) {
+			$parked[ $previous_market ] = self::snapshot_live_cart();
 		}
 
 		// 2. Empty the live cart.
 		WC()->cart->empty_cart();
 
-		// 3. Restore the new location's parked cart, if any.
-		$restore = isset( $parked[ (int) $new_location ] ) ? $parked[ (int) $new_location ] : array();
+		// 3. Restore the new market's parked cart, if any.
+		$restore = isset( $parked[ $new_market ] ) ? $parked[ $new_market ] : array();
 		self::restore_to_live_cart( $restore );
 
-		// The new location is now the live cart — drop it from the parked set.
-		unset( $parked[ (int) $new_location ] );
+		// The new market is now the live cart — drop it from the parked set.
+		unset( $parked[ $new_market ] );
 
 		self::save_parked_carts( $user_id, $parked );
 	}
@@ -148,29 +148,28 @@ class Sycomp_B2B_Cart {
 	}
 
 	/**
-	 * Number of line items currently in a location's cart.
+	 * Number of line items currently in a market's cart.
 	 *
-	 * For the active location this reads the live cart; for others it reads
+	 * For the active market this reads the live cart; for others it reads
 	 * the parked snapshot.
 	 *
-	 * @param int $location_id Location ID.
+	 * @param string $market_key Market key.
 	 * @return int
 	 */
-	public static function get_location_item_count( $location_id ) {
-		$location_id = (int) $location_id;
-		$active      = Sycomp_B2B_Context::get_active_location_id();
+	public static function get_market_item_count( $market_key ) {
+		$active = Sycomp_B2B_Context::get_active_market();
 
-		if ( $location_id === $active ) {
+		if ( $market_key === $active ) {
 			return ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
 		}
 
 		$parked = self::get_parked_carts( get_current_user_id() );
-		if ( empty( $parked[ $location_id ] ) ) {
+		if ( empty( $parked[ $market_key ] ) ) {
 			return 0;
 		}
 
 		$count = 0;
-		foreach ( $parked[ $location_id ] as $item ) {
+		foreach ( $parked[ $market_key ] as $item ) {
 			$count += isset( $item['quantity'] ) ? (int) $item['quantity'] : 0;
 		}
 		return $count;
@@ -186,15 +185,15 @@ class Sycomp_B2B_Cart {
 	}
 
 	/**
-	 * Remove a location's parked cart entirely (used after a PO submit if
-	 * the submitted location is not the active one).
+	 * Remove a market's parked cart entirely (used after a PO submit if
+	 * the submitted market is not the active one).
 	 *
-	 * @param int $location_id Location ID.
+	 * @param string $market_key Market key.
 	 */
-	public static function clear_parked_cart( $location_id ) {
+	public static function clear_parked_cart( $market_key ) {
 		$user_id = get_current_user_id();
 		$parked  = self::get_parked_carts( $user_id );
-		unset( $parked[ (int) $location_id ] );
+		unset( $parked[ $market_key ] );
 		self::save_parked_carts( $user_id, $parked );
 	}
 }
