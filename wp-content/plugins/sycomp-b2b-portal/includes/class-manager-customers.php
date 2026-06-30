@@ -335,7 +335,7 @@ class Sycomp_B2B_Manager_Customers {
 		if ( ! $cid || ! self::company( $cid ) ) {
 			self::redirect( array( 'cdone' => 'error' ) );
 		}
-		if ( ! current_user_can( 'create_users' ) ) {
+		if ( ! self::is_manager() ) {
 			self::redirect( array( 'cv' => 'edit', 'cid' => $cid, 'cdone' => 'no_caps' ) );
 		}
 
@@ -1136,7 +1136,7 @@ class Sycomp_B2B_Manager_Customers {
 		// Create a new buyer.
 		echo '<div>';
 		echo '<h3 style="font-size:.95rem;margin:0 0 8px;">' . esc_html__( 'Add a new buyer', 'sycomp-b2b-portal' ) . '</h3>';
-		if ( current_user_can( 'create_users' ) ) {
+		if ( self::is_manager() ) {
 			echo '<form method="post" class="sy-form">';
 			self::nonce_field();
 			echo '<input type="hidden" name="sycomp_customer_action" value="buyer_create">';
