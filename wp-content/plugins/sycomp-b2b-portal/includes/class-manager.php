@@ -43,6 +43,20 @@ class Sycomp_B2B_Manager {
 	 * Stream the purchase-order list as a CSV download.
 	 */
 	public static function maybe_export() {
+		if ( ! empty( $_GET['sycomp_product_export'] ) && self::is_manager() ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$nonce = isset( $_GET['_sycexp'] ) ? sanitize_text_field( wp_unslash( $_GET['_sycexp'] ) ) : '';
+			if ( wp_verify_nonce( $nonce, 'sycomp_export' ) ) {
+				self::do_export_products();
+			}
+		}
+
+		if ( ! empty( $_GET['sycomp_template_export'] ) && self::is_manager() ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$nonce = isset( $_GET['_sycexp'] ) ? sanitize_text_field( wp_unslash( $_GET['_sycexp'] ) ) : '';
+			if ( wp_verify_nonce( $nonce, 'sycomp_export' ) ) {
+				self::do_export_template();
+			}
+		}
+
 		if ( empty( $_GET['sycomp_po_export'] ) || ! self::is_manager() ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
@@ -263,6 +277,9 @@ class Sycomp_B2B_Manager {
 				break;
 			case 'import_run':
 				self::do_import();
+				break;
+			case 'export_products':
+				self::do_export_products();
 				break;
 		}
 	}
@@ -718,6 +735,123 @@ class Sycomp_B2B_Manager {
 
 		set_transient( 'sycomp_import_msg_' . $uid, $msg, 120 );
 		self::redirect( array( 'section' => 'products', 'pview' => 'import', 'done' => 'import_done' ) );
+	}
+
+	/**
+	 * Run the products export and stream a CSV.
+	 */
+	protected static function do_export_products() {
+
+
+
+		$markets = Sycomp_B2B_Markets::all();
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=products-export-' . date( 'Ymd' ) . '.csv' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		$output = fopen( 'php://output', 'w' );
+		
+		// Add BOM to fix UTF-8 in Excel
+		fputs( $output, "\xEF\xBB\xBF" );
+
+		// Build header row
+		$headers = array( 'Handle', 'Title', 'Body (HTML)', 'Short Desc', 'Variant SKU', 'Brand', 'Category', 'Image Src' );
+		foreach ( $markets as $market_key => $market_data ) {
+			$headers[] = 'Price: ' . $market_key;
+		}
+		fputcsv( $output, $headers );
+
+		$args = array(
+			'post_type'      => 'product',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		);
+		$product_ids = get_posts( $args );
+
+		foreach ( $product_ids as $pid ) {
+			$product = wc_get_product( $pid );
+			if ( ! $product ) {
+				continue;
+			}
+
+			// Meta handle is defined in Sycomp_B2B_Importer::META_HANDLE which is '_sycomp_handle'
+			$handle = get_post_meta( $pid, '_sycomp_handle', true );
+			if ( ! $handle ) {
+				$handle = $product->get_slug();
+			}
+
+			$brands = wp_get_post_terms( $pid, Sycomp_B2B_Post_Types::TAX_BRAND, array( 'fields' => 'names' ) );
+			$brand  = ! is_wp_error( $brands ) && ! empty( $brands ) ? $brands[0] : '';
+
+			$cats = wp_get_post_terms( $pid, 'product_cat', array( 'fields' => 'names' ) );
+			$cat  = ! is_wp_error( $cats ) && ! empty( $cats ) ? $cats[0] : '';
+
+			$image_id  = $product->get_image_id();
+			$image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'full' ) : '';
+
+			$row = array(
+				$handle,
+				$product->get_name(),
+				$product->get_description(),
+				$product->get_short_description(),
+				$product->get_sku(),
+				$brand,
+				$cat,
+				$image_url,
+			);
+
+			foreach ( $markets as $market_key => $market_data ) {
+				$price = Sycomp_B2B_Pricing::get_market_price( $pid, $market_key );
+				$row[] = $price;
+			}
+
+			fputcsv( $output, $row );
+		}
+
+		fclose( $output );
+		exit;
+	}
+
+	/**
+	 * Download a blank CSV template for products.
+	 */
+	protected static function do_export_template() {
+		$markets = Sycomp_B2B_Markets::all();
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=products-template.csv' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		$output = fopen( 'php://output', 'w' );
+		fputs( $output, "\xEF\xBB\xBF" ); // BOM
+
+		$headers = array( 'Handle', 'Title', 'Body (HTML)', 'Short Desc', 'Variant SKU', 'Brand', 'Category', 'Image Src' );
+		foreach ( $markets as $market_key => $market_data ) {
+			$headers[] = 'Price: ' . $market_key;
+		}
+		fputcsv( $output, $headers );
+
+		$row = array(
+			'example-product',
+			'Example Product',
+			'<p>Full HTML description.</p>',
+			'Short description.',
+			'EX-123',
+			'ExampleBrand',
+			'ExampleCategory',
+			'https://example.com/image.jpg',
+		);
+		foreach ( $markets as $market_key => $market_data ) {
+			$row[] = '99.99';
+		}
+		fputcsv( $output, $row );
+
+		fclose( $output );
+		exit;
 	}
 
 	/**
@@ -1277,6 +1411,26 @@ class Sycomp_B2B_Manager {
 
 		$actions  = '<a class="sy-btn sy-btn--ghost sy-btn--sm" href="' . esc_url( add_query_arg( array( 'section' => 'products', 'pview' => 'bulkprice' ), self::manage_url() ) ) . '">' . esc_html__( 'Bulk pricing', 'sycomp-b2b-portal' ) . '</a>';
 		$actions .= '<a class="sy-btn sy-btn--ghost sy-btn--sm" href="' . esc_url( add_query_arg( array( 'section' => 'products', 'pview' => 'import' ), self::manage_url() ) ) . '">' . esc_html__( 'Import CSV', 'sycomp-b2b-portal' ) . '</a>';
+		$actions .= '<a class="sy-btn sy-btn--ghost sy-btn--sm" href="' . esc_url(
+			add_query_arg(
+				array(
+					'section'               => 'products',
+					'sycomp_product_export' => 1,
+					'_sycexp'               => wp_create_nonce( 'sycomp_export' ),
+				),
+				self::manage_url()
+			)
+		) . '">' . esc_html__( 'Export CSV', 'sycomp-b2b-portal' ) . '</a>';
+		$actions .= '<a class="sy-btn sy-btn--ghost sy-btn--sm" href="' . esc_url(
+			add_query_arg(
+				array(
+					'section'                => 'products',
+					'sycomp_template_export' => 1,
+					'_sycexp'                => wp_create_nonce( 'sycomp_export' ),
+				),
+				self::manage_url()
+			)
+		) . '">' . esc_html__( 'Download Template', 'sycomp-b2b-portal' ) . '</a>';
 		$actions .= '<a class="sy-btn sy-btn--accent sy-btn--sm" href="' . esc_url( add_query_arg( array( 'section' => 'products', 'pview' => 'new' ), self::manage_url() ) ) . '">' . esc_html__( 'Add Product', 'sycomp-b2b-portal' ) . '</a>';
 
 		self::page_head(
@@ -1637,38 +1791,16 @@ class Sycomp_B2B_Manager {
 		);
 		self::notice();
 
-		echo '<div class="sy-adm-split">';
-
-		// Products CSV.
-		echo '<section class="sy-panel"><h2 class="sy-panel__title">' . esc_html__( 'Import products', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
-		echo '<p class="sy-muted">' . esc_html__( 'Upload a product export CSV. Products are matched by SKU or handle, so re-importing updates rather than duplicates.', 'sycomp-b2b-portal' ) . '</p>';
+		echo '<section class="sy-panel" style="max-width:640px;"><h2 class="sy-panel__title">' . esc_html__( 'Upload CSV', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
+		echo '<p class="sy-muted" style="margin-bottom: 24px;">' . esc_html__( 'Upload your modified CSV to update products and their per-market prices simultaneously. Products are matched by SKU or handle. New products will be created automatically.', 'sycomp-b2b-portal' ) . '</p>';
 		echo '<form method="post" enctype="multipart/form-data" class="sy-form">';
 		wp_nonce_field( 'sycomp_import', 'sycomp_nonce' );
 		echo '<input type="hidden" name="sycomp_admin_action" value="import_run">';
 		echo '<input type="hidden" name="import_type" value="products">';
 		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'CSV file', 'sycomp-b2b-portal' ) . '</span><input type="file" name="sycomp_csv" accept=".csv" required></label>';
-		echo '<label class="sy-check"><input type="checkbox" name="import_images" value="1"> ' . esc_html__( 'Also download product images (slower)', 'sycomp-b2b-portal' ) . '</label>';
-		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent sy-btn--sm" type="submit">' . esc_html__( 'Import products', 'sycomp-b2b-portal' ) . '</button></div>';
+		echo '<label class="sy-check" style="margin-bottom: 24px;"><input type="checkbox" name="import_images" value="1"> ' . esc_html__( 'Also download product images (slower)', 'sycomp-b2b-portal' ) . '</label>';
+		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Import Data', 'sycomp-b2b-portal' ) . '</button></div>';
 		echo '</form></div></section>';
-
-		// Prices CSV.
-		echo '<section class="sy-panel"><h2 class="sy-panel__title">' . esc_html__( 'Import a price list', 'sycomp-b2b-portal' ) . '</h2><div class="sy-panel__body">';
-		echo '<p class="sy-muted">' . esc_html__( 'Upload one price-list CSV per market. The SKU/handle and price columns are auto-detected.', 'sycomp-b2b-portal' ) . '</p>';
-		echo '<form method="post" enctype="multipart/form-data" class="sy-form">';
-		wp_nonce_field( 'sycomp_import', 'sycomp_nonce' );
-		echo '<input type="hidden" name="sycomp_admin_action" value="import_run">';
-		echo '<input type="hidden" name="import_type" value="prices">';
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'Market', 'sycomp-b2b-portal' ) . '</span><select name="import_market" required>';
-		echo '<option value="">' . esc_html__( '— Select market —', 'sycomp-b2b-portal' ) . '</option>';
-		foreach ( Sycomp_B2B_Markets::all() as $key => $market ) {
-			echo '<option value="' . esc_attr( $key ) . '">' . esc_html( $market['label'] . ' (' . $market['currency'] . ')' ) . '</option>';
-		}
-		echo '</select></label>';
-		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'CSV file', 'sycomp-b2b-portal' ) . '</span><input type="file" name="sycomp_csv" accept=".csv" required></label>';
-		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent sy-btn--sm" type="submit">' . esc_html__( 'Import price list', 'sycomp-b2b-portal' ) . '</button></div>';
-		echo '</form></div></section>';
-
-		echo '</div>';
 	}
 
 	/**

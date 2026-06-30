@@ -277,10 +277,17 @@ class Sycomp_B2B_Importer {
 			self::assign_term( $product_id, 'product_cat', $cat );
 		}
 
-		// Seed the US market price from the product CSV's USD column so the
-		// United States storefront works before per-market price lists load.
+		// Seed the US market price from the product CSV's USD column.
 		if ( '' !== $usd && is_numeric( $usd ) ) {
 			Sycomp_B2B_Pricing::set_market_price( $product_id, 'united_states', $usd );
+		}
+
+		// Also process any dynamic per-market price columns (e.g. "Price: germany").
+		foreach ( Sycomp_B2B_Markets::all() as $market_key => $market_data ) {
+			$market_price = self::field( $main, array( 'Price: ' . $market_key, 'Price ' . $market_key, $market_key . ' Price' ) );
+			if ( '' !== $market_price && is_numeric( $market_price ) ) {
+				Sycomp_B2B_Pricing::set_market_price( $product_id, $market_key, $market_price );
+			}
 		}
 
 		if ( $import_images ) {
