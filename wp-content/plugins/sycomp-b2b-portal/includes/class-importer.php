@@ -248,10 +248,10 @@ class Sycomp_B2B_Importer {
 		$product->set_name( $title );
 		$product->set_status( 'publish' );
 		if ( $body ) {
-			$product->set_description( wp_kses_post( $body ) );
+			$product->set_description( wpautop( wp_kses_post( $body ) ) );
 		}
 		$product->set_short_description(
-			$short ? wp_kses_post( $short ) : wp_trim_words( wp_strip_all_tags( $body ), 30 )
+			$short ? wpautop( wp_kses_post( $short ) ) : wpautop( wp_trim_words( wp_strip_all_tags( $body ), 30 ) )
 		);
 		if ( $sku ) {
 			$product->set_sku( $sku );

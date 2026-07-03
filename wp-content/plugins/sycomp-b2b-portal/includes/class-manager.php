@@ -148,6 +148,19 @@ class Sycomp_B2B_Manager {
 	}
 
 	/**
+	 * Convert HTML description back to clean plain text.
+	 *
+	 * @param string $html HTML content.
+	 * @return string Plain text.
+	 */
+	public static function html_to_plain_text( $html ) {
+		if ( ! $html ) {
+			return '';
+		}
+		return trim( wp_strip_all_tags( str_replace( array( '<br>', '<br/>', '<br />', '</p>' ), "\n", $html ) ) );
+	}
+
+	/**
 	 * Whether the current user may use the admin.
 	 *
 	 * @return bool
@@ -339,7 +352,7 @@ class Sycomp_B2B_Manager {
 
 		$name  = isset( $_POST['p_name'] ) ? sanitize_text_field( wp_unslash( $_POST['p_name'] ) ) : '';
 		$sku   = isset( $_POST['p_sku'] ) ? sanitize_text_field( wp_unslash( $_POST['p_sku'] ) ) : '';
-		$desc  = isset( $_POST['p_desc'] ) ? wp_kses_post( wp_unslash( $_POST['p_desc'] ) ) : '';
+		$desc  = isset( $_POST['p_desc'] ) ? wpautop( wp_kses_post( wp_unslash( $_POST['p_desc'] ) ) ) : '';
 		$stock = isset( $_POST['p_stock'] ) ? sanitize_text_field( wp_unslash( $_POST['p_stock'] ) ) : '';
 
 		if ( '' === $name ) {
@@ -369,6 +382,7 @@ class Sycomp_B2B_Manager {
 			$product->set_catalog_visibility( 'visible' );
 			$product->set_sku( $sku );
 			$product->set_description( $desc );
+			$product->set_short_description( wpautop( wp_trim_words( wp_strip_all_tags( $desc ), 30 ) ) );
 			if ( '' !== $base ) {
 				$product->set_regular_price( $base );
 			}
@@ -757,7 +771,7 @@ class Sycomp_B2B_Manager {
 		fputs( $output, "\xEF\xBB\xBF" );
 
 		// Build header row
-		$headers = array( 'Handle', 'Title', 'Body (HTML)', 'Short Desc', 'Variant SKU', 'Brand', 'Category', 'Image Src' );
+		$headers = array( 'Handle', 'Title', 'Body (HTML)', 'Short Desc', 'Variant SKU', 'Brand', 'Category' );
 		foreach ( $markets as $market_key => $market_data ) {
 			$headers[] = 'Price: ' . $market_key;
 		}
@@ -795,12 +809,11 @@ class Sycomp_B2B_Manager {
 			$row = array(
 				$handle,
 				$product->get_name(),
-				$product->get_description(),
-				$product->get_short_description(),
+				self::html_to_plain_text( $product->get_description() ),
+				self::html_to_plain_text( $product->get_short_description() ),
 				$product->get_sku(),
 				$brand,
 				$cat,
-				$image_url,
 			);
 
 			foreach ( $markets as $market_key => $market_data ) {
@@ -829,7 +842,7 @@ class Sycomp_B2B_Manager {
 		$output = fopen( 'php://output', 'w' );
 		fputs( $output, "\xEF\xBB\xBF" ); // BOM
 
-		$headers = array( 'Handle', 'Title', 'Body (HTML)', 'Short Desc', 'Variant SKU', 'Brand', 'Category', 'Image Src' );
+		$headers = array( 'Handle', 'Title', 'Body (HTML)', 'Short Desc', 'Variant SKU', 'Brand', 'Category' );
 		foreach ( $markets as $market_key => $market_data ) {
 			$headers[] = 'Price: ' . $market_key;
 		}
@@ -843,7 +856,6 @@ class Sycomp_B2B_Manager {
 			'EX-123',
 			'ExampleBrand',
 			'ExampleCategory',
-			'https://example.com/image.jpg',
 		);
 		foreach ( $markets as $market_key => $market_data ) {
 			$row[] = '99.99';
@@ -1618,8 +1630,10 @@ class Sycomp_B2B_Manager {
 		}
 		echo '<input type="file" name="p_image" accept="image/*"></label>';
 
+		$edit_desc = $product ? self::html_to_plain_text( $product->get_description() ) : '';
 		echo '<label class="sy-field sy-field--wide"><span class="sy-field__label">' . esc_html__( 'Description', 'sycomp-b2b-portal' ) . '</span>';
-		echo '<textarea name="p_desc" rows="4">' . esc_textarea( $product ? $product->get_description() : '' ) . '</textarea></label>';
+		echo '<textarea name="p_desc" rows="4">' . esc_textarea( $edit_desc ) . '</textarea></label>';
+		echo '<div style="margin-bottom:15px; font-size:12px; color:#666;">' . esc_html__( 'HTML is automatically generated from line breaks.', 'sycomp-b2b-portal' ) . '</div>';
 
 		echo '</div></div></section>';
 
