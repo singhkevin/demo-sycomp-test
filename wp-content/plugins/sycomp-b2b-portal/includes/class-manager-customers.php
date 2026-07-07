@@ -521,7 +521,7 @@ class Sycomp_B2B_Manager_Customers {
 		);
 
 		foreach ( $products as $pid ) {
-			$current = array_map( 'intval', (array) get_post_meta( $pid, '_sycomp_company', false ) );
+			$current = Sycomp_B2B_Post_Types::get_product_companies( $pid );
 			$has     = in_array( $cid, $current, true );
 			$want    = isset( $enabled[ $pid ] );
 
@@ -1274,7 +1274,7 @@ class Sycomp_B2B_Manager_Customers {
 			echo '</tr></thead><tbody>';
 			foreach ( $products as $product ) {
 				$pid     = (int) $product->ID;
-				$current = array_map( 'intval', (array) get_post_meta( $pid, '_sycomp_company', false ) );
+				$current = Sycomp_B2B_Post_Types::get_product_companies( $pid );
 				$checked = in_array( $cid, $current, true );
 				$wc      = wc_get_product( $pid );
 				$sku     = ( $wc && $wc->get_sku() ) ? $wc->get_sku() : '';

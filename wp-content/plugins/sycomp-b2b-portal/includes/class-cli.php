@@ -62,14 +62,24 @@ class Sycomp_B2B_CLI {
 	 * [--images]
 	 * : Also download product images.
 	 *
+	 * [--companies=<ids>]
+	 * : Comma-separated list of company IDs to assign visibility.
+	 *
 	 * @param array $args       Positional args.
 	 * @param array $assoc_args Flags.
 	 */
 	public function import_products( $args, $assoc_args ) {
 		$file = isset( $args[0] ) ? $args[0] : '';
+		$company_ids = array();
+		if ( ! empty( $assoc_args['companies'] ) ) {
+			$company_ids = array_map( 'absint', explode( ',', $assoc_args['companies'] ) );
+		}
 		$result = Sycomp_B2B_Importer::import_products(
 			$file,
-			array( 'import_images' => isset( $assoc_args['images'] ) )
+			array(
+				'import_images' => isset( $assoc_args['images'] ),
+				'company_ids'   => $company_ids,
+			)
 		);
 
 		if ( is_wp_error( $result ) ) {

@@ -22,3 +22,6 @@ wp-content/themes/**/*.zip
 Thumbs.db
 .idea/
 .vscode/
+
+# Custom Excludes
+products_export.csv

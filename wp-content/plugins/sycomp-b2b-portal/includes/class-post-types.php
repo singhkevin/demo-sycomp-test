@@ -325,4 +325,35 @@ class Sycomp_B2B_Post_Types {
 
 		return $title;
 	}
+
+	/**
+	 * Set product companies visibility (unified logic).
+	 *
+	 * @param int   $product_id  Product ID.
+	 * @param int[] $company_ids Array of company IDs.
+	 */
+	public static function set_product_companies( $product_id, $company_ids ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id ) {
+			return;
+		}
+		delete_post_meta( $product_id, '_sycomp_company' );
+		if ( ! empty( $company_ids ) && is_array( $company_ids ) ) {
+			foreach ( array_unique( array_filter( array_map( 'absint', $company_ids ) ) ) as $cid ) {
+				if ( $cid ) {
+					add_post_meta( $product_id, '_sycomp_company', $cid );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get company IDs for which the product is visible.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return int[] Company IDs.
+	 */
+	public static function get_product_companies( $product_id ) {
+		return array_map( 'intval', (array) get_post_meta( absint( $product_id ), '_sycomp_company', false ) );
+	}
 }

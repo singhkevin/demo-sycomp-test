@@ -81,7 +81,14 @@ class Sycomp_B2B_Admin_Import {
 
 		if ( 'products' === $type ) {
 			$import_images = ! empty( $_POST['sycomp_import_images'] );
-			$result        = Sycomp_B2B_Importer::import_products( $tmp, array( 'import_images' => $import_images ) );
+			$companies     = isset( $_POST['sycomp_import_companies'] ) ? array_map( 'absint', (array) $_POST['sycomp_import_companies'] ) : array();
+			$result        = Sycomp_B2B_Importer::import_products(
+				$tmp,
+				array(
+					'import_images' => $import_images,
+					'company_ids'   => $companies,
+				)
+			);
 			self::record_result( $result );
 		} elseif ( 'prices' === $type ) {
 			$market = isset( $_POST['sycomp_market'] ) ? sanitize_key( wp_unslash( $_POST['sycomp_market'] ) ) : '';
@@ -172,6 +179,20 @@ class Sycomp_B2B_Admin_Import {
 								<?php esc_html_e( 'Also download product images (slower — recommended via WP-CLI for large catalogues)', 'sycomp-b2b-portal' ); ?>
 							</label>
 						</p>
+						<div style="margin-bottom: 16px;">
+							<strong><?php esc_html_e( 'Visible to companies', 'sycomp-b2b-portal' ); ?></strong>
+							<p class="description"><?php esc_html_e( 'Select which companies can see the imported products (leave unchecked to keep existing visibility).', 'sycomp-b2b-portal' ); ?></p>
+							<?php
+							$companies = Sycomp_B2B_Post_Types::get_companies();
+							if ( empty( $companies ) ) {
+								echo '<p><em>' . esc_html__( 'No customer companies exist yet.', 'sycomp-b2b-portal' ) . '</em></p>';
+							} else {
+								foreach ( $companies as $company ) {
+									echo '<label style="display:block; margin: 6px 0;"><input type="checkbox" name="sycomp_import_companies[]" value="' . esc_attr( $company->ID ) . '"> ' . esc_html( get_the_title( $company ) ) . '</label>';
+								}
+							}
+							?>
+						</div>
 						<p><button type="submit" class="button button-primary"><?php esc_html_e( 'Import products', 'sycomp-b2b-portal' ); ?></button></p>
 					</form>
 				</div>

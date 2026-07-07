@@ -414,15 +414,8 @@ class Sycomp_B2B_Manager {
 		}
 
 		// Per-company visibility.
-		delete_post_meta( $new_id, '_sycomp_company' );
-		if ( ! empty( $_POST['p_companies'] ) && is_array( $_POST['p_companies'] ) ) {
-			foreach ( wp_unslash( $_POST['p_companies'] ) as $cid ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				$cid = absint( $cid );
-				if ( $cid ) {
-					add_post_meta( $new_id, '_sycomp_company', $cid );
-				}
-			}
-		}
+		$p_companies = isset( $_POST['p_companies'] ) ? (array) wp_unslash( $_POST['p_companies'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		Sycomp_B2B_Post_Types::set_product_companies( $new_id, $p_companies );
 
 		// Featured image upload.
 		if ( ! empty( $_FILES['p_image']['name'] ) ) {
@@ -706,7 +699,14 @@ class Sycomp_B2B_Manager {
 		$msg = array( 'warn', __( 'Nothing was imported.', 'sycomp-b2b-portal' ) );
 
 		if ( 'products' === $type ) {
-			$result = Sycomp_B2B_Importer::import_products( $tmp, array( 'import_images' => ! empty( $_POST['import_images'] ) ) );
+			$import_companies = isset( $_POST['import_companies'] ) ? array_map( 'absint', (array) $_POST['import_companies'] ) : array();
+			$result = Sycomp_B2B_Importer::import_products(
+				$tmp,
+				array(
+					'import_images' => ! empty( $_POST['import_images'] ),
+					'company_ids'   => $import_companies,
+				)
+			);
 			if ( is_wp_error( $result ) ) {
 				$msg = array( 'warn', $result->get_error_message() );
 			} else {
@@ -1592,7 +1592,7 @@ class Sycomp_B2B_Manager {
 			$cur_cat = ( ! is_wp_error( $ct ) && ! empty( $ct ) ) ? (int) $ct[0] : 0;
 			$bt = wp_get_post_terms( $pid, Sycomp_B2B_Post_Types::TAX_BRAND, array( 'fields' => 'names' ) );
 			$cur_brand = ( ! is_wp_error( $bt ) && ! empty( $bt ) ) ? $bt[0] : '';
-			$cur_comp  = array_map( 'intval', (array) get_post_meta( $pid, '_sycomp_company', false ) );
+			$cur_comp  = Sycomp_B2B_Post_Types::get_product_companies( $pid );
 		}
 
 		echo '<form class="sy-form sy-form--card" method="post" enctype="multipart/form-data" action="' . esc_url( $back ) . '">';
@@ -1812,7 +1812,22 @@ class Sycomp_B2B_Manager {
 		echo '<input type="hidden" name="sycomp_admin_action" value="import_run">';
 		echo '<input type="hidden" name="import_type" value="products">';
 		echo '<label class="sy-field"><span class="sy-field__label">' . esc_html__( 'CSV file', 'sycomp-b2b-portal' ) . '</span><input type="file" name="sycomp_csv" accept=".csv" required></label>';
-		echo '<label class="sy-check" style="margin-bottom: 24px;"><input type="checkbox" name="import_images" value="1"> ' . esc_html__( 'Also download product images (slower)', 'sycomp-b2b-portal' ) . '</label>';
+		echo '<label class="sy-check" style="margin-bottom: 12px;"><input type="checkbox" name="import_images" value="1"> ' . esc_html__( 'Also download product images (slower)', 'sycomp-b2b-portal' ) . '</label>';
+		
+		echo '<label class="sy-field" style="margin-bottom: 24px;"><span class="sy-field__label">' . esc_html__( 'Visible to companies', 'sycomp-b2b-portal' ) . '</span>';
+		$companies = Sycomp_B2B_Post_Types::get_companies();
+		if ( empty( $companies ) ) {
+			echo '<p class="sy-muted">' . esc_html__( 'No customer companies exist yet.', 'sycomp-b2b-portal' ) . '</p>';
+		} else {
+			echo '<p class="sy-muted" style="margin-bottom: 12px;">' . esc_html__( 'Choose which companies can see the imported products (leave unchecked to keep existing visibility).', 'sycomp-b2b-portal' ) . '</p>';
+			echo '<div class="sy-checkgrid">';
+			foreach ( $companies as $company ) {
+				echo '<label class="sy-check"><input type="checkbox" name="import_companies[]" value="' . esc_attr( $company->ID ) . '"> ' . esc_html( get_the_title( $company ) ) . '</label>';
+			}
+			echo '</div>';
+		}
+		echo '</label>';
+
 		echo '<div class="sy-form__actions"><button class="sy-btn sy-btn--accent" type="submit">' . esc_html__( 'Import Data', 'sycomp-b2b-portal' ) . '</button></div>';
 		echo '</form></div></section>';
 	}

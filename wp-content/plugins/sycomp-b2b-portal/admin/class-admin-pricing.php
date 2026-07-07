@@ -186,7 +186,7 @@ class Sycomp_B2B_Admin_Pricing {
 		<h4 style="margin:18px 0 4px;">Available to companies</h4>
 		<p class="description">Tick the companies whose buyers may see this product in their catalogue. A product with no company ticked is hidden from every catalogue.</p>
 		<?php
-		$sycomp_enabled = array_map( 'strval', (array) get_post_meta( $post->ID, '_sycomp_company' ) );
+		$sycomp_enabled = array_map( 'strval', Sycomp_B2B_Post_Types::get_product_companies( $post->ID ) );
 		$sycomp_companies = Sycomp_B2B_Post_Types::get_companies();
 		if ( empty( $sycomp_companies ) ) {
 			echo '<p><em>' . esc_html__( 'No companies created yet.', 'sycomp-b2b-portal' ) . '</em></p>';
@@ -241,10 +241,7 @@ class Sycomp_B2B_Admin_Pricing {
 
 		// Company availability.
 		$companies = isset( $_POST['sycomp_company'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['sycomp_company'] ) ) : array();
-		delete_post_meta( $post_id, '_sycomp_company' );
-		foreach ( array_unique( array_filter( $companies ) ) as $sycomp_cid ) {
-			add_post_meta( $post_id, '_sycomp_company', $sycomp_cid );
-		}
+		Sycomp_B2B_Post_Types::set_product_companies( $post_id, $companies );
 	}
 
 	/* ---------------------------------------------------------------------

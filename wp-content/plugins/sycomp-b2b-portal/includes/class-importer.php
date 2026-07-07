@@ -128,11 +128,17 @@ class Sycomp_B2B_Importer {
 	 * Import products from a Shopify-style product CSV.
 	 *
 	 * @param string $path Absolute CSV path.
-	 * @param array  $args { import_images: bool }.
+	 * @param array  $args { import_images: bool, company_ids: int[] }.
 	 * @return array|WP_Error Result summary.
 	 */
 	public static function import_products( $path, $args = array() ) {
-		$args = wp_parse_args( $args, array( 'import_images' => false ) );
+		$args = wp_parse_args(
+			$args,
+			array(
+				'import_images' => false,
+				'company_ids'   => array(),
+			)
+		);
 
 		$csv = self::read_csv( $path );
 		if ( is_wp_error( $csv ) ) {
@@ -176,7 +182,7 @@ class Sycomp_B2B_Importer {
 				continue;
 			}
 
-			$result = self::upsert_product( $handle, $main, $rows, $args['import_images'] );
+			$result = self::upsert_product( $handle, $main, $rows, $args['import_images'], $args['company_ids'] );
 			if ( is_wp_error( $result ) ) {
 				$errors[] = $handle . ': ' . $result->get_error_message();
 				continue;
@@ -205,9 +211,10 @@ class Sycomp_B2B_Importer {
 	 * @param array  $main          The main data row.
 	 * @param array  $rows          All rows in the handle group.
 	 * @param bool   $import_images Whether to sideload images.
+	 * @param int[]  $company_ids   Company IDs to assign product visibility.
 	 * @return string|WP_Error 'created' | 'updated' | WP_Error.
 	 */
-	protected static function upsert_product( $handle, $main, $rows, $import_images ) {
+	protected static function upsert_product( $handle, $main, $rows, $import_images, $company_ids = array() ) {
 		$title = self::field( $main, array( 'Title', 'Product Name', 'Name' ) );
 		$sku   = self::field( $main, array( 'Variant SKU', 'SKU' ) );
 		$body  = self::field( $main, array( 'Body (HTML)', 'Body', 'Description' ) );
@@ -269,6 +276,10 @@ class Sycomp_B2B_Importer {
 		$product_id = $product->get_id();
 
 		update_post_meta( $product_id, self::META_HANDLE, $handle );
+
+		if ( ! empty( $company_ids ) ) {
+			Sycomp_B2B_Post_Types::set_product_companies( $product_id, $company_ids );
+		}
 
 		if ( $brand ) {
 			self::assign_term( $product_id, Sycomp_B2B_Post_Types::TAX_BRAND, $brand );
