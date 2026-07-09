@@ -8,7 +8,70 @@
  * ---------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------
-   Homepage market selector
+   Homepage market selector (Original Admin Layout)
+   ------------------------------------------------------------------------- */
+.sy-marketsel {
+  min-height: calc(100vh - 76px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #0c1c3c 0%, #081429 100%);
+  padding: 56px 24px;
+}
+.sy-marketsel__inner { width: 100%; max-width: 960px; margin: 0 auto; }
+.sy-marketsel__head { text-align: center; margin-bottom: 36px; }
+.sy-marketsel__head h1 { color: #fff; font-size: var(--sy-text-2xl); margin-bottom: 8px; }
+.sy-marketsel__head p { color: rgba(255,255,255,.66); font-size: var(--sy-text-md); margin: 0; }
+
+.sy-marketsel .sy-market-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+.sy-marketsel .sy-market-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  background: #fff;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--sy-radius-lg, 8px);
+  text-decoration: none;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.sy-marketsel .sy-market-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.28);
+  border-color: rgba(255,255,255,.12);
+}
+.sy-marketsel .sy-market-card__flag {
+  width: 64px; height: 43px;
+  object-fit: cover;
+  border-radius: var(--sy-radius-sm, 4px);
+  border: 1px solid var(--sy-border);
+  display: block;
+}
+.sy-marketsel .sy-market-card__name { font-weight: 650; color: var(--sy-navy); font-size: var(--sy-text-base); margin: 0; }
+.sy-marketsel .sy-market-card__cur { font-size: var(--sy-text-xs); color: var(--sy-muted); letter-spacing: .04em; }
+.sy-marketsel .sy-market-card.is-unavailable { opacity: .42; cursor: not-allowed; }
+.sy-marketsel .sy-market-card__note { font-size: var(--sy-text-3xs); color: var(--sy-danger); text-align: center; }
+
+.sy-marketsel .sy-marketsel__empty {
+  text-align: center;
+  color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--sy-radius-lg, 8px);
+  padding: 30px 26px;
+  font-size: var(--sy-text-base);
+  margin: 0;
+}
+.sy-marketsel .sy-marketsel__signin { text-align: center; margin-top: 32px; }
+
+/* -------------------------------------------------------------------------
+   Homepage market selector (New Buyer Layout)
    ------------------------------------------------------------------------- */
 /* sr-only accessibility helper */
 .sr-only {
