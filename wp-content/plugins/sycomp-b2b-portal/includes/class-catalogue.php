@@ -359,6 +359,7 @@ class Sycomp_B2B_Catalogue {
 				<?php endforeach; ?>
 			</form>
 
+			<?php if ( current_user_can( 'manage_woocommerce' ) ) : ?>
 			<div class="sy-filter-group">
 				<h3 class="sy-filter__label"><?php esc_html_e( 'Brand', 'sycomp-b2b-portal' ); ?></h3>
 				<ul class="sy-filter-list">
@@ -380,6 +381,7 @@ class Sycomp_B2B_Catalogue {
 					<?php endif; ?>
 				</ul>
 			</div>
+			<?php endif; ?>
 
 			<div class="sy-filter-group">
 				<h3 class="sy-filter__label"><?php esc_html_e( 'Product category', 'sycomp-b2b-portal' ); ?></h3>
