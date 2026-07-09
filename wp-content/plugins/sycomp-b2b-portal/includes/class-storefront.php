@@ -259,11 +259,13 @@ class Sycomp_B2B_Storefront {
 		ob_start();
 		?>
 		<section class="sy-marketsel-layout">
-			<div class="sy-storefront-banner">
-				<div class="sy-storefront-banner__content">
-					<h1 class="sr-only"><?php esc_html_e( 'Welcome to the Sycomp Storefront', 'sycomp-b2b-portal' ); ?></h1>
-					<p class="sr-only"><?php esc_html_e( 'The Right Technology. Right When You Need It.', 'sycomp-b2b-portal' ); ?></p>
-					<span class="sr-only"><?php esc_html_e( 'Select a market to browse', 'sycomp-b2b-portal' ); ?></span>
+			<div class="sy-container sy-storefront-banner-wrap">
+				<div class="sy-storefront-banner">
+					<div class="sy-storefront-banner__content">
+						<h1 class="sr-only"><?php esc_html_e( 'Welcome to the Sycomp Storefront', 'sycomp-b2b-portal' ); ?></h1>
+						<p class="sr-only"><?php esc_html_e( 'The Right Technology. Right When You Need It.', 'sycomp-b2b-portal' ); ?></p>
+						<span class="sr-only"><?php esc_html_e( 'Select a market to browse', 'sycomp-b2b-portal' ); ?></span>
+					</div>
 				</div>
 			</div>
 

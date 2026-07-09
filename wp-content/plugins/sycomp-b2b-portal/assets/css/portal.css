@@ -29,7 +29,13 @@
   width: 100%;
 }
 
-/* Storefront Banner */
+/* Storefront Banner — inset to match the header's nav content width (.sy-container) */
+.sy-container.sy-storefront-banner-wrap {
+  width: 100%;
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
 .sy-storefront-banner {
   width: 100%;
   aspect-ratio: 1470 / 443;
@@ -38,6 +44,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  border-radius: var(--sy-radius-lg, 10px);
   position: relative;
 }
 
@@ -177,6 +184,13 @@
   }
   .sy-storefront-banner {
     min-height: 240px;
+  }
+}
+
+@media (max-width: 860px) {
+  .sy-container.sy-storefront-banner-wrap {
+    padding-top: 24px;
+    padding-bottom: 24px;
   }
 }
 
