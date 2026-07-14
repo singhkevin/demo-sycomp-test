@@ -332,11 +332,18 @@ class Sycomp_B2B_Storefront {
 								$sycomp_visible[ $key ] = $market;
 							}
 						}
+						$sycomp_count = count( $sycomp_visible );
+						// Min 3 cols on desktop/tablet; more markets → more cols (max 5).
+						// 1–6 → 3, 7–8 → 4, 9+ → 5.
+						$sycomp_cols = (int) max( 3, min( 5, (int) ceil( $sycomp_count / 2 ) ) );
 					?>
 					<?php if ( $logged_in && empty( $sycomp_visible ) ) : ?>
 						<p class="sy-marketsel__empty"><?php esc_html_e( 'No markets have been enabled for your company yet. Please contact your Sycomp representative.', 'sycomp-b2b-portal' ); ?></p>
 					<?php else : ?>
-						<div class="sy-market-grid">
+						<div class="sy-market-grid"
+							data-count="<?php echo esc_attr( (string) $sycomp_count ); ?>"
+							data-cols="<?php echo esc_attr( (string) $sycomp_cols ); ?>"
+							style="--sy-market-cols: <?php echo esc_attr( (string) $sycomp_cols ); ?>">
 							<?php foreach ( $sycomp_visible as $key => $market ) :
 								$jump_url = add_query_arg( 'sycomp_market', $key, $catalogue_url );
 								?>
@@ -348,9 +355,6 @@ class Sycomp_B2B_Storefront {
 								<div class="sy-market-card__info">
 									<span class="sy-market-card__name"><?php echo esc_html( $market['label'] ); ?></span>
 									<span class="sy-market-card__cur"><?php echo esc_html( $market['currency'] ); ?></span>
-								</div>
-								<div class="sy-market-card__chevron">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="sy-chevron-icon"><polyline points="9 18 15 12 9 6"></polyline></svg>
 								</div>
 							</a>
 							<?php endforeach; ?>

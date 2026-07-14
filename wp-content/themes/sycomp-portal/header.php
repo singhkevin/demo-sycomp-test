@@ -139,9 +139,21 @@ $sy_is_admin = function_exists( 'sycomp_b2b_use_manager_chrome' ) && sycomp_b2b_
 			<?php if ( is_user_logged_in() ) : ?>
 				<?php if ( current_user_can( 'manage_woocommerce' ) ) : ?>
 
+					<?php
+					$sy_mgr_nav = '';
+					if ( function_exists( 'sycomp_b2b_page_id' ) && sycomp_b2b_page_id( 'catalogue' ) && is_page( sycomp_b2b_page_id( 'catalogue' ) ) ) {
+						$sy_mgr_nav = 'catalogue';
+					} elseif ( function_exists( 'sycomp_b2b_is_manage_page' ) && sycomp_b2b_is_manage_page() ) {
+						$sy_mgr_nav = 'dashboard';
+					} elseif ( is_page( 'catalogue' ) ) {
+						$sy_mgr_nav = 'catalogue';
+					} elseif ( is_page( 'manage' ) ) {
+						$sy_mgr_nav = 'dashboard';
+					}
+					?>
 					<nav class="sy-header__nav" aria-label="<?php esc_attr_e( 'Management', 'sycomp-portal' ); ?>">
-						<a href="<?php echo esc_url( $sy_manage ); ?>"><?php esc_html_e( 'Dashboard', 'sycomp-portal' ); ?></a>
-						<a href="<?php echo esc_url( $sy_cat ); ?>"><?php esc_html_e( 'Catalogue', 'sycomp-portal' ); ?></a>
+						<a href="<?php echo esc_url( $sy_manage ); ?>"<?php echo ( 'dashboard' === $sy_mgr_nav ) ? ' class="is-active" aria-current="page"' : ''; ?>><?php esc_html_e( 'Dashboard', 'sycomp-portal' ); ?></a>
+						<a href="<?php echo esc_url( $sy_cat ); ?>"<?php echo ( 'catalogue' === $sy_mgr_nav ) ? ' class="is-active" aria-current="page"' : ''; ?>><?php esc_html_e( 'Catalogue', 'sycomp-portal' ); ?></a>
 					</nav>
 					<div class="sy-header__meta">
 						<a class="sy-header__user" href="<?php echo esc_url( wp_logout_url( home_url( '/' ) ) ); ?>">
@@ -165,6 +177,30 @@ $sy_is_admin = function_exists( 'sycomp_b2b_use_manager_chrome' ) && sycomp_b2b_
 							}
 						}
 					}
+
+					// Which primary-nav item matches the current page.
+					$sy_buyer_nav = '';
+					if ( function_exists( 'is_cart' ) && is_cart() ) {
+						$sy_buyer_nav = 'cart';
+					} elseif ( function_exists( 'is_checkout' ) && is_checkout() ) {
+						$sy_buyer_nav = 'cart';
+					} elseif ( function_exists( 'is_product' ) && is_product() ) {
+						$sy_buyer_nav = 'catalogue';
+					} elseif ( function_exists( 'sycomp_b2b_page_id' ) ) {
+						if ( sycomp_b2b_page_id( 'catalogue' ) && is_page( sycomp_b2b_page_id( 'catalogue' ) ) ) {
+							$sy_buyer_nav = 'catalogue';
+						} elseif ( sycomp_b2b_page_id( 'orders' ) && is_page( sycomp_b2b_page_id( 'orders' ) ) ) {
+							$sy_buyer_nav = 'orders';
+						} elseif ( sycomp_b2b_page_id( 'account' ) && is_page( sycomp_b2b_page_id( 'account' ) ) ) {
+							$sy_buyer_nav = 'account';
+						}
+					} elseif ( is_page( 'catalogue' ) ) {
+						$sy_buyer_nav = 'catalogue';
+					} elseif ( is_page( 'orders' ) ) {
+						$sy_buyer_nav = 'orders';
+					} elseif ( is_page( 'account' ) ) {
+						$sy_buyer_nav = 'account';
+					}
 					?>
 					<?php if ( $sy_company_logo || $sy_company_name ) : ?>
 						<div class="sy-header__company" title="<?php echo esc_attr( $sy_company_name ); ?>">
@@ -177,11 +213,11 @@ $sy_is_admin = function_exists( 'sycomp_b2b_use_manager_chrome' ) && sycomp_b2b_
 					<?php endif; ?>
 
 					<nav class="sy-header__nav" aria-label="<?php esc_attr_e( 'Primary', 'sycomp-portal' ); ?>">
-						<a href="<?php echo esc_url( $sy_cat ); ?>"><?php esc_html_e( 'Catalogue', 'sycomp-portal' ); ?></a>
-						<a href="<?php echo esc_url( $sy_orders ); ?>"><?php esc_html_e( 'Orders', 'sycomp-portal' ); ?></a>
-						<a href="<?php echo esc_url( $sy_acct ); ?>"><?php esc_html_e( 'Account', 'sycomp-portal' ); ?></a>
+						<a href="<?php echo esc_url( $sy_cat ); ?>"<?php echo ( 'catalogue' === $sy_buyer_nav ) ? ' class="is-active" aria-current="page"' : ''; ?>><?php esc_html_e( 'Catalogue', 'sycomp-portal' ); ?></a>
+						<a href="<?php echo esc_url( $sy_orders ); ?>"<?php echo ( 'orders' === $sy_buyer_nav ) ? ' class="is-active" aria-current="page"' : ''; ?>><?php esc_html_e( 'Orders', 'sycomp-portal' ); ?></a>
+						<a href="<?php echo esc_url( $sy_acct ); ?>"<?php echo ( 'account' === $sy_buyer_nav ) ? ' class="is-active" aria-current="page"' : ''; ?>><?php esc_html_e( 'Account', 'sycomp-portal' ); ?></a>
 						<?php if ( function_exists( 'wc_get_cart_url' ) ) : ?>
-							<a href="<?php echo esc_url( wc_get_cart_url() ); ?>">
+							<a href="<?php echo esc_url( wc_get_cart_url() ); ?>"<?php echo ( 'cart' === $sy_buyer_nav ) ? ' class="is-active" aria-current="page"' : ''; ?>>
 								<?php esc_html_e( 'Cart', 'sycomp-portal' ); ?>
 								(<span class="sy-cart-count"><?php
 									echo ( function_exists( 'WC' ) && WC()->cart ) ? esc_html( WC()->cart->get_cart_contents_count() ) : '0';

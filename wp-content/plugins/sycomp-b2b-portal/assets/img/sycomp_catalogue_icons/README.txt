@@ -16,7 +16,18 @@ Icon list:
 3. docks_hubs
 4. networking
 5. power_adapters
-6. cables_connectivity
-7. headsets_audio
-8. storage
-9. view_all_categories
+6. cables_connectivity (Cables)
+7. connectivity
+8. headsets_audio
+9. earbuds
+10. storage
+11. view_all_categories
+12. accessories
+13. keyboards
+14. mice_pointing_devices
+15. phone
+16. privacy_screens
+17. stands_mounts
+18. webcams
+19. yubikey
+20. uncategorized

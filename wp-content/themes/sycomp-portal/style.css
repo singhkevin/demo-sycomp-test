@@ -158,10 +158,21 @@ body.admin-bar .sy-header { top: 32px; }
 .sy-header__nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .sy-header__nav a {
   color: var(--sy-navy); font-size: var(--sy-text-base); font-weight: 600;
-  padding: 8px 12px; border-radius: var(--sy-radius);
+  padding: 8px 14px; border-radius: var(--sy-radius-pill, 999px);
+  border: 1px solid transparent;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.sy-header__nav a:hover, .sy-header__nav a[aria-current] {
-  color: var(--sy-accent); background: var(--sy-surface); text-decoration: none;
+.sy-header__nav a:hover {
+  color: var(--sy-navy); background: var(--sy-surface); text-decoration: none;
+}
+.sy-header__nav a.is-active,
+.sy-header__nav a[aria-current="page"] {
+  color: #fff;
+  background: var(--sy-navy);
+  border-color: var(--sy-navy);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(12, 28, 60, 0.18);
 }
 .sy-header__meta { display: flex; align-items: center; gap: 14px; }
 .sy-header__user { font-size: var(--sy-text-sm); font-weight: 600; color: var(--sy-navy); }

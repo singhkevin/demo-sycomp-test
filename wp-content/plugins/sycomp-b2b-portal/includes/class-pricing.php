@@ -33,6 +33,10 @@ class Sycomp_B2B_Pricing {
 		// Purchasability — a product is only buyable in markets it is priced for.
 		add_filter( 'woocommerce_is_purchasable', array( __CLASS__, 'filter_is_purchasable' ), 20, 2 );
 
+		// Listing visibility — blank market price means unavailable in related,
+		// cross-sells, upsells and other WooCommerce visible-product loops.
+		add_filter( 'woocommerce_product_is_visible', array( __CLASS__, 'filter_is_visible' ), 20, 2 );
+
 		// Currency follows the active location's market.
 		add_filter( 'woocommerce_currency', array( __CLASS__, 'filter_currency' ), 20 );
 		add_filter( 'woocommerce_currency_symbol', array( __CLASS__, 'filter_currency_symbol' ), 20, 2 );
@@ -247,7 +251,38 @@ class Sycomp_B2B_Pricing {
 		if ( ! $market || ! $product instanceof WC_Product ) {
 			return $purchasable;
 		}
-		return '' !== self::get_market_price( $product->get_id(), $market );
+		return self::is_priced_in_market( $product->get_id(), $market );
+	}
+
+	/**
+	 * A product is listing-visible only if it is priced in the active market.
+	 *
+	 * WooCommerce related products, cart cross-sells and upsells all filter
+	 * via wc_products_array_filter_visible() → is_visible(), so this keeps
+	 * those surfaces aligned with the catalogue rule: blank market price =
+	 * unavailable.
+	 *
+	 * @param bool $visible    Whether visible in catalogues / loops.
+	 * @param int  $product_id Product ID.
+	 * @return bool
+	 */
+	public static function filter_is_visible( $visible, $product_id ) {
+		if ( ! $visible ) {
+			return false;
+		}
+
+		if ( is_admin()
+			&& ! ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+			&& ! ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+			return $visible;
+		}
+
+		$market = Sycomp_B2B_Context::get_active_market();
+		if ( ! $market ) {
+			return $visible;
+		}
+
+		return self::is_priced_in_market( (int) $product_id, $market );
 	}
 
 	/**

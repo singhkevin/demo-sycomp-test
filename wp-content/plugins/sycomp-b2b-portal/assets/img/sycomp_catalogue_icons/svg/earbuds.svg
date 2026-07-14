@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img">
+  <title>Sycomp catalogue icon</title>
+  <g fill="none" stroke="#06245C" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left earbud -->
+    <ellipse cx="156" cy="210" rx="52" ry="64"/>
+    <path d="M156 274v48"/>
+    <path d="M128 322h56"/>
+    <!-- Right earbud -->
+    <ellipse cx="356" cy="210" rx="52" ry="64"/>
+    <path d="M356 274v48"/>
+    <path d="M328 322h56"/>
+    <!-- Connecting cable -->
+    <path d="M156 322c0 70 40 110 100 110s100-40 100-110"/>
+  </g>
+</svg>
