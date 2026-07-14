@@ -173,7 +173,7 @@ $sy_is_admin = function_exists( 'sycomp_b2b_use_manager_chrome' ) && sycomp_b2b_
 							$sy_company_name = get_the_title( $sy_cid );
 							$sy_logo_id      = (int) get_post_meta( $sy_cid, '_sycomp_logo_id', true );
 							if ( $sy_logo_id ) {
-								$sy_company_logo = wp_get_attachment_image_url( $sy_logo_id, 'medium' );
+								$sy_company_logo = wp_get_attachment_image_url( $sy_logo_id, 'large' );
 							}
 						}
 					}

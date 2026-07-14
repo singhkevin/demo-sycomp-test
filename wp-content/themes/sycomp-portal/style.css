@@ -4,7 +4,7 @@ Theme URI: https://sycomp.com
 Author: Viral Inbound
 Author URI: https://viralinbound.com
 Description: Private B2B procurement portal theme for Sycomp. Built to pair with the Sycomp B2B Portal plugin (WooCommerce). Minimal, professional, login-gated storefront with multi-market pricing and a purchase-order workflow.
-Version: 1.8.3
+Version: 1.8.7
 Requires at least: 6.2
 Tested up to: 6.5
 Requires PHP: 7.4
@@ -153,7 +153,7 @@ body.admin-bar .sy-header { top: 32px; }
   min-height: 76px; padding-top: 10px; padding-bottom: 10px;
 }
 .sy-header__logo { display: flex; align-items: center; gap: 10px; }
-.sy-header__logo img { max-height: 40px; width: auto; }
+.sy-header__logo img { max-height: 34px; width: auto; }
 .sy-header__logo-text { color: var(--sy-navy); font-weight: 700; font-size: var(--sy-text-lg); letter-spacing: .01em; }
 .sy-header__nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .sy-header__nav a {
@@ -346,7 +346,15 @@ body.admin-bar .sy-header { top: 32px; }
   margin-left: 4px; padding-left: 16px;
   border-left: 1px solid var(--sy-border);
 }
-.sy-header__company-logo { max-height: 44px; max-width: 190px; width: auto; display: block; }
+.sy-header__company-logo {
+  height: 56px;
+  max-height: 56px;
+  width: auto;
+  max-width: 224px;
+  object-fit: contain;
+  object-position: left center;
+  display: block;
+}
 .sy-header__company-name { font-weight: 650; color: var(--sy-navy); font-size: var(--sy-text-md); }
 
 /* =========================================================================

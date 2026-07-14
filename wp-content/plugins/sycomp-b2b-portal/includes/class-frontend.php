@@ -25,7 +25,8 @@ class Sycomp_B2B_Frontend {
 		add_action( 'template_redirect', array( __CLASS__, 'gate_site' ), 1 );
 		add_action( 'template_redirect', array( __CLASS__, 'manager_home_redirect' ), 2 );
 		add_action( 'template_redirect', array( __CLASS__, 'disable_portal_caching' ), 5 );
-		add_filter( 'login_redirect', array( __CLASS__, 'login_redirect' ), 10, 3 );
+		// Late priority so other plugins cannot override staff → Manage routing.
+		add_filter( 'login_redirect', array( __CLASS__, 'login_redirect' ), 9999, 3 );
 		add_filter( 'show_admin_bar', array( __CLASS__, 'admin_bar_visibility' ) );
 		add_action( 'login_enqueue_scripts', array( __CLASS__, 'login_styles' ) );
 		add_action( 'login_footer', array( __CLASS__, 'login_chrome' ) );
@@ -118,25 +119,33 @@ class Sycomp_B2B_Frontend {
 	}
 
 	/**
-	 * Route users after login: administrators to wp-admin, shop managers to
-	 * the Sycomp B2B dashboard, buyers to the portal home (market selector).
+	 * Route users after login.
+	 *
+	 * Administrators and shop managers always land on the Manage dashboard
+	 * (not wp-admin). WordPress defaults the login form's redirect_to to
+	 * admin_url(), and when that value survives filters unchanged, core
+	 * sends caps-capable users straight into /wp-admin/.
+	 *
+	 * Buyers go to the portal home (market selector).
 	 *
 	 * @param string           $redirect_to Default redirect.
 	 * @param string           $requested   Requested redirect.
-	 * @param WP_User|WP_Error  $user        User or error.
+	 * @param WP_User|WP_Error $user        User or error.
 	 * @return string
 	 */
 	public static function login_redirect( $redirect_to, $requested, $user ) {
 		if ( ! $user instanceof WP_User ) {
 			return $redirect_to;
 		}
-		$roles = (array) $user->roles;
-		if ( in_array( 'administrator', $roles, true ) ) {
-			return sycomp_b2b_page_url( 'manage' );
+
+		$roles     = (array) $user->roles;
+		$is_staff  = in_array( 'administrator', $roles, true ) || in_array( 'shop_manager', $roles, true );
+		$manage_url = function_exists( 'sycomp_b2b_page_url' ) ? sycomp_b2b_page_url( 'manage' ) : '';
+
+		if ( $is_staff ) {
+			return $manage_url ? $manage_url : home_url( '/manage/' );
 		}
-		if ( in_array( 'shop_manager', $roles, true ) ) {
-			return sycomp_b2b_page_url( 'manage' );
-		}
+
 		return home_url( '/' );
 	}
 

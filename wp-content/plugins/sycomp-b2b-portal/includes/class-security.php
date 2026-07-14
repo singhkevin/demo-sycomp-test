@@ -115,6 +115,66 @@ class Sycomp_B2B_Security {
 		add_action( 'send_headers', array( __CLASS__, 'security_headers' ) );
 		add_action( 'login_init', array( __CLASS__, 'security_headers' ) );
 		add_action( 'admin_init', array( __CLASS__, 'security_headers' ) );
+
+		// Staff login form should not default redirect_to to /wp-admin/.
+		add_action( 'login_init', array( __CLASS__, 'force_staff_login_redirect' ), 5 );
+		add_filter( 'admin_email_check_interval', array( __CLASS__, 'disable_admin_email_check_on_staff_login' ) );
+	}
+
+	/**
+	 * Whether the current login surface is the hidden staff URL.
+	 *
+	 * @return bool
+	 */
+	public static function is_staff_login_context() {
+		return 'staff' === self::$login_context;
+	}
+
+	/**
+	 * Point staff logins at the Manage dashboard instead of wp-admin.
+	 *
+	 * WordPress seeds the login form's redirect_to with admin_url() when
+	 * none is supplied. That survives into the POST and, without a winning
+	 * login_redirect filter, drops administrators into /wp-admin/.
+	 */
+	public static function force_staff_login_redirect() {
+		if ( ! self::is_staff_login_context() ) {
+			return;
+		}
+
+		$manage = function_exists( 'sycomp_b2b_page_url' ) ? sycomp_b2b_page_url( 'manage' ) : home_url( '/manage/' );
+		if ( ! $manage ) {
+			$manage = home_url( '/manage/' );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- seeding the login form target only.
+		$current = isset( $_REQUEST['redirect_to'] ) ? (string) wp_unslash( $_REQUEST['redirect_to'] ) : '';
+		$is_admin_target = ( '' === $current
+			|| 'wp-admin/' === $current
+			|| false !== strpos( $current, '/wp-admin' )
+			|| untrailingslashit( $current ) === untrailingslashit( admin_url() ) );
+
+		if ( $is_admin_target ) {
+			$_REQUEST['redirect_to'] = $manage;
+			$_GET['redirect_to']     = $manage;
+			$_POST['redirect_to']    = $manage;
+		}
+	}
+
+	/**
+	 * Skip the periodic "confirm admin email" interstitial on the staff login.
+	 *
+	 * That screen rebuilds a redirect through wp_login_url() and often ends
+	 * up sending administrators into wp-admin afterward.
+	 *
+	 * @param int $interval Seconds between checks.
+	 * @return int
+	 */
+	public static function disable_admin_email_check_on_staff_login( $interval ) {
+		if ( self::is_staff_login_context() ) {
+			return 0;
+		}
+		return $interval;
 	}
 
 	/* ---------------------------------------------------------------------
