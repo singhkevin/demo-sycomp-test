@@ -496,8 +496,17 @@
   display: block; padding: 7px 9px; border-radius: var(--sy-radius);
   font-size: var(--sy-text-sm); color: var(--sy-text); text-decoration: none;
 }
+.sy-filter-list--cats a {
+  display: flex; align-items: center; gap: 8px;
+}
+.sy-filter-list__icon {
+  flex: 0 0 20px; width: 20px; height: 20px; object-fit: contain;
+}
 .sy-filter-list a:hover { background: var(--sy-surface); text-decoration: none; }
 .sy-filter-list a.is-active { background: var(--sy-navy); color: #fff; font-weight: 600; }
+.sy-filter-list a.is-active .sy-filter-list__icon {
+  filter: brightness(0) invert(1);
+}
 .sy-filter-clear { width: 100%; margin-top: 16px; }
 
 /* Product grid */

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img">
+  <title>Sycomp catalogue icon</title>
+  <g fill="none" stroke="#06245C" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="90" y="126" width="332" height="218" rx="28"/>
+    <path d="M256 344v54"/>
+    <path d="M176 398h160"/>
+    <circle cx="126" cy="302" r="9" fill="#06245C" stroke="none"/>
+  </g>
+</svg>

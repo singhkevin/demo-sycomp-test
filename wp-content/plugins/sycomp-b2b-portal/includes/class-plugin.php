@@ -251,3 +251,53 @@ if ( ! function_exists( 'sycomp_b2b_placeholder_icon' ) ) {
 			. '</svg>';
 	}
 }
+
+if ( ! function_exists( 'sycomp_b2b_catalogue_category_icon_url' ) ) {
+	/**
+	 * URL for a catalogue category icon SVG, if one exists for the slug.
+	 *
+	 * Icon filenames use underscores (e.g. monitors_displays.svg). WooCommerce
+	 * category slugs usually use hyphens (monitors-displays) — both resolve.
+	 *
+	 * @param string $slug Category slug, or 'view_all_categories' for the all-categories link.
+	 * @return string Absolute URL, or empty string when no matching icon file exists.
+	 */
+	function sycomp_b2b_catalogue_category_icon_url( $slug ) {
+		$slug = sanitize_title( (string) $slug );
+		if ( '' === $slug ) {
+			return '';
+		}
+
+		$key = str_replace( '-', '_', $slug );
+
+		// Allow common name variations to hit the shipped icon set.
+		$aliases = array(
+			'all'             => 'view_all_categories',
+			'all_categories'  => 'view_all_categories',
+			'monitors'        => 'monitors_displays',
+			'laptops'         => 'laptops_computers',
+			'computers'       => 'laptops_computers',
+			'docks'           => 'docks_hubs',
+			'hubs'            => 'docks_hubs',
+			'power'           => 'power_adapters',
+			'adapters'        => 'power_adapters',
+			'cables'          => 'cables_connectivity',
+			'connectivity'    => 'cables_connectivity',
+			'headsets'        => 'headsets_audio',
+			'headset'         => 'headsets_audio',
+			'earbuds'         => 'headsets_audio',
+			'audio'           => 'headsets_audio',
+		);
+		if ( isset( $aliases[ $key ] ) ) {
+			$key = $aliases[ $key ];
+		}
+
+		$rel  = 'assets/img/sycomp_catalogue_icons/svg/' . $key . '.svg';
+		$path = SYCOMP_B2B_DIR . $rel;
+		if ( ! is_readable( $path ) ) {
+			return '';
+		}
+
+		return SYCOMP_B2B_URL . $rel;
+	}
+}

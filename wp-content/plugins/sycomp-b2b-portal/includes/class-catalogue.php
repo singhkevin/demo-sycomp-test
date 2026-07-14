@@ -336,7 +336,7 @@ class Sycomp_B2B_Catalogue {
 		$cats = get_terms(
 			array(
 				'taxonomy'   => 'product_cat',
-				'hide_empty' => true,
+				'hide_empty' => false,
 			)
 		);
 		?>
@@ -385,19 +385,35 @@ class Sycomp_B2B_Catalogue {
 
 			<div class="sy-filter-group">
 				<h3 class="sy-filter__label"><?php esc_html_e( 'Product category', 'sycomp-b2b-portal' ); ?></h3>
-				<ul class="sy-filter-list">
+				<ul class="sy-filter-list sy-filter-list--cats">
 					<li>
+						<?php
+						$all_icon = sycomp_b2b_catalogue_category_icon_url( 'view_all_categories' );
+						?>
 						<a class="<?php echo $cat ? '' : 'is-active'; ?>"
 							href="<?php echo esc_url( self::filter_link( $page_url, $brand, '', $search, $extra ) ); ?>">
-							<?php esc_html_e( 'All categories', 'sycomp-b2b-portal' ); ?>
+							<?php if ( $all_icon ) : ?>
+								<img class="sy-filter-list__icon" src="<?php echo esc_url( $all_icon ); ?>" alt="" width="20" height="20" aria-hidden="true" decoding="async">
+							<?php endif; ?>
+							<span><?php esc_html_e( 'All categories', 'sycomp-b2b-portal' ); ?></span>
 						</a>
 					</li>
 					<?php if ( ! is_wp_error( $cats ) ) : ?>
 						<?php foreach ( $cats as $term ) : ?>
+							<?php
+							$cat_icon = sycomp_b2b_catalogue_category_icon_url( $term->slug );
+							if ( ! $cat_icon ) {
+								// Fallback: slugify the term name (e.g. "Monitors & Displays").
+								$cat_icon = sycomp_b2b_catalogue_category_icon_url( sanitize_title( $term->name ) );
+							}
+							?>
 							<li>
 								<a class="<?php echo ( $cat === $term->slug ) ? 'is-active' : ''; ?>"
 									href="<?php echo esc_url( self::filter_link( $page_url, $brand, $term->slug, $search, $extra ) ); ?>">
-									<?php echo esc_html( $term->name ); ?>
+									<?php if ( $cat_icon ) : ?>
+										<img class="sy-filter-list__icon" src="<?php echo esc_url( $cat_icon ); ?>" alt="" width="20" height="20" aria-hidden="true" decoding="async">
+									<?php endif; ?>
+									<span><?php echo esc_html( $term->name ); ?></span>
 								</a>
 							</li>
 						<?php endforeach; ?>
