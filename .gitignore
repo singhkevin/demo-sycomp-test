@@ -35,6 +35,24 @@ wp-content/ai1wm-backups/
 wp-content/litespeed/
 wp-content/debug.log
 
+# Non-custom plugins/themes — WordPress.com support asked that this repo
+# only carry this project's own code (sycomp-b2b-portal, sycomp-email-otp-2fa,
+# and the sycomp-portal theme). WooCommerce, stock WP.org themes, and the
+# Hostinger-branded plugins/theme (leftover from the prior host, not
+# applicable on WordPress.com) are excluded — files stay on disk locally,
+# just no longer pushed on deploy.
+/wp-content/plugins/woocommerce/
+/wp-content/plugins/all-in-one-wp-migration/
+/wp-content/plugins/hostinger/
+/wp-content/plugins/hostinger-ai-assistant/
+/wp-content/plugins/hostinger-easy-onboarding/
+/wp-content/plugins/hostinger-reach/
+/wp-content/plugins/litespeed-cache/
+/wp-content/themes/hostinger-ai-theme/
+/wp-content/themes/twentytwentyfive/
+/wp-content/themes/twentytwentyfour/
+/wp-content/themes/twentytwentythree/
+
 # ZIP files (plugin/theme backups)
 wp-content/plugins/**/*.zip
 wp-content/themes/**/*.zip
