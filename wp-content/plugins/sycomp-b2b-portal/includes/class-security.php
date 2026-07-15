@@ -119,6 +119,11 @@ class Sycomp_B2B_Security {
 		// Staff login form should not default redirect_to to /wp-admin/.
 		add_action( 'login_init', array( __CLASS__, 'force_staff_login_redirect' ), 5 );
 		add_filter( 'admin_email_check_interval', array( __CLASS__, 'disable_admin_email_check_on_staff_login' ) );
+
+		// Buyers sign in with Sycomp-issued credentials only — no WordPress.com
+		// account is relevant to them. Suppress Jetpack's SSO button on the
+		// buyer login surface; leave it available on the hidden staff URL.
+		add_filter( 'jetpack_sso_allowed_actions', array( __CLASS__, 'filter_jetpack_sso_allowed_actions' ) );
 	}
 
 	/**
@@ -422,8 +427,11 @@ class Sycomp_B2B_Security {
 		// home/staff-URL rewriting below (filter_wp_redirect) and produces
 		// an infinite bounce. Force the filter false for the duration of
 		// this internal load so our own branded login surfaces stay in
-		// control; Jetpack's SSO button (if enabled) can still render
-		// alongside the form; only the automatic redirect is suppressed.
+		// control; on the staff surface, Jetpack's SSO button (if enabled)
+		// can still render alongside the form — only the automatic redirect
+		// is suppressed. On the buyer surface, SSO is suppressed entirely by
+		// filter_jetpack_sso_allowed_actions() below, so this filter is
+		// belt-and-suspenders there.
 		// Verified against Jetpack's actual source: bypass_login_forward_wpcom()
 		// in projects/packages/connection/src/sso/class-helpers.php simply
 		// returns apply_filters( 'jetpack_sso_bypass_login_forward_wpcom', false ).
@@ -432,6 +440,31 @@ class Sycomp_B2B_Security {
 		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		@require_once ABSPATH . 'wp-login.php';
 		exit;
+	}
+
+	/**
+	 * `jetpack_sso_allowed_actions` filter — restricts which login
+	 * "actions" Jetpack's SSO module engages for at all (button rendering,
+	 * forced-redirect check, everything). Buyers sign in with Sycomp-issued
+	 * credentials only and have no WordPress.com accounts, so the
+	 * "Log in with WordPress.com" button is irrelevant there. Suppress SSO
+	 * entirely on the buyer login; leave the default (unchanged) on the
+	 * staff surface, where an admin may actually want it.
+	 *
+	 * Verified against Jetpack's actual source
+	 * (projects/packages/connection/src/sso/class-helpers.php
+	 * display_sso_form_for_action()) — an empty array here means
+	 * Jetpack_SSO::login_init() never calls display_sso_login_form()
+	 * (the method that hooks the button onto `login_form`) at all.
+	 *
+	 * @param array $allowed_actions Actions Jetpack SSO engages for.
+	 * @return array
+	 */
+	public static function filter_jetpack_sso_allowed_actions( $allowed_actions ) {
+		if ( 'buyer' === self::$login_context ) {
+			return array();
+		}
+		return $allowed_actions;
 	}
 
 	/**
