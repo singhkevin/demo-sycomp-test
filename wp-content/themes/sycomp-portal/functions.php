@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SYCOMP_THEME_VERSION', '1.8.7' );
+define( 'SYCOMP_THEME_VERSION', '1.8.8' );
 
 /**
  * Theme setup.

@@ -4,7 +4,7 @@ Theme URI: https://sycomp.com
 Author: Viral Inbound
 Author URI: https://viralinbound.com
 Description: Private B2B procurement portal theme for Sycomp. Built to pair with the Sycomp B2B Portal plugin (WooCommerce). Minimal, professional, login-gated storefront with multi-market pricing and a purchase-order workflow.
-Version: 1.8.7
+Version: 1.8.8
 Requires at least: 6.2
 Tested up to: 6.5
 Requires PHP: 7.4
@@ -321,10 +321,34 @@ body.admin-bar .sy-header { top: 32px; }
 }
 
 /* =========================================================================
-   WooCommerce single product — related products
-   The product image + summary are floated; clear the related section so it
-   sits as a full-width band below them.
+   WooCommerce single product — layout
+   Image + summary are floated by WooCommerce. Product tabs (the usual clearfix)
+   are removed by the theme, so without an explicit clear the tall gallery
+   bleeds over the footer. Also cap the gallery height so oversized product
+   photos cannot expand the page.
    ========================================================================= */
+.woocommerce div.product::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.woocommerce div.product .woocommerce-product-gallery,
+.woocommerce div.product div.images {
+  overflow: hidden;
+}
+.woocommerce div.product .woocommerce-product-gallery__wrapper,
+.woocommerce div.product .woocommerce-product-gallery__image,
+.woocommerce div.product .flex-viewport {
+  max-height: 420px;
+}
+.woocommerce div.product div.images img,
+.woocommerce div.product .woocommerce-product-gallery__image img {
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
+  display: block;
+}
 .woocommerce div.product .related.products,
 .woocommerce div.product .up-sells {
   clear: both;
