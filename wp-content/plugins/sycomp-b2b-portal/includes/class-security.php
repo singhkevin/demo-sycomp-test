@@ -573,11 +573,17 @@ class Sycomp_B2B_Security {
 	 * Require authentication for every REST request — the portal is fully
 	 * private, so there is no anonymous REST surface to expose.
 	 *
-	 * Exception: Jetpack's own REST routes (connection handshake, sync,
-	 * IDC resolution, etc.) authenticate each request themselves via a
-	 * signed request, not a logged-in WordPress session — some of those
-	 * calls (like the initial connection) necessarily happen with no WP
-	 * user at all. Blocking them here breaks the Jetpack connection.
+	 * Exceptions:
+	 *  - Jetpack's own REST routes (connection handshake, sync, IDC
+	 *    resolution, etc.) authenticate each request themselves via a
+	 *    signed request, not a logged-in WordPress session — some of those
+	 *    calls (like the initial connection) necessarily happen with no WP
+	 *    user at all. Blocking them here breaks the Jetpack connection.
+	 *  - The bare REST index (`/wp-json/`) is WordPress core's public route
+	 *    discovery document — it lists available namespaces/routes but no
+	 *    private data. WordPress.com pings it to confirm the REST API is
+	 *    reachable at all before attempting anything else; leaving it
+	 *    gated behind our own auth makes the site look REST-broken.
 	 *
 	 * @param WP_Error|null|true $result Existing authentication result.
 	 * @return WP_Error|null|true
@@ -586,7 +592,7 @@ class Sycomp_B2B_Security {
 		if ( ! empty( $result ) || is_wp_error( $result ) ) {
 			return $result;
 		}
-		if ( self::is_jetpack_rest_request() ) {
+		if ( self::is_jetpack_rest_request() || self::is_rest_index_request() ) {
 			return $result;
 		}
 		if ( ! is_user_logged_in() ) {
@@ -608,6 +614,31 @@ class Sycomp_B2B_Security {
 	protected static function is_jetpack_rest_request() {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		return (bool) preg_match( '#/(jetpack|jetpack-idc)/v\d#i', $uri );
+	}
+
+	/**
+	 * Whether the current request targets the bare REST index (the route
+	 * discovery document at the API root), not a specific namespace.
+	 *
+	 * @return bool
+	 */
+	protected static function is_rest_index_request() {
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+
+		// Pretty permalinks: /wp-json or /wp-json/ — nothing after the prefix.
+		$prefix = untrailingslashit( '/' . trim( (string) rest_get_url_prefix(), '/' ) );
+		if ( untrailingslashit( (string) $path ) === $prefix ) {
+			return true;
+		}
+
+		// Plain permalinks: /?rest_route=/ — the root route, nothing deeper.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['rest_route'] ) && '/' === trim( (string) wp_unslash( $_GET['rest_route'] ) ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/* ---------------------------------------------------------------------
