@@ -6,6 +6,28 @@ local-xdebuginfo.php
 test-path.php
 fix-sycomp.php
 
+# WordPress core — managed by the WordPress.com platform, not this repo.
+# Deploying these overwrites the platform's own core files. Only wp-content/
+# (this project's plugins and theme) should be pushed.
+/index.php
+/license.txt
+/readme.html
+/wp-activate.php
+/wp-admin/
+/wp-blog-header.php
+/wp-comments-post.php
+/wp-config-sample.php
+/wp-cron.php
+/wp-includes/
+/wp-links-opml.php
+/wp-load.php
+/wp-login.php
+/wp-mail.php
+/wp-settings.php
+/wp-signup.php
+/wp-trackback.php
+/xmlrpc.php
+
 # WordPress Content Uploads & Backups
 wp-content/uploads/
 wp-content/upgrade/
