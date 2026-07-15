@@ -214,23 +214,30 @@ class Sycomp_B2B_Frontend {
 			body.login .syc-login-header__support:hover { color: #1e4fd6; }
 			body.login .syc-login-header__support svg { width: 20px; height: 20px; }
 
-			/* Form column — vertically centred over the photo. */
+			/* Form column — vertically centred over the photo. Scrolls instead
+			   of squashing its children when a login message pushes total
+			   content taller than the viewport (see flex-shrink: 0 below —
+			   without it, flexbox silently shrinks + clips the form itself,
+			   since its default overflow is hidden). */
 			#login {
 				width: 100%; max-width: 420px; margin: 0 auto; box-sizing: border-box;
 				flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center;
-				padding: 28px 16px;
+				padding: 28px 16px; overflow-y: auto;
 			}
 			body.login .syc-login-intro {
 				text-align: center; color: #ffffff; font-size: 1.4rem;
 				font-weight: 650; margin: 0 0 4px; text-shadow: 0 1px 12px rgba(0,0,0,.55);
+				flex-shrink: 0;
 			}
 			body.login .syc-login-sub {
 				text-align: center; color: rgba(255,255,255,.9); font-size: .92rem;
 				margin: 0 0 20px; text-shadow: 0 1px 8px rgba(0,0,0,.6);
+				flex-shrink: 0;
 			}
 			.login form {
 				background: #ffffff; border: 0; border-radius: 10px;
 				box-shadow: 0 16px 50px rgba(0,0,0,.35); padding: 28px 26px; margin: 0;
+				flex-shrink: 0;
 			}
 			.login label { color: #1a1f29; font-size: .9rem; }
 			.login input[type=text], .login input[type=password] {
@@ -248,8 +255,8 @@ class Sycomp_B2B_Frontend {
 			.login #nav a,
 			.login #nav a:visited { color: #ffffff; text-shadow: 0 1px 10px rgba(0,0,0,.85); }
 			.login #nav a:hover { color: #c9d8f5; }
-			.login .message, .login .notice { border-left-color: #1e4fd6; border-radius: 6px; }
-			.login #login_error { border-left-color: #c0392b; border-radius: 6px; }
+			.login .message, .login .notice { border-left-color: #1e4fd6; border-radius: 6px; flex-shrink: 0; }
+			.login #login_error { border-left-color: #c0392b; border-radius: 6px; flex-shrink: 0; }
 
 			/* Footer: one row (logo left / nav centre / social right), a
 			   divider, then the copyright line with legal links at right. */
