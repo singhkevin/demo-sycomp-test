@@ -291,17 +291,28 @@ class Sycomp_B2B_Security {
 
 	/**
 	 * Runs on `plugins_loaded` (priority 1). Blocks XML-RPC outright.
+	 *
+	 * Exception: Jetpack's connection handshake and heartbeat run over
+	 * `xmlrpc.php?for=jetpack` (the standard signal Jetpack itself and every
+	 * major security plugin use to tell its calls apart from pingback/XML-RPC
+	 * abuse) — blocking that endpoint prevents the site from ever connecting
+	 * to WordPress.com and surfaces as a 403 "transport error" in Jetpack.
 	 */
 	public static function block_xmlrpc() {
 		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 			return;
 		}
 		$uri = wp_unslash( $_SERVER['REQUEST_URI'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		if ( false !== stripos( (string) $uri, 'xmlrpc.php' ) ) {
-			status_header( 403 );
-			nocache_headers();
-			exit( 'XML-RPC services are disabled on this site.' );
+		if ( false === stripos( (string) $uri, 'xmlrpc.php' ) ) {
+			return;
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['for'] ) && 'jetpack' === $_GET['for'] ) {
+			return;
+		}
+		status_header( 403 );
+		nocache_headers();
+		exit( 'XML-RPC services are disabled on this site.' );
 	}
 
 	/**
@@ -377,6 +388,19 @@ class Sycomp_B2B_Security {
 
 		global $pagenow, $error, $interim_login, $action, $user_login; // phpcs:ignore
 		$pagenow = 'wp-login.php';
+
+		// When Jetpack SSO is set to require WordPress.com sign-in, it hooks
+		// `login_init` and unconditionally redirects any wp-login.php load to
+		// wordpress.com — including this internal one. That fights with the
+		// wp-login.php → home/staff-URL rewriting below (filter_wp_redirect)
+		// and produces an infinite bounce between this site and WordPress.com.
+		// Jetpack SSO honours `jetpack-sso-default-login=1` as an explicit
+		// "show the default login form" escape hatch, so set it before
+		// wp-login.php loads to keep our own branded login surfaces in
+		// control. This does not disable Jetpack SSO — an optional
+		// "Log in with WordPress.com" button can still appear on the form.
+		$_GET['jetpack-sso-default-login']     = '1';
+		$_REQUEST['jetpack-sso-default-login'] = '1';
 
 		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		@require_once ABSPATH . 'wp-login.php';
@@ -549,11 +573,20 @@ class Sycomp_B2B_Security {
 	 * Require authentication for every REST request — the portal is fully
 	 * private, so there is no anonymous REST surface to expose.
 	 *
+	 * Exception: Jetpack's own REST routes (connection handshake, sync,
+	 * IDC resolution, etc.) authenticate each request themselves via a
+	 * signed request, not a logged-in WordPress session — some of those
+	 * calls (like the initial connection) necessarily happen with no WP
+	 * user at all. Blocking them here breaks the Jetpack connection.
+	 *
 	 * @param WP_Error|null|true $result Existing authentication result.
 	 * @return WP_Error|null|true
 	 */
 	public static function require_rest_auth( $result ) {
 		if ( ! empty( $result ) || is_wp_error( $result ) ) {
+			return $result;
+		}
+		if ( self::is_jetpack_rest_request() ) {
 			return $result;
 		}
 		if ( ! is_user_logged_in() ) {
@@ -564,6 +597,17 @@ class Sycomp_B2B_Security {
 			);
 		}
 		return $result;
+	}
+
+	/**
+	 * Whether the current request targets one of Jetpack's own REST
+	 * namespaces.
+	 *
+	 * @return bool
+	 */
+	protected static function is_jetpack_rest_request() {
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		return (bool) preg_match( '#/(jetpack|jetpack-idc)/v\d#i', $uri );
 	}
 
 	/* ---------------------------------------------------------------------
