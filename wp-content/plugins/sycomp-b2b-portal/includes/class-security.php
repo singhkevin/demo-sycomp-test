@@ -389,18 +389,20 @@ class Sycomp_B2B_Security {
 		global $pagenow, $error, $interim_login, $action, $user_login; // phpcs:ignore
 		$pagenow = 'wp-login.php';
 
-		// When Jetpack SSO is set to require WordPress.com sign-in, it hooks
-		// `login_init` and unconditionally redirects any wp-login.php load to
-		// wordpress.com — including this internal one. That fights with the
-		// wp-login.php → home/staff-URL rewriting below (filter_wp_redirect)
-		// and produces an infinite bounce between this site and WordPress.com.
-		// Jetpack SSO honours `jetpack-sso-default-login=1` as an explicit
-		// "show the default login form" escape hatch, so set it before
-		// wp-login.php loads to keep our own branded login surfaces in
-		// control. This does not disable Jetpack SSO — an optional
-		// "Log in with WordPress.com" button can still appear on the form.
-		$_GET['jetpack-sso-default-login']     = '1';
-		$_REQUEST['jetpack-sso-default-login'] = '1';
+		// Jetpack's SSO module hooks `login_init` too, and — if
+		// `jetpack_sso_bypass_login_forward_wpcom` resolves true (an explicit
+		// add_filter() call, or a WordPress.com-side default for hosted
+		// sites) — unconditionally redirects the load to wordpress.com,
+		// including this internal one. That fights with the wp-login.php →
+		// home/staff-URL rewriting below (filter_wp_redirect) and produces
+		// an infinite bounce. Force the filter false for the duration of
+		// this internal load so our own branded login surfaces stay in
+		// control; Jetpack's SSO button (if enabled) can still render
+		// alongside the form; only the automatic redirect is suppressed.
+		// Verified against Jetpack's actual source: bypass_login_forward_wpcom()
+		// in projects/packages/connection/src/sso/class-helpers.php simply
+		// returns apply_filters( 'jetpack_sso_bypass_login_forward_wpcom', false ).
+		add_filter( 'jetpack_sso_bypass_login_forward_wpcom', '__return_false', 999 );
 
 		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		@require_once ABSPATH . 'wp-login.php';
@@ -606,14 +608,19 @@ class Sycomp_B2B_Security {
 	}
 
 	/**
-	 * Whether the current request targets one of Jetpack's own REST
-	 * namespaces.
+	 * Whether the current request targets one of Jetpack's own REST routes.
+	 *
+	 * Verified against Jetpack's actual source (projects/packages/connection/src
+	 * — class-rest-connector.php and identity-crisis/class-rest-endpoints.php):
+	 * connection, sync, and identity-crisis routes all register under the
+	 * single `jetpack/v4` namespace; there is no separate `jetpack-idc`
+	 * namespace.
 	 *
 	 * @return bool
 	 */
 	protected static function is_jetpack_rest_request() {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		return (bool) preg_match( '#/(jetpack|jetpack-idc)/v\d#i', $uri );
+		return (bool) preg_match( '#/jetpack/v\d#i', $uri );
 	}
 
 	/**
