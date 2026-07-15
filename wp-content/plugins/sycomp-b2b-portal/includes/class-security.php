@@ -84,7 +84,7 @@ class Sycomp_B2B_Security {
 		remove_action( 'template_redirect', 'wp_redirect_admin_locations', 1000 );
 
 		// --- XML-RPC. ---
-		add_filter( 'xmlrpc_enabled', '__return_false' );
+		add_filter( 'xmlrpc_enabled', array( __CLASS__, 'filter_xmlrpc_enabled' ) );
 		add_filter( 'wp_headers', array( __CLASS__, 'strip_pingback_header' ) );
 
 		// --- Author / user enumeration. ---
@@ -313,6 +313,31 @@ class Sycomp_B2B_Security {
 		status_header( 403 );
 		nocache_headers();
 		exit( 'XML-RPC services are disabled on this site.' );
+	}
+
+	/**
+	 * `xmlrpc_enabled` filter — disables XML-RPC methods that require
+	 * authentication (e.g. the classic wp.newPost publishing API).
+	 *
+	 * Exception: Jetpack's own registration/connection handshake calls
+	 * WordPress core's wp_xmlrpc_server::login() directly as part of
+	 * xmlrpc.php?for=jetpack (verified in Jetpack's
+	 * projects/packages/connection/src/class-manager.php). That method
+	 * checks this exact filter and 405s with "XML-RPC services are
+	 * disabled on this site" if it resolves false — independent of, and
+	 * even after fixing, block_xmlrpc()'s own request-level gate above.
+	 * Forcing this unconditionally false silently broke Jetpack's
+	 * handshake at the WordPress-core level regardless of that fix.
+	 *
+	 * @param bool $is_enabled Whether XML-RPC methods requiring auth are enabled.
+	 * @return bool
+	 */
+	public static function filter_xmlrpc_enabled( $is_enabled ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['for'] ) && 'jetpack' === $_GET['for'] ) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
