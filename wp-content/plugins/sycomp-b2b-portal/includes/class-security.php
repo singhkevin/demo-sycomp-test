@@ -315,11 +315,6 @@ class Sycomp_B2B_Security {
 	 *    report XML-RPC as down even though the real connection works fine.
 	 */
 	public static function block_xmlrpc() {
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
-		if ( false !== strpos( $ua, 'jetpack' ) || false !== strpos( $ua, 'wordpress.com' ) ) {
-			return;
-		}
-
 		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 			return;
 		}
@@ -396,11 +391,6 @@ class Sycomp_B2B_Security {
 	 * two login surfaces.
 	 */
 	public static function handle_request() {
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? strtolower( $_SERVER['HTTP_USER_AGENT'] ) : '';
-		if ( false !== strpos( $ua, 'jetpack' ) || false !== strpos( $ua, 'wordpress.com' ) ) {
-			return;
-		}
-
 		global $pagenow;
 
 		$uri = isset( $_SERVER['REQUEST_URI'] )
