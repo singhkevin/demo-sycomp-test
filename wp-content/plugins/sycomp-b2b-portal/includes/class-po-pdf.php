@@ -284,7 +284,6 @@ class Sycomp_B2B_PO_PDF {
 		}
 
 		$company_id      = (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY );
-		$company         = $company_id ? get_the_title( $company_id ) : $order->get_billing_company();
 		$location_id     = (int) $order->get_meta( Sycomp_B2B_PO::META_LOCATION );
 		$billing_address = (string) $order->get_meta( '_sycomp_billing_address' );
 		if ( empty( $billing_address ) && $location_id ) {
@@ -359,44 +358,7 @@ class Sycomp_B2B_PO_PDF {
 		}
 
 		// Dynamic Quote ID Formatting
-		$words = explode( ' ', $company );
-		$company_prefix = ! empty( $words[0] ) ? preg_replace( '/[^A-Za-z0-9]/', '', $words[0] ) : '';
-		$m_data = Sycomp_B2B_Markets::get( $market );
-		$market_code = $m_data ? strtoupper( $m_data['country_code'] ) : '';
-		$batch = (string) $order->get_meta( '_sycomp_batch' );
-		if ( '' === $batch ) {
-			$batch = (string) $order->get_meta( 'batch' );
-		}
-		$batch_val = $batch;
-		if ( '' === $batch_val ) {
-			$batch_val = '-Batch';
-		}
-
-		// Load configured nomenclature format per market
-		$quote_formats = get_option( 'sycomp_b2b_quote_formats', array() );
-		$fmt           = isset( $quote_formats[ $market ] ) ? trim( $quote_formats[ $market ] ) : '';
-
-		if ( '' === $fmt ) {
-			// Default fallback pattern
-			$fmt = '{company}{market}{batch}{id}';
-		}
-
-		// Replace placeholders and common aliases (forgiving placeholders)
-		$quote_no = str_replace(
-			array(
-				'{company}', '{company_name}',
-				'{market}', '{market_code}',
-				'{batch}', '{batch_no}',
-				'{id}', '{order_id}', '{quote_id}'
-			),
-			array(
-				$company_prefix, $company_prefix,
-				$market_code, $market_code,
-				$batch_val, $batch_val,
-				$order->get_id(), $order->get_id(), $order->get_id()
-			),
-			$fmt
-		);
+		$quote_no = Sycomp_B2B_PO::quote_id( $order );
 
 		// Top-right Quote Info Table
 		$tbl_x  = self::R - 140;

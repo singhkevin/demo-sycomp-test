@@ -34,6 +34,8 @@ class Sycomp_B2B_PO {
 	const META_COMPANY   = '_sycomp_company_id';
 	const META_PO_REF    = '_sycomp_po_reference';
 	const META_DELIVERY  = '_sycomp_delivery_address';
+	const META_QUOTE_ID  = '_sycomp_quote_id';
+	const META_PO_FILE   = '_sycomp_po_file_id';
 
 	/**
 	 * Embedded images for the current outgoing PO email.
@@ -532,6 +534,168 @@ class Sycomp_B2B_PO {
 		}
 		$company = (int) Sycomp_B2B_User::get_company( $user_id );
 		return $company > 0 && (int) $order->get_meta( self::META_COMPANY ) === $company;
+	}
+
+	/**
+	 * Unique Quote ID for a proposal (same format as the PDF).
+	 *
+	 * Computed once and stored on the order so list tables and PDFs stay in sync.
+	 *
+	 * @param WC_Order $order Order.
+	 * @return string
+	 */
+	public static function quote_id( $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return '';
+		}
+
+		$stored = (string) $order->get_meta( self::META_QUOTE_ID );
+		if ( '' !== $stored ) {
+			return $stored;
+		}
+
+		$quote_no = self::build_quote_id( $order );
+		if ( '' === $quote_no ) {
+			return '';
+		}
+
+		// Guarantee uniqueness even if nomenclature omits {id}.
+		if ( self::quote_id_taken( $quote_no, $order->get_id() ) ) {
+			$quote_no .= '-' . $order->get_id();
+		}
+
+		$order->update_meta_data( self::META_QUOTE_ID, $quote_no );
+		$order->save();
+
+		return $quote_no;
+	}
+
+	/**
+	 * Build the Quote ID string from market nomenclature (does not persist).
+	 *
+	 * @param WC_Order $order Order.
+	 * @return string
+	 */
+	public static function build_quote_id( $order ) {
+		if ( ! $order instanceof WC_Order || ! $order->get_id() ) {
+			return '';
+		}
+
+		$company_id = (int) $order->get_meta( self::META_COMPANY );
+		$company    = $company_id ? get_the_title( $company_id ) : '';
+		$market     = (string) $order->get_meta( self::META_MARKET );
+
+		$words          = explode( ' ', $company );
+		$company_prefix = ! empty( $words[0] ) ? preg_replace( '/[^A-Za-z0-9]/', '', $words[0] ) : '';
+		$m_data         = Sycomp_B2B_Markets::get( $market );
+		$market_code    = $m_data ? strtoupper( (string) $m_data['country_code'] ) : '';
+
+		$batch = (string) $order->get_meta( '_sycomp_batch' );
+		if ( '' === $batch ) {
+			$batch = (string) $order->get_meta( 'batch' );
+		}
+		$batch_val = '' !== $batch ? $batch : '-Batch';
+
+		$quote_formats = get_option( 'sycomp_b2b_quote_formats', array() );
+		$fmt           = isset( $quote_formats[ $market ] ) ? trim( (string) $quote_formats[ $market ] ) : '';
+		if ( '' === $fmt ) {
+			$fmt = '{company}{market}{batch}{id}';
+		}
+
+		return str_replace(
+			array(
+				'{company}',
+				'{company_name}',
+				'{market}',
+				'{market_code}',
+				'{batch}',
+				'{batch_no}',
+				'{id}',
+				'{order_id}',
+				'{quote_id}',
+			),
+			array(
+				$company_prefix,
+				$company_prefix,
+				$market_code,
+				$market_code,
+				$batch_val,
+				$batch_val,
+				$order->get_id(),
+				$order->get_id(),
+				$order->get_id(),
+			),
+			$fmt
+		);
+	}
+
+	/**
+	 * Whether another order already uses this Quote ID.
+	 *
+	 * @param string $quote_id Quote ID.
+	 * @param int    $exclude  Order ID to ignore.
+	 * @return bool
+	 */
+	protected static function quote_id_taken( $quote_id, $exclude = 0 ) {
+		$orders = wc_get_orders(
+			array(
+				'limit'      => 1,
+				'return'     => 'ids',
+				'exclude'    => array( (int) $exclude ),
+				'meta_key'   => self::META_QUOTE_ID,
+				'meta_value' => $quote_id,
+			)
+		);
+		return ! empty( $orders );
+	}
+
+	/**
+	 * Country label for a proposal's market.
+	 *
+	 * @param WC_Order $order Order.
+	 * @return string
+	 */
+	public static function country_label( $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return '';
+		}
+		$market = (string) $order->get_meta( self::META_MARKET );
+		if ( ! $market || ! Sycomp_B2B_Markets::exists( $market ) ) {
+			return '';
+		}
+		$data = Sycomp_B2B_Markets::get( $market );
+		if ( ! empty( $data['label'] ) ) {
+			return (string) $data['label'];
+		}
+		return Sycomp_B2B_Markets::label( $market );
+	}
+
+	/**
+	 * Attached customer PO file attachment ID.
+	 *
+	 * @param WC_Order $order Order.
+	 * @return int
+	 */
+	public static function po_file_id( $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return 0;
+		}
+		return (int) $order->get_meta( self::META_PO_FILE );
+	}
+
+	/**
+	 * Public URL for the attached customer PO file, if any.
+	 *
+	 * @param WC_Order $order Order.
+	 * @return string
+	 */
+	public static function po_file_url( $order ) {
+		$att_id = self::po_file_id( $order );
+		if ( ! $att_id ) {
+			return '';
+		}
+		$url = wp_get_attachment_url( $att_id );
+		return $url ? (string) $url : '';
 	}
 
 	/**
