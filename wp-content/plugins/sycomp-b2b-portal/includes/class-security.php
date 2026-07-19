@@ -690,13 +690,6 @@ class Sycomp_B2B_Security {
 	 * @return WP_Error|null|true
 	 */
 	public static function require_rest_auth( $result ) {
-		// TEMPORARY: Disable the B2B REST API block completely to test if this is
-		// what Jetpack's connection debugger is interpreting as "invalid JSON".
-		// Jetpack might be probing core WordPress endpoints (like /wp/v2/users)
-		// and expecting a standard response, but getting our custom 401 WP_Error instead.
-		return $result;
-
-		/*
 		if ( ! empty( $result ) || is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -714,7 +707,6 @@ class Sycomp_B2B_Security {
 		}
 
 		return $result;
-		*/
 	}
 
 	/**
