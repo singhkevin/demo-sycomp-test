@@ -677,8 +677,28 @@ class Sycomp_B2B_Security {
 	 * @return bool
 	 */
 	protected static function is_jetpack_rest_request() {
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		return (bool) preg_match( '#/jetpack/v\d#i', $uri );
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+
+		// Match the parsed path only (pretty permalinks), never the raw
+		// REQUEST_URI — that also contains the query string, and a substring
+		// match against it let a request to *any* other REST route bypass the
+		// login requirement below just by appending "?x=/jetpack/v4" to it.
+		$prefix = untrailingslashit( '/' . trim( (string) rest_get_url_prefix(), '/' ) );
+		if ( preg_match( '#^' . preg_quote( $prefix, '#' ) . '/jetpack/v\d#i', $path ) ) {
+			return true;
+		}
+
+		// Plain-permalink fallback: /?rest_route=/jetpack/v4/...
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['rest_route'] ) ) {
+			$route = (string) wp_unslash( $_GET['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			if ( preg_match( '#^/jetpack/v\d#i', $route ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

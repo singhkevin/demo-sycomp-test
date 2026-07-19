@@ -134,6 +134,15 @@ class Sycomp_Email_OTP_2FA {
 	const MAX_ATTEMPTS = 5;
 
 	/**
+	 * Set true only while this plugin itself is completing a login after a
+	 * successful TOTP check, so enforce_2fa_after_any_login() can tell that
+	 * apart from every other way a session can get established.
+	 *
+	 * @var bool
+	 */
+	protected static $completing_own_login = false;
+
+	/**
 	 * Initialize plugin hooks.
 	 */
 	public static function init() {
@@ -149,6 +158,11 @@ class Sycomp_Email_OTP_2FA {
 
 		// Custom OTP Verification Surface
 		add_action( 'login_form_sycomp_2fa', array( __CLASS__, 'handle_otp_page' ) );
+
+		// Catch any login that reaches wp_login without going through TOTP
+		// verification above — see enforce_2fa_after_any_login() for why this
+		// is necessary alongside the authenticate filter.
+		add_action( 'wp_login', array( __CLASS__, 'enforce_2fa_after_any_login' ), 1, 2 );
 
 		// Admin Profile Management
 		add_action( 'show_user_profile', array( __CLASS__, 'add_profile_fields' ) );
@@ -288,6 +302,54 @@ class Sycomp_Email_OTP_2FA {
 		exit;
 	}
 
+	/**
+	 * Catch a session established without going through intercept_login()
+	 * above — the only such path in practice is Jetpack SSO's "Log in with
+	 * WordPress.com" button. Jetpack verifies the WordPress.com identity
+	 * itself and then calls wp_set_auth_cookie() + do_action( 'wp_login', ... )
+	 * directly, the same way wp_signon() does on success — it never runs the
+	 * `authenticate` filter chain intercept_login() hooks into, so a staff
+	 * member could otherwise use SSO to skip TOTP entirely. Since Jetpack SSO
+	 * is intentionally left enabled on the staff login surface (see
+	 * Sycomp_B2B_Security::filter_jetpack_sso_allowed_actions()), this must be
+	 * caught here instead of by disabling SSO.
+	 *
+	 * Every login-completing path — password, SSO, or any future one — ends
+	 * up firing `wp_login`, so gating there (rather than only on
+	 * `authenticate`) covers all of them. A session that reaches this hook
+	 * without self::$completing_own_login set was not TOTP-verified: log it
+	 * back out immediately and route it through the same OTP page used for
+	 * password logins.
+	 *
+	 * @param string  $user_login Username (unused).
+	 * @param WP_User $user       The user that just logged in.
+	 */
+	public static function enforce_2fa_after_any_login( $user_login, $user ) {
+		if ( self::$completing_own_login ) {
+			return;
+		}
+		if ( ! ( $user instanceof WP_User ) ) {
+			return;
+		}
+
+		// Buyers have no TOTP requirement — only staff logins (administrator,
+		// shop_manager) are gated, matching who can reach the hidden staff
+		// login surface Jetpack SSO is enabled on.
+		$roles = (array) $user->roles;
+		if ( ! array_intersect( $roles, array( 'administrator', 'shop_manager' ) ) ) {
+			return;
+		}
+
+		wp_clear_auth_cookie();
+		wp_set_current_user( 0 );
+
+		self::set_temp_cookie( $user->ID );
+
+		$redirect_url = add_query_arg( array( 'action' => 'sycomp_2fa' ), wp_login_url() );
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
 	/* ---------------------------------------------------------------------
 	 * OTP Verification Interface & Logic (TOTP)
 	 * ------------------------------------------------------------------ */
@@ -365,9 +427,13 @@ class Sycomp_Email_OTP_2FA {
 
 				wp_set_current_user( $user->ID );
 				wp_set_auth_cookie( $user->ID, true );
-				
-				// Fire standard WordPress login actions (clears failed login throttles)
+
+				// Fire standard WordPress login actions (clears failed login throttles).
+				// Flagged so enforce_2fa_after_any_login() knows this particular
+				// wp_login came from a completed TOTP check, not a bypass.
+				self::$completing_own_login = true;
 				do_action( 'wp_login', $user->user_login, $user );
+				self::$completing_own_login = false;
 				
 				// Redirection logic matching user roles
 				$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';

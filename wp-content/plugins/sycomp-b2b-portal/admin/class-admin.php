@@ -103,13 +103,33 @@ class Sycomp_B2B_Admin {
 
 		// Each item: array( menu_title, capability, slug, page_title, classes, hookname, icon ).
 		$menu = array(
-			3  => array( __( 'Dashboard', 'sycomp-b2b-portal' ), self::CAPABILITY, sycomp_b2b_page_url( 'manage' ), '', 'menu-top', 'menu-sycomp-dash', 'dashicons-grid-view' ),
-			5  => array( __( 'Products', 'sycomp-b2b-portal' ), 'edit_products', 'edit.php?post_type=product', '', 'menu-top', 'menu-sycomp-products', 'dashicons-archive' ),
-			7  => array( __( 'Categories', 'sycomp-b2b-portal' ), 'manage_product_terms', 'edit-tags.php?taxonomy=product_cat&post_type=product', '', 'menu-top', 'menu-sycomp-cats', 'dashicons-category' ),
-			9  => array( __( 'Brands', 'sycomp-b2b-portal' ), 'manage_product_terms', 'edit-tags.php?taxonomy=' . Sycomp_B2B_Post_Types::TAX_BRAND . '&post_type=product', '', 'menu-top', 'menu-sycomp-brands', 'dashicons-tag' ),
-			85 => array( '', 'read', 'sycomp-sep', '', 'wp-menu-separator', '', '' ),
-			90 => array( __( 'Logout', 'sycomp-b2b-portal' ), 'read', wp_logout_url(), '', 'menu-top', 'menu-sycomp-logout', 'dashicons-exit' ),
+			3 => array( __( 'Dashboard', 'sycomp-b2b-portal' ), self::CAPABILITY, sycomp_b2b_page_url( 'manage' ), '', 'menu-top', 'menu-sycomp-dash', 'dashicons-grid-view' ),
+			5 => array( __( 'Products', 'sycomp-b2b-portal' ), 'edit_products', 'edit.php?post_type=product', '', 'menu-top', 'menu-sycomp-products', 'dashicons-archive' ),
+			7 => array( __( 'Categories', 'sycomp-b2b-portal' ), 'manage_product_terms', 'edit-tags.php?taxonomy=product_cat&post_type=product', '', 'menu-top', 'menu-sycomp-cats', 'dashicons-category' ),
+			9 => array( __( 'Brands', 'sycomp-b2b-portal' ), 'manage_product_terms', 'edit-tags.php?taxonomy=' . Sycomp_B2B_Post_Types::TAX_BRAND . '&post_type=product', '', 'menu-top', 'menu-sycomp-brands', 'dashicons-tag' ),
 		);
+
+		// Preserve Jetpack's own top-level menu entries (main "Jetpack" menu
+		// plus standalone modules such as Boost, Search or Protect) instead of
+		// letting the wholesale $GLOBALS['menu'] replacement below erase them.
+		// WordPress core still hides any entry here the current user lacks the
+		// capability for at render time, so this only restores visibility for
+		// items a shop manager's own capabilities (e.g. manage_woocommerce on
+		// a Jetpack Woo-integration screen) already permit — it grants nothing
+		// new.
+		if ( isset( $GLOBALS['menu'] ) && is_array( $GLOBALS['menu'] ) ) {
+			$position = 10;
+			foreach ( $GLOBALS['menu'] as $item ) {
+				$slug = isset( $item[2] ) ? (string) $item[2] : '';
+				if ( '' !== $slug && preg_match( '/^jetpack/i', $slug ) ) {
+					$menu[ $position ] = $item;
+					++$position;
+				}
+			}
+		}
+
+		$menu[85] = array( '', 'read', 'sycomp-sep', '', 'wp-menu-separator', '', '' );
+		$menu[90] = array( __( 'Logout', 'sycomp-b2b-portal' ), 'read', wp_logout_url(), '', 'menu-top', 'menu-sycomp-logout', 'dashicons-exit' );
 
 		$GLOBALS['menu'] = $menu;
 
