@@ -297,11 +297,22 @@ class Sycomp_B2B_Security {
 	/**
 	 * Runs on `plugins_loaded` (priority 1). Blocks XML-RPC outright.
 	 *
-	 * Exception: Jetpack's connection handshake and heartbeat run over
-	 * `xmlrpc.php?for=jetpack` (the standard signal Jetpack itself and every
-	 * major security plugin use to tell its calls apart from pingback/XML-RPC
-	 * abuse) — blocking that endpoint prevents the site from ever connecting
-	 * to WordPress.com and surfaces as a 403 "transport error" in Jetpack.
+	 * Exceptions:
+	 *  - Jetpack's connection handshake and heartbeat run over
+	 *    `xmlrpc.php?for=jetpack` (the standard signal Jetpack itself and
+	 *    every major security plugin use to tell its calls apart from
+	 *    pingback/XML-RPC abuse) — blocking that endpoint prevents the site
+	 *    from ever connecting to WordPress.com and surfaces as a 403
+	 *    "transport error" in Jetpack.
+	 *  - Jetpack's own "Debug Site Connection" tool (My Jetpack → Debug, and
+	 *    the connection Site Health check) separately posts a plain
+	 *    `demo.sayHello` XML-RPC call with no `?for=jetpack` marker, as a
+	 *    pre-flight "is XML-RPC even reachable" probe before it attempts the
+	 *    real signed handshake above. `demo.sayHello` is WordPress core's
+	 *    built-in no-op diagnostic method (wp-includes/class-wp-xmlrpc-server.php
+	 *    — always just `return 'Hello!'`, no auth, no data access), so
+	 *    letting it through here is safe; blocking it makes Jetpack falsely
+	 *    report XML-RPC as down even though the real connection works fine.
 	 */
 	public static function block_xmlrpc() {
 		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
@@ -315,9 +326,31 @@ class Sycomp_B2B_Security {
 		if ( isset( $_GET['for'] ) && 'jetpack' === $_GET['for'] ) {
 			return;
 		}
+		if ( self::is_xmlrpc_demo_hello() ) {
+			return;
+		}
 		status_header( 403 );
 		nocache_headers();
 		exit( 'XML-RPC services are disabled on this site.' );
+	}
+
+	/**
+	 * Whether the current request's XML-RPC POST body is exactly a
+	 * `demo.sayHello` call — see block_xmlrpc() for why this one method is
+	 * exempted from the block.
+	 *
+	 * @return bool
+	 */
+	protected static function is_xmlrpc_demo_hello() {
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : '';
+		if ( 'POST' !== $method ) {
+			return false;
+		}
+		$body = file_get_contents( 'php://input' );
+		if ( ! $body ) {
+			return false;
+		}
+		return (bool) preg_match( '#<methodName>\s*demo\.sayHello\s*</methodName>#i', $body );
 	}
 
 	/**
