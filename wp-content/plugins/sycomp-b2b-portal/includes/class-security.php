@@ -326,6 +326,14 @@ class Sycomp_B2B_Security {
 		if ( isset( $_GET['for'] ) && 'jetpack' === $_GET['for'] ) {
 			return;
 		}
+
+		// Jetpack support tools issue a GET request to xmlrpc.php to verify the file
+		// exists and is accessible. It expects to see WordPress's standard
+		// "XML-RPC server accepts POST requests only." response.
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : '';
+		if ( 'GET' === $method || 'HEAD' === $method ) {
+			return;
+		}
 		if ( self::is_xmlrpc_demo_hello() ) {
 			return;
 		}
