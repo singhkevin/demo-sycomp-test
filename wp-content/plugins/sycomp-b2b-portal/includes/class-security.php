@@ -690,12 +690,21 @@ class Sycomp_B2B_Security {
 	 * @return WP_Error|null|true
 	 */
 	public static function require_rest_auth( $result ) {
+		// TEMPORARY: Disable the B2B REST API block completely to test if this is
+		// what Jetpack's connection debugger is interpreting as "invalid JSON".
+		// Jetpack might be probing core WordPress endpoints (like /wp/v2/users)
+		// and expecting a standard response, but getting our custom 401 WP_Error instead.
+		return $result;
+
+		/*
 		if ( ! empty( $result ) || is_wp_error( $result ) ) {
 			return $result;
 		}
+
 		if ( self::is_jetpack_rest_request() || self::is_rest_index_request() ) {
 			return $result;
 		}
+
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
 				'sycomp_rest_forbidden',
@@ -703,7 +712,9 @@ class Sycomp_B2B_Security {
 				array( 'status' => 401 )
 			);
 		}
+
 		return $result;
+		*/
 	}
 
 	/**
