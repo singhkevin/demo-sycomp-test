@@ -34,10 +34,6 @@ class Sycomp_B2B_Frontend {
 		add_filter( 'login_headerurl', array( __CLASS__, 'login_logo_url' ) );
 		add_filter( 'login_headertext', array( __CLASS__, 'login_logo_text' ) );
 		add_filter( 'woocommerce_get_stock_html', '__return_empty_string' );
-
-		// Jetpack/API discovery endpoints (required since the home page is replaced by this login screen)
-		add_action( 'login_head', 'rsd_link' );
-		add_action( 'login_head', 'rest_output_link_wp_head' );
 	}
 
 	/**
