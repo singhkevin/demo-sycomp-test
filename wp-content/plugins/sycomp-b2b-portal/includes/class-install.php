@@ -42,6 +42,7 @@ class Sycomp_B2B_Install {
 	 * Run on plugin deactivation.
 	 */
 	public static function deactivate() {
+		wp_clear_scheduled_hook( 'sycomp_b2b_refresh_jetpack_ips' );
 		flush_rewrite_rules();
 	}
 

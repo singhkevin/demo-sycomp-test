@@ -626,6 +626,116 @@
 .sy-po-pdf-actions { margin: 18px 0 4px; }
 .sy-order-actions { white-space: nowrap; }
 .sy-order-actions .sy-btn { margin: 2px 4px 2px 0; }
+.sy-table--orders .sy-o-col--act .sy-rowact {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.sy-table--orders .sy-o-col--act .sy-rowact .sy-btn {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+}
+.sy-po-attach { vertical-align: middle; }
+.sy-po-attach__form {
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+  margin-top: 6px;
+}
+.sy-po-attach__pick {
+  position: relative; display: inline-flex; cursor: pointer;
+}
+.sy-po-attach__pick input[type="file"] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; margin: 0; padding: 0; border: 0;
+}
+.sy-po-attach__name {
+  display: block; max-width: 160px; font-size: var(--sy-text-xs);
+  line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Buyer orders — content-sized columns, scroll instead of overlap. */
+.sy-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.sy-table--orders {
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+}
+.sy-table--orders th,
+.sy-table--orders td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+/* Compact columns shrink to content. */
+.sy-table--orders .sy-o-col--country,
+.sy-table--orders .sy-o-col--date,
+.sy-table--orders .sy-o-col--status,
+.sy-table--orders .sy-o-col--items,
+.sy-table--orders .sy-o-col--total,
+.sy-table--orders .sy-o-col--act {
+  width: 1%;
+  white-space: nowrap;
+}
+.sy-table--orders .sy-o-col--items { text-align: center; }
+.sy-table--orders .sy-o-col--quote {
+  min-width: 140px;
+  max-width: 220px;
+}
+.sy-table--orders .sy-o-col--location,
+.sy-table--orders .sy-o-col--raiser {
+  min-width: 120px;
+  max-width: 180px;
+}
+.sy-table--orders .sy-o-col--po {
+  min-width: 150px;
+  white-space: nowrap;
+}
+.sy-table--orders .sy-o-col--quote strong,
+.sy-table--orders .sy-o-col--quote .sy-prod-sku,
+.sy-table--orders .sy-o-cell {
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sy-table--orders .sy-o-col--quote strong,
+.sy-table--orders .sy-o-col--quote .sy-prod-sku {
+  max-width: 220px;
+}
+/* Stacked mobile cards — undo desktop width/ellipsis rules. */
+@media ( max-width: 760px ) {
+  .sy-table--stack.sy-stacked.sy-table--orders {
+    width: 100%;
+    min-width: 0;
+  }
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--country,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--date,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--status,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--items,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--total,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--act,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--quote,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--location,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--raiser,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--po {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    white-space: normal;
+  }
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--quote strong,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-col--quote .sy-prod-sku,
+  .sy-table--stack.sy-stacked.sy-table--orders .sy-o-cell {
+    display: inline;
+    max-width: none;
+    overflow: visible;
+    white-space: normal;
+  }
+}
 
 /* =========================================================================
    Cart page — per-location cart switcher
@@ -1063,13 +1173,20 @@ a.sy-stat:hover { transform: translateY(-2px); text-decoration: none; }
     background: var(--sy-surface);
   }
   .sy-table--stack.sy-stacked tbody td:first-child::before { display: none; }
-  /* Last cell — the card footer (row actions). */
-  .sy-table--stack.sy-stacked tbody td:last-child {
+  /* Action column — View / Accept / Close / Cancel (not necessarily last). */
+  .sy-table--stack.sy-stacked tbody td.sy-col-act,
+  .sy-table--stack.sy-stacked tbody td.sy-order-actions {
     justify-content: flex-end;
     background: var(--sy-surface);
   }
-  .sy-table--stack.sy-stacked tbody td:last-child::before { display: none; }
-  .sy-table--stack.sy-stacked tbody td:last-child .sy-rowact { justify-content: flex-end; }
+  .sy-table--stack.sy-stacked tbody td.sy-col-act .sy-rowact,
+  .sy-table--stack.sy-stacked tbody td.sy-order-actions .sy-rowact {
+    justify-content: flex-end; flex-wrap: wrap;
+  }
+  /* Purchase Order attach/download stays labelled; no longer treated as actions. */
+  .sy-table--stack.sy-stacked tbody td.sy-po-attach {
+    align-items: flex-start;
+  }
 }
 
 /* Catalogue filter rail: shorter lists on phones so the product grid is

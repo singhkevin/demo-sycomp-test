@@ -2748,7 +2748,8 @@ class Sycomp_B2B_Manager {
 			echo '<p class="sy-empty">' . esc_html__( 'No proposals in this view.', 'sycomp-b2b-portal' ) . '</p>';
 		} else {
 			echo '<table class="sy-table sy-table--admin sy-table--stack"><thead><tr>';
-			echo '<th>' . esc_html__( 'PO Number', 'sycomp-b2b-portal' ) . '</th>';
+			echo '<th>' . esc_html__( 'Quote ID', 'sycomp-b2b-portal' ) . '</th>';
+			echo '<th>' . esc_html__( 'Country', 'sycomp-b2b-portal' ) . '</th>';
 			echo '<th>' . esc_html__( 'Company', 'sycomp-b2b-portal' ) . '</th>';
 			echo '<th>' . esc_html__( 'Date', 'sycomp-b2b-portal' ) . '</th>';
 			echo '<th>' . esc_html__( 'Items', 'sycomp-b2b-portal' ) . '</th>';
@@ -2771,11 +2772,15 @@ class Sycomp_B2B_Manager {
 	 * @param string   $stage Stage key.
 	 */
 	protected static function po_row( $order, $stage ) {
-		$company_id = (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY );
-		$market     = (string) $order->get_meta( Sycomp_B2B_PO::META_MARKET );
-		$po_ref     = (string) $order->get_meta( Sycomp_B2B_PO::META_PO_REF );
-		$status     = $order->get_status();
-		$total      = ( $market && Sycomp_B2B_Markets::exists( $market ) )
+		$company_id  = (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY );
+		$market      = (string) $order->get_meta( Sycomp_B2B_PO::META_MARKET );
+		$po_ref      = (string) $order->get_meta( Sycomp_B2B_PO::META_PO_REF );
+		$status      = $order->get_status();
+		$quote_id    = Sycomp_B2B_PO::quote_id( $order );
+		$country     = Sycomp_B2B_PO::country_label( $order );
+		$po_file_url = Sycomp_B2B_PO::po_file_url( $order );
+		$po_file_id  = Sycomp_B2B_PO::po_file_id( $order );
+		$total       = ( $market && Sycomp_B2B_Markets::exists( $market ) )
 			? Sycomp_B2B_Pricing::format_in_market( $order->get_total(), $market )
 			: $order->get_formatted_order_total();
 		$is_open    = $order->has_status( Sycomp_B2B_PO::STATUS_OPEN );
@@ -2786,11 +2791,12 @@ class Sycomp_B2B_Manager {
 		);
 
 		echo '<tr>';
-		echo '<td><a class="sy-link" href="' . esc_url( $detail_url ) . '"><strong>#' . esc_html( $order->get_order_number() ) . '</strong></a>';
+		echo '<td><a class="sy-link" href="' . esc_url( $detail_url ) . '"><strong>' . esc_html( $quote_id ? $quote_id : '#' . $order->get_order_number() ) . '</strong></a>';
 		if ( $po_ref ) {
 			echo '<span class="sy-prow__sku">' . esc_html( $po_ref ) . '</span>';
 		}
 		echo '</td>';
+		echo '<td>' . ( $country ? esc_html( $country ) : '<span class="sy-muted">&mdash;</span>' ) . '</td>';
 		echo '<td>' . ( $company_id ? esc_html( get_the_title( $company_id ) ) : '<span class="sy-muted">&mdash;</span>' ) . '</td>';
 		echo '<td>' . esc_html( wc_format_datetime( $order->get_date_created() ) ) . '</td>';
 		echo '<td>' . esc_html( number_format_i18n( $order->get_item_count() ) ) . '</td>';
@@ -2798,6 +2804,10 @@ class Sycomp_B2B_Manager {
 		echo '<td><span class="sy-badge ' . esc_attr( Sycomp_B2B_PO::status_badge_class( $status ) ) . '">' . esc_html( Sycomp_B2B_PO::status_label( $status ) ) . '</span></td>';
 		echo '<td class="sy-col-act"><div class="sy-rowact">';
 		echo '<a class="sy-btn sy-btn--ghost sy-btn--sm" href="' . esc_url( $detail_url ) . '">' . esc_html__( 'View', 'sycomp-b2b-portal' ) . '</a>';
+		if ( $po_file_url ) {
+			$po_label = get_the_title( $po_file_id );
+			echo '<a class="sy-btn sy-btn--primary sy-btn--sm" href="' . esc_url( $po_file_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $po_label ? $po_label : __( 'PO PDF', 'sycomp-b2b-portal' ) ) . '</a>';
+		}
 		if ( $is_open || $is_process ) {
 			echo '<form method="post">';
 			wp_nonce_field( 'sycomp_po', 'sycomp_nonce' );
@@ -2827,6 +2837,10 @@ class Sycomp_B2B_Manager {
 		$company_id  = (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY );
 		$location_id = (int) $order->get_meta( Sycomp_B2B_PO::META_LOCATION );
 		$po_ref      = (string) $order->get_meta( Sycomp_B2B_PO::META_PO_REF );
+		$quote_id    = Sycomp_B2B_PO::quote_id( $order );
+		$country     = Sycomp_B2B_PO::country_label( $order );
+		$po_file_url = Sycomp_B2B_PO::po_file_url( $order );
+		$po_file_id  = Sycomp_B2B_PO::po_file_id( $order );
 		$delivery    = (string) $order->get_meta( Sycomp_B2B_PO::META_DELIVERY );
 		if ( '' === trim( $delivery ) && $location_id ) {
 			$delivery = (string) Sycomp_B2B_Post_Types::get_location_address( $location_id );
@@ -2838,8 +2852,8 @@ class Sycomp_B2B_Manager {
 		echo '<p class="sy-back"><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'Back to proposals', 'sycomp-b2b-portal' ) . '</a></p>';
 
 		echo '<div class="sy-adm-head"><div class="sy-adm-head__text"><h1>';
-		/* translators: %s: PO number. */
-		echo esc_html( sprintf( __( 'Proposal #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ) );
+		/* translators: %s: Quote ID. */
+		echo esc_html( sprintf( __( 'Proposal %s', 'sycomp-b2b-portal' ), $quote_id ? $quote_id : '#' . $order->get_order_number() ) );
 		echo ' <span class="sy-badge ' . esc_attr( Sycomp_B2B_PO::status_badge_class( $status ) ) . '">' . esc_html( Sycomp_B2B_PO::status_label( $status ) ) . '</span>';
 		echo '</h1></div><div class="sy-adm-head__actions">';
 		if ( $is_open || $is_process ) {
@@ -2873,11 +2887,21 @@ class Sycomp_B2B_Manager {
 		// Summary.
 		echo '<section class="sy-panel"><h2 class="sy-panel__title">' . esc_html__( 'Summary', 'sycomp-b2b-portal' ) . '</h2>';
 		echo '<div class="sy-panel__body sy-deflist">';
+		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Quote ID', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $quote_id ? esc_html( $quote_id ) : '-' ) . '</span></div>';
+		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Country', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $country ? esc_html( $country ) : '-' ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Company', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $company_id ? esc_html( get_the_title( $company_id ) ) : '-' ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Location', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $location_id ? esc_html( get_the_title( $location_id ) ) : '-' ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Market', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $market ? esc_html( Sycomp_B2B_Markets::label( $market ) ) : '-' ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Date', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . esc_html( wc_format_datetime( $order->get_date_created() ) ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'PO reference', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( '' !== $po_ref ? esc_html( $po_ref ) : '-' ) . '</span></div>';
+		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Purchase Order', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">';
+		if ( $po_file_url ) {
+			$label = get_the_title( $po_file_id );
+			echo '<a class="sy-link" href="' . esc_url( $po_file_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $label ? $label : __( 'Download', 'sycomp-b2b-portal' ) ) . '</a>';
+		} else {
+			echo '-';
+		}
+		echo '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Buyer', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . esc_html( $order->get_formatted_billing_full_name() ? $order->get_formatted_billing_full_name() : $order->get_billing_email() ) . '</span></div>';
 		$sycomp_supplier = $market ? Sycomp_B2B_Warehouses::address_lines( $market ) : array();
 		echo '<div class="sy-deflist__full"><span class="sy-deflist__k">' . esc_html__( 'Supplier (ship-from)', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $sycomp_supplier ? wp_kses_post( implode( '<br>', array_map( 'esc_html', $sycomp_supplier ) ) ) : '-' ) . '</span></div>';

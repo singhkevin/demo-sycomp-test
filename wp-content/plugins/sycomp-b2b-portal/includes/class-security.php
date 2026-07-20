@@ -56,6 +56,21 @@ class Sycomp_B2B_Security {
 	const LOCKOUT_MINUTES = 15;
 
 	/**
+	 * Option key holding the cached, verified Jetpack IPv4 CIDR ranges.
+	 */
+	const OPTION_JETPACK_IPS = 'sycomp_jetpack_ip_ranges';
+
+	/**
+	 * Cron hook that refreshes the cached Jetpack IP ranges daily.
+	 */
+	const CRON_HOOK_JETPACK_IPS = 'sycomp_b2b_refresh_jetpack_ips';
+
+	/**
+	 * Automattic's published list of Jetpack server IPv4 ranges.
+	 */
+	const JETPACK_IPS_URL = 'https://jetpack.com/ips-v4.txt';
+
+	/**
 	 * Which login surface is currently being served: '', 'buyer' or 'staff'.
 	 *
 	 * @var string
@@ -84,7 +99,7 @@ class Sycomp_B2B_Security {
 		remove_action( 'template_redirect', 'wp_redirect_admin_locations', 1000 );
 
 		// --- XML-RPC. ---
-		add_filter( 'xmlrpc_enabled', '__return_false' );
+		add_filter( 'xmlrpc_enabled', array( __CLASS__, 'filter_xmlrpc_enabled' ) );
 		add_filter( 'wp_headers', array( __CLASS__, 'strip_pingback_header' ) );
 
 		// --- Author / user enumeration. ---
@@ -119,6 +134,16 @@ class Sycomp_B2B_Security {
 		// Staff login form should not default redirect_to to /wp-admin/.
 		add_action( 'login_init', array( __CLASS__, 'force_staff_login_redirect' ), 5 );
 		add_filter( 'admin_email_check_interval', array( __CLASS__, 'disable_admin_email_check_on_staff_login' ) );
+
+		// Buyers sign in with Sycomp-issued credentials only — no WordPress.com
+		// account is relevant to them. Suppress Jetpack's SSO button on the
+		// buyer login surface; leave it available on the hidden staff URL.
+		add_filter( 'jetpack_sso_allowed_actions', array( __CLASS__, 'filter_jetpack_sso_allowed_actions' ) );
+
+		// --- Jetpack IP allowlist (see the "Jetpack IP allowlist" section
+		// below for why this exists and how it's kept spoof-proof). ---
+		add_action( self::CRON_HOOK_JETPACK_IPS, array( __CLASS__, 'refresh_jetpack_ip_ranges' ) );
+		add_action( 'admin_init', array( __CLASS__, 'maybe_schedule_jetpack_ip_refresh' ) );
 	}
 
 	/**
@@ -286,19 +311,166 @@ class Sycomp_B2B_Security {
 	}
 
 	/* ---------------------------------------------------------------------
+	 * Jetpack IP allowlist.
+	 *
+	 * A verified, spoof-proof replacement for an earlier User-Agent-based
+	 * exemption that was reverted after a security review: any client can
+	 * set an arbitrary User-Agent header, so that version let anyone bypass
+	 * the wp-login.php/wp-admin lockdown and the XML-RPC block just by
+	 * sending `User-Agent: Jetpack by WordPress.com`.
+	 *
+	 * This checks the request's actual TCP-level source IP
+	 * ($_SERVER['REMOTE_ADDR'], set by the server itself — not something a
+	 * client can put arbitrary values into the way it can a header) against
+	 * Automattic's own published list of Jetpack server IP ranges. Spoofing
+	 * a TCP source address well enough to both send a request AND receive
+	 * the response is a fundamentally different, far higher bar than
+	 * setting a header, which is why this is safe where the UA check
+	 * wasn't.
+	 *
+	 * Deliberately does NOT read X-Forwarded-For or any other
+	 * client-suppliable "real IP" header — without verified knowledge of
+	 * this specific host's trusted-proxy configuration, trusting a
+	 * client-controlled header would reopen exactly the spoofing problem
+	 * this replaces. If this host's proxy layer means REMOTE_ADDR doesn't
+	 * reflect the true origin, this check simply never matches — it fails
+	 * closed, not open.
+	 * ------------------------------------------------------------------ */
+
+	/**
+	 * Make sure the daily IP-range refresh is scheduled, and run one
+	 * immediate fetch if the list has never been populated yet (e.g. right
+	 * after activation, before the first cron run) — otherwise a fresh
+	 * install would fail closed for a full day until cron first fires.
+	 */
+	public static function maybe_schedule_jetpack_ip_refresh() {
+		if ( ! wp_next_scheduled( self::CRON_HOOK_JETPACK_IPS ) ) {
+			wp_schedule_event( time(), 'daily', self::CRON_HOOK_JETPACK_IPS );
+		}
+		if ( false === get_option( self::OPTION_JETPACK_IPS, false ) ) {
+			self::refresh_jetpack_ip_ranges();
+		}
+	}
+
+	/**
+	 * Fetch Automattic's published Jetpack IPv4 ranges and cache them.
+	 *
+	 * Fails closed on any error: if the fetch fails, times out, or returns
+	 * something unparseable, the previously cached list (if any) is left
+	 * untouched rather than cleared — a transient network hiccup never
+	 * widens or breaks the check, it just keeps using the last known-good
+	 * list until the next successful daily refresh.
+	 */
+	public static function refresh_jetpack_ip_ranges() {
+		$response = wp_remote_get( self::JETPACK_IPS_URL, array( 'timeout' => 10 ) );
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return;
+		}
+
+		$body   = (string) wp_remote_retrieve_body( $response );
+		$ranges = array();
+		foreach ( preg_split( '/\r\n|\r|\n/', $body ) as $line ) {
+			$line = trim( $line );
+			if ( '' === $line || false === strpos( $line, '/' ) ) {
+				continue;
+			}
+			list( $subnet, $mask ) = explode( '/', $line, 2 );
+			if ( filter_var( $subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) && ctype_digit( $mask ) && (int) $mask <= 32 ) {
+				$ranges[] = $line;
+			}
+		}
+
+		if ( empty( $ranges ) ) {
+			return; // Empty or unparseable response — keep the existing cached list.
+		}
+
+		update_option( self::OPTION_JETPACK_IPS, $ranges, false );
+	}
+
+	/**
+	 * Whether an IPv4 address falls inside a CIDR range.
+	 *
+	 * @param string $ip   Dotted-quad IPv4 address.
+	 * @param string $cidr CIDR range, e.g. "192.0.64.0/18".
+	 * @return bool
+	 */
+	protected static function ip_in_cidr( $ip, $cidr ) {
+		if ( false === strpos( $cidr, '/' ) ) {
+			return false;
+		}
+		list( $subnet, $mask ) = explode( '/', $cidr, 2 );
+		$mask = (int) $mask;
+		if ( $mask < 0 || $mask > 32 ) {
+			return false;
+		}
+		$ip_long     = ip2long( $ip );
+		$subnet_long = ip2long( $subnet );
+		if ( false === $ip_long || false === $subnet_long ) {
+			return false;
+		}
+		$mask_long = -1 << ( 32 - $mask );
+		return ( $ip_long & $mask_long ) === ( $subnet_long & $mask_long );
+	}
+
+	/**
+	 * Whether the current request's source IP is one of Automattic's
+	 * published Jetpack server IPs. No cached list yet, or no match, both
+	 * simply return false — this always fails closed.
+	 *
+	 * @return bool
+	 */
+	protected static function is_jetpack_ip() {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) wp_unslash( $_SERVER['REMOTE_ADDR'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$ip = filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
+		if ( ! $ip ) {
+			return false;
+		}
+
+		$ranges = get_option( self::OPTION_JETPACK_IPS, array() );
+		if ( empty( $ranges ) || ! is_array( $ranges ) ) {
+			return false;
+		}
+
+		foreach ( $ranges as $cidr ) {
+			if ( self::ip_in_cidr( $ip, (string) $cidr ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/* ---------------------------------------------------------------------
 	 * Request handling.
 	 * ------------------------------------------------------------------ */
 
 	/**
 	 * Runs on `plugins_loaded` (priority 1). Blocks XML-RPC outright.
 	 *
-	 * Exception: Jetpack's connection handshake and heartbeat run over
-	 * `xmlrpc.php?for=jetpack` (the standard signal Jetpack itself and every
-	 * major security plugin use to tell its calls apart from pingback/XML-RPC
-	 * abuse) — blocking that endpoint prevents the site from ever connecting
-	 * to WordPress.com and surfaces as a 403 "transport error" in Jetpack.
+	 * Exceptions:
+	 *  - Jetpack's connection handshake and heartbeat run over
+	 *    `xmlrpc.php?for=jetpack` (the standard signal Jetpack itself and
+	 *    every major security plugin use to tell its calls apart from
+	 *    pingback/XML-RPC abuse) — blocking that endpoint prevents the site
+	 *    from ever connecting to WordPress.com and surfaces as a 403
+	 *    "transport error" in Jetpack.
+	 *  - Jetpack's own "Debug Site Connection" tool (My Jetpack → Debug, and
+	 *    the connection Site Health check) separately posts a plain
+	 *    `demo.sayHello` XML-RPC call with no `?for=jetpack` marker, as a
+	 *    pre-flight "is XML-RPC even reachable" probe before it attempts the
+	 *    real signed handshake above. `demo.sayHello` is WordPress core's
+	 *    built-in no-op diagnostic method (wp-includes/class-wp-xmlrpc-server.php
+	 *    — always just `return 'Hello!'`, no auth, no data access), so
+	 *    letting it through here is safe; blocking it makes Jetpack falsely
+	 *    report XML-RPC as down even though the real connection works fine.
+	 *  - Verified Jetpack server IPs (see the "Jetpack IP allowlist"
+	 *    section above) skip this block entirely, for whatever check in
+	 *    Jetpack's connection/debug suite isn't already covered by the two
+	 *    exceptions above.
 	 */
 	public static function block_xmlrpc() {
+		if ( self::is_jetpack_ip() ) {
+			return;
+		}
 		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 			return;
 		}
@@ -310,16 +482,83 @@ class Sycomp_B2B_Security {
 		if ( isset( $_GET['for'] ) && 'jetpack' === $_GET['for'] ) {
 			return;
 		}
+
+		// Jetpack support tools issue a GET request to xmlrpc.php to verify the file
+		// exists and is accessible. It expects to see WordPress's standard
+		// "XML-RPC server accepts POST requests only." response.
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : '';
+		if ( 'GET' === $method || 'HEAD' === $method ) {
+			return;
+		}
+		if ( self::is_xmlrpc_demo_hello() ) {
+			return;
+		}
 		status_header( 403 );
 		nocache_headers();
 		exit( 'XML-RPC services are disabled on this site.' );
 	}
 
 	/**
+	 * Whether the current request's XML-RPC POST body is exactly a
+	 * `demo.sayHello` call — see block_xmlrpc() for why this one method is
+	 * exempted from the block.
+	 *
+	 * @return bool
+	 */
+	protected static function is_xmlrpc_demo_hello() {
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : '';
+		if ( 'POST' !== $method ) {
+			return false;
+		}
+		$body = file_get_contents( 'php://input' );
+		if ( ! $body ) {
+			return false;
+		}
+		return (bool) preg_match( '#<methodName>\s*demo\.sayHello\s*</methodName>#i', $body );
+	}
+
+	/**
+	 * `xmlrpc_enabled` filter — disables XML-RPC methods that require
+	 * authentication (e.g. the classic wp.newPost publishing API).
+	 *
+	 * Exception: Jetpack's own registration/connection handshake calls
+	 * WordPress core's wp_xmlrpc_server::login() directly as part of
+	 * xmlrpc.php?for=jetpack (verified in Jetpack's
+	 * projects/packages/connection/src/class-manager.php). That method
+	 * checks this exact filter and 405s with "XML-RPC services are
+	 * disabled on this site" if it resolves false — independent of, and
+	 * even after fixing, block_xmlrpc()'s own request-level gate above.
+	 * Forcing this unconditionally false silently broke Jetpack's
+	 * handshake at the WordPress-core level regardless of that fix.
+	 *
+	 * @param bool $is_enabled Whether XML-RPC methods requiring auth are enabled.
+	 * @return bool
+	 */
+	public static function filter_xmlrpc_enabled( $is_enabled ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['for'] ) && 'jetpack' === $_GET['for'] ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Runs on `wp_loaded`. Enforces the wp-admin lockdown and routes the
 	 * two login surfaces.
+	 *
+	 * Exception: verified Jetpack server IPs (see the "Jetpack IP
+	 * allowlist" section above) skip this entirely, so Jetpack's own
+	 * connection/debug checks never hit the disguised/hidden wp-login.php
+	 * or the wp-admin lockdown. This is deliberately scoped to real,
+	 * unspoofable Automattic infrastructure only — not a client header —
+	 * so it doesn't reopen the login-surface separation the way the
+	 * reverted User-Agent version did.
 	 */
 	public static function handle_request() {
+		if ( self::is_jetpack_ip() ) {
+			return;
+		}
+
 		global $pagenow;
 
 		$uri = isset( $_SERVER['REQUEST_URI'] )
@@ -389,22 +628,52 @@ class Sycomp_B2B_Security {
 		global $pagenow, $error, $interim_login, $action, $user_login; // phpcs:ignore
 		$pagenow = 'wp-login.php';
 
-		// When Jetpack SSO is set to require WordPress.com sign-in, it hooks
-		// `login_init` and unconditionally redirects any wp-login.php load to
-		// wordpress.com — including this internal one. That fights with the
-		// wp-login.php → home/staff-URL rewriting below (filter_wp_redirect)
-		// and produces an infinite bounce between this site and WordPress.com.
-		// Jetpack SSO honours `jetpack-sso-default-login=1` as an explicit
-		// "show the default login form" escape hatch, so set it before
-		// wp-login.php loads to keep our own branded login surfaces in
-		// control. This does not disable Jetpack SSO — an optional
-		// "Log in with WordPress.com" button can still appear on the form.
-		$_GET['jetpack-sso-default-login']     = '1';
-		$_REQUEST['jetpack-sso-default-login'] = '1';
+		// Jetpack's SSO module hooks `login_init` too, and — if
+		// `jetpack_sso_bypass_login_forward_wpcom` resolves true (an explicit
+		// add_filter() call, or a WordPress.com-side default for hosted
+		// sites) — unconditionally redirects the load to wordpress.com,
+		// including this internal one. That fights with the wp-login.php →
+		// home/staff-URL rewriting below (filter_wp_redirect) and produces
+		// an infinite bounce. Force the filter false for the duration of
+		// this internal load so our own branded login surfaces stay in
+		// control; on the staff surface, Jetpack's SSO button (if enabled)
+		// can still render alongside the form — only the automatic redirect
+		// is suppressed. On the buyer surface, SSO is suppressed entirely by
+		// filter_jetpack_sso_allowed_actions() below, so this filter is
+		// belt-and-suspenders there.
+		// Verified against Jetpack's actual source: bypass_login_forward_wpcom()
+		// in projects/packages/connection/src/sso/class-helpers.php simply
+		// returns apply_filters( 'jetpack_sso_bypass_login_forward_wpcom', false ).
+		add_filter( 'jetpack_sso_bypass_login_forward_wpcom', '__return_false', 999 );
 
 		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		@require_once ABSPATH . 'wp-login.php';
 		exit;
+	}
+
+	/**
+	 * `jetpack_sso_allowed_actions` filter — restricts which login
+	 * "actions" Jetpack's SSO module engages for at all (button rendering,
+	 * forced-redirect check, everything). Buyers sign in with Sycomp-issued
+	 * credentials only and have no WordPress.com accounts, so the
+	 * "Log in with WordPress.com" button is irrelevant there. Suppress SSO
+	 * entirely on the buyer login; leave the default (unchanged) on the
+	 * staff surface, where an admin may actually want it.
+	 *
+	 * Verified against Jetpack's actual source
+	 * (projects/packages/connection/src/sso/class-helpers.php
+	 * display_sso_form_for_action()) — an empty array here means
+	 * Jetpack_SSO::login_init() never calls display_sso_login_form()
+	 * (the method that hooks the button onto `login_form`) at all.
+	 *
+	 * @param array $allowed_actions Actions Jetpack SSO engages for.
+	 * @return array
+	 */
+	public static function filter_jetpack_sso_allowed_actions( $allowed_actions ) {
+		if ( 'buyer' === self::$login_context ) {
+			return array();
+		}
+		return $allowed_actions;
 	}
 
 	/**
@@ -573,11 +842,17 @@ class Sycomp_B2B_Security {
 	 * Require authentication for every REST request — the portal is fully
 	 * private, so there is no anonymous REST surface to expose.
 	 *
-	 * Exception: Jetpack's own REST routes (connection handshake, sync,
-	 * IDC resolution, etc.) authenticate each request themselves via a
-	 * signed request, not a logged-in WordPress session — some of those
-	 * calls (like the initial connection) necessarily happen with no WP
-	 * user at all. Blocking them here breaks the Jetpack connection.
+	 * Exceptions:
+	 *  - Jetpack's own REST routes (connection handshake, sync, IDC
+	 *    resolution, etc.) authenticate each request themselves via a
+	 *    signed request, not a logged-in WordPress session — some of those
+	 *    calls (like the initial connection) necessarily happen with no WP
+	 *    user at all. Blocking them here breaks the Jetpack connection.
+	 *  - The bare REST index (`/wp-json/`) is WordPress core's public route
+	 *    discovery document — it lists available namespaces/routes but no
+	 *    private data. WordPress.com pings it to confirm the REST API is
+	 *    reachable at all before attempting anything else; leaving it
+	 *    gated behind our own auth makes the site look REST-broken.
 	 *
 	 * @param WP_Error|null|true $result Existing authentication result.
 	 * @return WP_Error|null|true
@@ -586,9 +861,11 @@ class Sycomp_B2B_Security {
 		if ( ! empty( $result ) || is_wp_error( $result ) ) {
 			return $result;
 		}
-		if ( self::is_jetpack_rest_request() ) {
+
+		if ( self::is_jetpack_rest_request() || self::is_rest_index_request() ) {
 			return $result;
 		}
+
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
 				'sycomp_rest_forbidden',
@@ -596,18 +873,69 @@ class Sycomp_B2B_Security {
 				array( 'status' => 401 )
 			);
 		}
+
 		return $result;
 	}
 
 	/**
-	 * Whether the current request targets one of Jetpack's own REST
-	 * namespaces.
+	 * Whether the current request targets one of Jetpack's own REST routes.
+	 *
+	 * Verified against Jetpack's actual source (projects/packages/connection/src
+	 * — class-rest-connector.php and identity-crisis/class-rest-endpoints.php):
+	 * connection, sync, and identity-crisis routes all register under the
+	 * single `jetpack/v4` namespace; there is no separate `jetpack-idc`
+	 * namespace.
 	 *
 	 * @return bool
 	 */
 	protected static function is_jetpack_rest_request() {
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		return (bool) preg_match( '#/(jetpack|jetpack-idc)/v\d#i', $uri );
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+
+		// Match the parsed path only (pretty permalinks), never the raw
+		// REQUEST_URI — that also contains the query string, and a substring
+		// match against it let a request to *any* other REST route bypass the
+		// login requirement below just by appending "?x=/jetpack/v4" to it.
+		$prefix = untrailingslashit( '/' . trim( (string) rest_get_url_prefix(), '/' ) );
+		if ( preg_match( '#^' . preg_quote( $prefix, '#' ) . '/jetpack/v\d#i', $path ) ) {
+			return true;
+		}
+
+		// Plain-permalink fallback: /?rest_route=/jetpack/v4/...
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['rest_route'] ) ) {
+			$route = (string) wp_unslash( $_GET['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			if ( preg_match( '#^/jetpack/v\d#i', $route ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether the current request targets the bare REST index (the route
+	 * discovery document at the API root), not a specific namespace.
+	 *
+	 * @return bool
+	 */
+	protected static function is_rest_index_request() {
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+
+		// Pretty permalinks: /wp-json or /wp-json/ — nothing after the prefix.
+		$prefix = untrailingslashit( '/' . trim( (string) rest_get_url_prefix(), '/' ) );
+		if ( untrailingslashit( (string) $path ) === $prefix ) {
+			return true;
+		}
+
+		// Plain permalinks: /?rest_route=/ — the root route, nothing deeper.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing check.
+		if ( isset( $_GET['rest_route'] ) && '/' === trim( (string) wp_unslash( $_GET['rest_route'] ) ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/* ---------------------------------------------------------------------

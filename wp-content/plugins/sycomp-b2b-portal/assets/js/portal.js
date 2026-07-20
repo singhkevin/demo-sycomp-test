@@ -263,6 +263,31 @@
 })();
 
 /**
+ * Buyer PO file attach — show chosen filename (ellipsis) and reveal Upload.
+ */
+(function () {
+	'use strict';
+
+	document.addEventListener('change', function (e) {
+		var input = e.target;
+		if (!input || input.type !== 'file' || !input.closest('.sy-po-attach__form')) {
+			return;
+		}
+		var form = input.closest('.sy-po-attach__form');
+		var nameEl = form.querySelector('.sy-po-attach__name');
+		var submit = form.querySelector('.sy-po-attach__submit');
+		var file = input.files && input.files[0];
+		if (nameEl) {
+			nameEl.textContent = file ? file.name : (nameEl.getAttribute('data-empty') || '');
+			nameEl.title = file ? file.name : '';
+		}
+		if (submit) {
+			submit.hidden = !file;
+		}
+	});
+})();
+
+/**
  * Sycomp B2B Portal — premium custom address field transformation at checkout.
  */
 (function ($) {

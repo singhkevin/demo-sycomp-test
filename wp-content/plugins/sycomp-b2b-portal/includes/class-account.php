@@ -24,6 +24,7 @@ class Sycomp_B2B_Account {
 	public static function init() {
 		add_shortcode( 'sycomp_account', array( __CLASS__, 'shortcode' ) );
 		add_shortcode( 'sycomp_orders', array( __CLASS__, 'orders_shortcode' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_attach_po_file' ) );
 	}
 
 	/**
@@ -97,6 +98,7 @@ class Sycomp_B2B_Account {
 		$order_id = isset( $_GET['sycomp_order'] ) ? absint( wp_unslash( $_GET['sycomp_order'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
 
 		ob_start();
+		self::render_po_file_notice();
 		if ( $order_id ) {
 			$order = wc_get_order( $order_id );
 			if ( $order && Sycomp_B2B_PO::user_can_view( $order ) ) {
@@ -111,6 +113,88 @@ class Sycomp_B2B_Account {
 			self::render_orders_panel();
 		}
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Flash notice after a buyer attaches a PO file.
+	 */
+	protected static function render_po_file_notice() {
+		if ( empty( $_GET['sycomp_po_file'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+		$key = sanitize_key( wp_unslash( $_GET['sycomp_po_file'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$messages = array(
+			'ok'       => __( 'Purchase order file attached.', 'sycomp-b2b-portal' ),
+			'invalid'  => __( 'Please upload a PDF or image file.', 'sycomp-b2b-portal' ),
+			'error'    => __( 'The file could not be uploaded. Please try again.', 'sycomp-b2b-portal' ),
+			'denied'   => __( 'You cannot attach a file to that proposal.', 'sycomp-b2b-portal' ),
+		);
+		if ( ! isset( $messages[ $key ] ) ) {
+			return;
+		}
+		$class = ( 'ok' === $key ) ? 'sy-notice' : 'sy-notice sy-notice--warn';
+		echo '<div class="' . esc_attr( $class ) . '">' . esc_html( $messages[ $key ] ) . '</div>';
+	}
+
+	/**
+	 * Handle buyer upload of a customer PO file against a proposal.
+	 */
+	public static function maybe_attach_po_file() {
+		if ( empty( $_POST['sycomp_attach_po'] ) ) {
+			return;
+		}
+		if ( ! is_user_logged_in() || ! Sycomp_B2B_User::is_portal_user() ) {
+			return;
+		}
+		if ( empty( $_POST['sycomp_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['sycomp_nonce'] ) ), 'sycomp_attach_po' ) ) {
+			return;
+		}
+
+		$orders_url = sycomp_b2b_page_url( 'orders' );
+		$order_id   = isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0;
+		$order      = $order_id ? wc_get_order( $order_id ) : false;
+
+		// Buyers only: must belong to the same company as the proposal.
+		$company = (int) Sycomp_B2B_User::get_company();
+		if ( ! $order || ! $company || (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY ) !== $company ) {
+			wp_safe_redirect( add_query_arg( 'sycomp_po_file', 'denied', $orders_url ) );
+			exit;
+		}
+
+		if ( empty( $_FILES['sycomp_po_file']['name'] ) ) {
+			wp_safe_redirect( add_query_arg( 'sycomp_po_file', 'invalid', $orders_url ) );
+			exit;
+		}
+
+		$file = $_FILES['sycomp_po_file']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
+		$ext   = isset( $check['ext'] ) ? strtolower( (string) $check['ext'] ) : '';
+		$allowed = array( 'pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp' );
+		if ( ! $ext || ! in_array( $ext, $allowed, true ) ) {
+			wp_safe_redirect( add_query_arg( 'sycomp_po_file', 'invalid', $orders_url ) );
+			exit;
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$att_id = media_handle_upload( 'sycomp_po_file', 0 );
+		if ( is_wp_error( $att_id ) ) {
+			wp_safe_redirect( add_query_arg( 'sycomp_po_file', 'error', $orders_url ) );
+			exit;
+		}
+
+		$old_id = Sycomp_B2B_PO::po_file_id( $order );
+		$order->update_meta_data( Sycomp_B2B_PO::META_PO_FILE, (int) $att_id );
+		$order->save();
+
+		if ( $old_id && $old_id !== (int) $att_id ) {
+			wp_delete_attachment( $old_id, true );
+		}
+
+		wp_safe_redirect( add_query_arg( 'sycomp_po_file', 'ok', $orders_url ) );
+		exit;
 	}
 
 	/* ---------------------------------------------------------------------
@@ -240,6 +324,10 @@ class Sycomp_B2B_Account {
 		$company_id  = (int) $order->get_meta( Sycomp_B2B_PO::META_COMPANY );
 		$market      = (string) $order->get_meta( Sycomp_B2B_PO::META_MARKET );
 		$po_ref      = (string) $order->get_meta( Sycomp_B2B_PO::META_PO_REF );
+		$quote_id    = Sycomp_B2B_PO::quote_id( $order );
+		$country     = Sycomp_B2B_PO::country_label( $order );
+		$po_file_url = Sycomp_B2B_PO::po_file_url( $order );
+		$po_file_id  = Sycomp_B2B_PO::po_file_id( $order );
 		$status      = $order->get_status();
 		$status_name = Sycomp_B2B_PO::is_po( $order ) ? Sycomp_B2B_PO::status_label( $status ) : wc_get_order_status_name( $status );
 		$badge       = Sycomp_B2B_PO::status_badge_class( $status );
@@ -248,14 +336,24 @@ class Sycomp_B2B_Account {
 
 		echo '<section class="sy-panel">';
 		echo '<h2 class="sy-panel__title">';
-		/* translators: %s: PO number. */
-		echo esc_html( sprintf( __( 'Proposal #%s', 'sycomp-b2b-portal' ), $order->get_order_number() ) );
+		/* translators: %s: Quote ID. */
+		echo esc_html( sprintf( __( 'Proposal %s', 'sycomp-b2b-portal' ), $quote_id ? $quote_id : '#' . $order->get_order_number() ) );
 		echo ' <span class="sy-badge ' . esc_attr( $badge ) . '">' . esc_html( $status_name ) . '</span>';
 		echo '</h2>';
 		echo '<div class="sy-panel__body sy-deflist">';
+		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Quote ID', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $quote_id ? esc_html( $quote_id ) : '-' ) . '</span></div>';
+		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Country', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $country ? esc_html( $country ) : '-' ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Date', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . esc_html( wc_format_datetime( $order->get_date_created() ) ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Location', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $location_id ? esc_html( get_the_title( $location_id ) ) : '-' ) . '</span></div>';
 		echo '<div><span class="sy-deflist__k">' . esc_html__( 'PO reference', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( '' !== $po_ref ? esc_html( $po_ref ) : '-' ) . '</span></div>';
+		echo '<div><span class="sy-deflist__k">' . esc_html__( 'Purchase Order', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">';
+		if ( $po_file_url ) {
+			$label = get_the_title( $po_file_id );
+			echo '<a class="sy-link" href="' . esc_url( $po_file_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $label ? $label : __( 'View file', 'sycomp-b2b-portal' ) ) . '</a>';
+		} else {
+			echo '-';
+		}
+		echo '</span></div>';
 		$sy_supplier = $market ? Sycomp_B2B_Warehouses::address_lines( $market ) : array();
 		echo '<div class="sy-deflist__full"><span class="sy-deflist__k">' . esc_html__( 'Supplier (ship-from)', 'sycomp-b2b-portal' ) . '</span><span class="sy-deflist__v">' . ( $sy_supplier ? wp_kses_post( implode( '<br>', array_map( 'esc_html', $sy_supplier ) ) ) : '-' ) . '</span></div>';
 		$sy_billing = (string) $order->get_meta( '_sycomp_billing_address' );
@@ -343,17 +441,20 @@ class Sycomp_B2B_Account {
 					<div class="sy-notice"><?php esc_html_e( 'No proposals have been raised for your company yet.', 'sycomp-b2b-portal' ); ?></div>
 				<?php else : ?>
 					<p class="sy-muted"><?php esc_html_e( 'Every proposal for your company, across all locations, raised by any team member.', 'sycomp-b2b-portal' ); ?></p>
-					<table class="sy-table sy-table--stack">
+					<div class="sy-table-scroll">
+					<table class="sy-table sy-table--stack sy-table--orders">
 						<thead>
 							<tr>
-								<th><?php esc_html_e( 'PO Number', 'sycomp-b2b-portal' ); ?></th>
-								<th><?php esc_html_e( 'Date', 'sycomp-b2b-portal' ); ?></th>
-								<th><?php esc_html_e( 'Location', 'sycomp-b2b-portal' ); ?></th>
-								<th><?php esc_html_e( 'Raised by', 'sycomp-b2b-portal' ); ?></th>
-								<th><?php esc_html_e( 'Status', 'sycomp-b2b-portal' ); ?></th>
-								<th><?php esc_html_e( 'Items', 'sycomp-b2b-portal' ); ?></th>
-								<th><?php esc_html_e( 'Total', 'sycomp-b2b-portal' ); ?></th>
-								<th></th>
+								<th class="sy-o-col sy-o-col--quote"><?php esc_html_e( 'Quote ID', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--country"><?php esc_html_e( 'Country', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--date"><?php esc_html_e( 'Date', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--status"><?php esc_html_e( 'Status', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--items"><?php esc_html_e( 'Items', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--location"><?php esc_html_e( 'Location', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--raiser"><?php esc_html_e( 'Raised by', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--total"><?php esc_html_e( 'Total', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--act sy-col-act"><?php esc_html_e( 'Action', 'sycomp-b2b-portal' ); ?></th>
+								<th class="sy-o-col sy-o-col--po"><?php esc_html_e( 'Purchase Order', 'sycomp-b2b-portal' ); ?></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -364,6 +465,7 @@ class Sycomp_B2B_Account {
 							?>
 						</tbody>
 					</table>
+					</div>
 				<?php endif; ?>
 			</div>
 		</section>
@@ -380,6 +482,10 @@ class Sycomp_B2B_Account {
 		$market      = (string) $order->get_meta( Sycomp_B2B_PO::META_MARKET );
 		$status      = $order->get_status();
 		$po_ref      = (string) $order->get_meta( Sycomp_B2B_PO::META_PO_REF );
+		$quote_id    = Sycomp_B2B_PO::quote_id( $order );
+		$country     = Sycomp_B2B_PO::country_label( $order );
+		$po_file_url = Sycomp_B2B_PO::po_file_url( $order );
+		$po_file_id  = Sycomp_B2B_PO::po_file_id( $order );
 
 		// Total formatted in the order's own market currency.
 		if ( $market && Sycomp_B2B_Markets::exists( $market ) ) {
@@ -394,16 +500,18 @@ class Sycomp_B2B_Account {
 			: wc_get_order_status_name( $status );
 		?>
 		<tr>
-			<td>
-				<strong>#<?php echo esc_html( $order->get_order_number() ); ?></strong>
+			<td class="sy-o-col sy-o-col--quote">
+				<strong><?php echo esc_html( $quote_id ? $quote_id : '#' . $order->get_order_number() ); ?></strong>
 				<?php if ( $po_ref ) : ?>
 					<span class="sy-prod-sku"><?php echo esc_html( $po_ref ); ?></span>
 				<?php endif; ?>
 			</td>
-			<td><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></td>
-			<td><?php echo $location_id ? esc_html( get_the_title( $location_id ) ) : '—'; ?></td>
-			<td>
-				<?php
+			<td class="sy-o-col sy-o-col--country"><?php echo $country ? esc_html( $country ) : '—'; ?></td>
+			<td class="sy-o-col sy-o-col--date"><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></td>
+			<td class="sy-o-col sy-o-col--status"><span class="sy-badge <?php echo esc_attr( $badge_class ); ?>"><?php echo esc_html( $status_name ); ?></span></td>
+			<td class="sy-o-col sy-o-col--items"><?php echo esc_html( $order->get_item_count() ); ?></td>
+			<td class="sy-o-col sy-o-col--location"><span class="sy-o-cell"><?php echo $location_id ? esc_html( get_the_title( $location_id ) ) : '—'; ?></span></td>
+			<td class="sy-o-col sy-o-col--raiser"><span class="sy-o-cell"><?php
 				$sy_raiser   = '';
 				$sy_customer = $order->get_customer_id();
 				if ( $sy_customer ) {
@@ -419,14 +527,31 @@ class Sycomp_B2B_Account {
 					$sy_raiser = $order->get_billing_email();
 				}
 				echo esc_html( '' !== trim( $sy_raiser ) ? $sy_raiser : '—' );
-				?>
+			?></span></td>
+			<td class="sy-o-col sy-o-col--total sy-col-price"><?php echo wp_kses_post( $total ); ?></td>
+			<td class="sy-o-col sy-o-col--act sy-col-act sy-order-actions">
+				<div class="sy-rowact">
+					<a class="sy-btn sy-btn--ghost sy-btn--sm" href="<?php echo esc_url( add_query_arg( 'sycomp_order', $order->get_id(), sycomp_b2b_page_url( 'orders' ) ) ); ?>"><?php esc_html_e( 'View', 'sycomp-b2b-portal' ); ?></a>
+					<a class="sy-btn sy-btn--ghost sy-btn--sm" href="<?php echo esc_url( Sycomp_B2B_PO_PDF::pdf_url( $order ) ); ?>"><?php esc_html_e( 'PDF', 'sycomp-b2b-portal' ); ?></a>
+				</div>
 			</td>
-			<td><span class="sy-badge <?php echo esc_attr( $badge_class ); ?>"><?php echo esc_html( $status_name ); ?></span></td>
-			<td><?php echo esc_html( $order->get_item_count() ); ?></td>
-			<td><?php echo wp_kses_post( $total ); ?></td>
-			<td class="sy-order-actions">
-				<a class="sy-btn sy-btn--ghost sy-btn--sm" href="<?php echo esc_url( add_query_arg( 'sycomp_order', $order->get_id(), sycomp_b2b_page_url( 'orders' ) ) ); ?>"><?php esc_html_e( 'View', 'sycomp-b2b-portal' ); ?></a>
-				<a class="sy-btn sy-btn--ghost sy-btn--sm" href="<?php echo esc_url( Sycomp_B2B_PO_PDF::pdf_url( $order ) ); ?>"><?php esc_html_e( 'PDF', 'sycomp-b2b-portal' ); ?></a>
+			<td class="sy-o-col sy-o-col--po sy-po-attach">
+				<?php if ( $po_file_url ) : ?>
+					<a class="sy-link" href="<?php echo esc_url( $po_file_url ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php echo esc_html( get_the_title( $po_file_id ) ? get_the_title( $po_file_id ) : __( 'View file', 'sycomp-b2b-portal' ) ); ?>
+					</a>
+				<?php endif; ?>
+				<form class="sy-po-attach__form" method="post" enctype="multipart/form-data" action="<?php echo esc_url( sycomp_b2b_page_url( 'orders' ) ); ?>">
+					<?php wp_nonce_field( 'sycomp_attach_po', 'sycomp_nonce' ); ?>
+					<input type="hidden" name="order_id" value="<?php echo esc_attr( $order->get_id() ); ?>">
+					<input type="hidden" name="sycomp_attach_po" value="1">
+					<label class="sy-po-attach__pick">
+						<span class="sy-btn sy-btn--ghost sy-btn--sm"><?php echo $po_file_url ? esc_html__( 'Replace', 'sycomp-b2b-portal' ) : esc_html__( 'Attach', 'sycomp-b2b-portal' ); ?></span>
+						<input type="file" name="sycomp_po_file" accept=".pdf,image/*,.jpg,.jpeg,.png,.gif,.webp" required aria-label="<?php esc_attr_e( 'Purchase order file', 'sycomp-b2b-portal' ); ?>">
+					</label>
+					<span class="sy-po-attach__name sy-muted" data-empty="<?php esc_attr_e( 'No file chosen', 'sycomp-b2b-portal' ); ?>"><?php esc_html_e( 'No file chosen', 'sycomp-b2b-portal' ); ?></span>
+					<button class="sy-btn sy-btn--primary sy-btn--sm sy-po-attach__submit" type="submit" hidden><?php esc_html_e( 'Upload', 'sycomp-b2b-portal' ); ?></button>
+				</form>
 			</td>
 		</tr>
 		<?php
