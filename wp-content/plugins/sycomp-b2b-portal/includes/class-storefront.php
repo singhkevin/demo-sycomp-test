@@ -238,53 +238,52 @@ class Sycomp_B2B_Storefront {
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * [sycomp_market_selector] — full-viewport flag grid for all 9 markets.
+	 * [sycomp_market_selector] — full-viewport flag grid.
+	 *
+	 * Markets are shown only after sign-in. Logged-out visitors are served
+	 * the branded buyer login by Sycomp_B2B_Security (this shortcode is a
+	 * last-resort fallback if that intercept is skipped).
 	 *
 	 * @return string
 	 */
 	public static function market_selector_shortcode() {
+		if ( ! is_user_logged_in() ) {
+			return function_exists( 'sycomp_b2b_login_gate' )
+				? sycomp_b2b_login_gate( __( 'Sign in to select a market and browse the catalogue.', 'sycomp-b2b-portal' ) )
+				: '';
+		}
+
 		$markets       = Sycomp_B2B_Markets::all();
 		$catalogue_url = sycomp_b2b_page_url( 'catalogue' );
-		$logged_in     = is_user_logged_in();
+		$is_manager    = current_user_can( 'manage_woocommerce' );
 
 		// Markets the current buyer's company actually operates in (has priced products).
 		$available = array();
-		if ( $logged_in ) {
-			$available_keys = Sycomp_B2B_Markets::get_available_markets( Sycomp_B2B_User::get_company() );
-			foreach ( $available_keys as $k ) {
-				$available[ $k ] = true;
-			}
+		$available_keys = Sycomp_B2B_Markets::get_available_markets( Sycomp_B2B_User::get_company() );
+		foreach ( $available_keys as $k ) {
+			$available[ $k ] = true;
 		}
 
-		$is_manager    = is_user_logged_in() && current_user_can( 'manage_woocommerce' );
-
 		ob_start();
-		
+
 		if ( $is_manager ) :
 		?>
 		<section class="sy-marketsel">
 			<div class="sy-marketsel__inner">
 				<header class="sy-marketsel__head">
 					<h1><?php esc_html_e( 'Sycomp Procurement Portal', 'sycomp-b2b-portal' ); ?></h1>
-					<p>
-						<?php
-						echo $logged_in
-							? esc_html__( 'Select a market to browse its catalogue and pricing.', 'sycomp-b2b-portal' )
-							: esc_html__( 'Select a market to sign in and browse its catalogue.', 'sycomp-b2b-portal' );
-						?>
-					</p>
+					<p><?php esc_html_e( 'Select a market to browse its catalogue and pricing.', 'sycomp-b2b-portal' ); ?></p>
 				</header>
 
 				<?php
-					// Only the markets enabled for this buyer's company are shown.
 					$sycomp_visible = array();
 					foreach ( $markets as $key => $market ) {
-						if ( ! $logged_in || isset( $available[ $key ] ) ) {
+						if ( isset( $available[ $key ] ) ) {
 							$sycomp_visible[ $key ] = $market;
 						}
 					}
 				?>
-				<?php if ( $logged_in && empty( $sycomp_visible ) ) : ?>
+				<?php if ( empty( $sycomp_visible ) ) : ?>
 					<p class="sy-marketsel__empty"><?php esc_html_e( 'No markets have been enabled for your company yet. Please contact your Sycomp representative.', 'sycomp-b2b-portal' ); ?></p>
 				<?php else : ?>
 					<div class="sy-market-grid">
@@ -299,14 +298,6 @@ class Sycomp_B2B_Storefront {
 						</a>
 						<?php endforeach; ?>
 					</div>
-				<?php endif; ?>
-
-				<?php if ( ! $logged_in ) : ?>
-					<p class="sy-marketsel__signin">
-						<a class="sy-btn sy-btn--accent" href="<?php echo esc_url( wp_login_url( $catalogue_url ) ); ?>">
-							<?php esc_html_e( 'Sign in to the portal', 'sycomp-b2b-portal' ); ?>
-						</a>
-					</p>
 				<?php endif; ?>
 			</div>
 		</section>
@@ -325,10 +316,9 @@ class Sycomp_B2B_Storefront {
 			<div class="sy-market-selector-container">
 				<div class="sy-marketsel__inner">
 					<?php
-						// Only the markets enabled for this buyer's company are shown.
 						$sycomp_visible = array();
 						foreach ( $markets as $key => $market ) {
-							if ( ! $logged_in || isset( $available[ $key ] ) ) {
+							if ( isset( $available[ $key ] ) ) {
 								$sycomp_visible[ $key ] = $market;
 							}
 						}
@@ -337,7 +327,7 @@ class Sycomp_B2B_Storefront {
 						// 1–6 → 3, 7–8 → 4, 9+ → 5.
 						$sycomp_cols = (int) max( 3, min( 5, (int) ceil( $sycomp_count / 2 ) ) );
 					?>
-					<?php if ( $logged_in && empty( $sycomp_visible ) ) : ?>
+					<?php if ( empty( $sycomp_visible ) ) : ?>
 						<p class="sy-marketsel__empty"><?php esc_html_e( 'No markets have been enabled for your company yet. Please contact your Sycomp representative.', 'sycomp-b2b-portal' ); ?></p>
 					<?php else : ?>
 						<div class="sy-market-grid"
@@ -359,14 +349,6 @@ class Sycomp_B2B_Storefront {
 							</a>
 							<?php endforeach; ?>
 						</div>
-					<?php endif; ?>
-
-					<?php if ( ! $logged_in ) : ?>
-						<p class="sy-marketsel__signin">
-							<a class="sy-btn sy-btn--accent" href="<?php echo esc_url( wp_login_url( $catalogue_url ) ); ?>">
-								<?php esc_html_e( 'Sign in to the portal', 'sycomp-b2b-portal' ); ?>
-							</a>
-						</p>
 					<?php endif; ?>
 				</div>
 			</div>
