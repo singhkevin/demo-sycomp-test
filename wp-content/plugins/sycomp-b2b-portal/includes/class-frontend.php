@@ -80,17 +80,19 @@ class Sycomp_B2B_Frontend {
 	}
 
 	/**
-	 * The shop manager's home screen is the management dashboard, not the
-	 * public market selector. Any time a shop manager lands on the site
-	 * front page they are sent to the Manage dashboard instead. Buyers and
-	 * administrators are unaffected.
+	 * Staff home screen is the management dashboard, not the public market
+	 * selector. Any time a staff member (shop_manager or administrator)
+	 * lands on the site front page they are sent to the Manage dashboard
+	 * instead. Buyers are unaffected.
 	 */
 	public static function manager_home_redirect() {
 		if ( ! is_user_logged_in() || ! is_front_page() ) {
 			return;
 		}
 		$user = wp_get_current_user();
-		if ( ! $user || ! in_array( 'shop_manager', (array) $user->roles, true ) ) {
+		$is_shop_manager = $user && in_array( 'shop_manager', (array) $user->roles, true );
+		$is_admin        = $user && in_array( 'administrator', (array) $user->roles, true );
+		if ( ! $is_shop_manager && ! $is_admin ) {
 			return;
 		}
 		$manage = sycomp_b2b_page_url( 'manage' );
