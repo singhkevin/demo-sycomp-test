@@ -187,7 +187,13 @@ class Sycomp_B2B_Security {
 		if ( $is_admin_target ) {
 			$_REQUEST['redirect_to'] = $manage;
 			$_GET['redirect_to']     = $manage;
-			$_POST['redirect_to']    = $manage;
+			// Only touch $_POST on real POSTs. Seeding it on GET makes
+			// wp-login.php skip its empty-$_POST cleanup and show
+			// "username/password field is empty" on every page load.
+			$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : '';
+			if ( 'POST' === $method ) {
+				$_POST['redirect_to'] = $manage;
+			}
 		}
 	}
 
