@@ -53,6 +53,33 @@ wp-content/debug.log
 /wp-content/themes/twentytwentyfour/
 /wp-content/themes/twentytwentythree/
 
+# Third-party plugin — not this project's own code, same policy as above.
+/wp-content/plugins/ai-provider-for-google/
+
+# Hostinger-specific mu-plugins — leftover from the prior host, not
+# applicable on WordPress.com (mu-plugins/ isn't covered by the plugin
+# exclusions above since it's a separate always-on directory).
+/wp-content/mu-plugins/hostinger-auto-updates.php
+/wp-content/mu-plugins/hostinger-preview-domain.php
+
+# LiteSpeed cache config data — leftover from the prior (LiteSpeed) host;
+# no LiteSpeed on WordPress.com.
+/wp-content/.litespeed_conf.dat
+
+# One-off setup/migration helpers and their debug output — each already
+# ran, is intentionally left as a no-op (see the file's own comment), and
+# has nothing left to deploy.
+/wp-content/sycomp-diag.txt
+/wp-content/mu-plugins/sycomp-diag.php
+/wp-content/mu-plugins/sycomp-snap.php
+/wp-content/mu-plugins/sycomp-pages.php
+/wp-content/mu-plugins/sycomp-snap-report.json
+
+# Stale loose duplicate of the 2FA plugin's main file, sitting directly in
+# wp-content/ instead of its plugin folder — WordPress never loads it from
+# here. The real, current copy is wp-content/plugins/sycomp-email-otp-2fa/.
+/wp-content/sycomp-email-otp-2fa.php
+
 # ZIP files (plugin/theme backups)
 wp-content/plugins/**/*.zip
 wp-content/themes/**/*.zip
