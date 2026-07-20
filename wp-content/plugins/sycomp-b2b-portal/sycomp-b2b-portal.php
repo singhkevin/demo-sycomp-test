@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* -------------------------------------------------------------------------
  * Constants
  * ---------------------------------------------------------------------- */
-define( 'SYCOMP_B2B_VERSION', '1.17.16' );
+define( 'SYCOMP_B2B_VERSION', '1.17.17' );
 define( 'SYCOMP_B2B_FILE', __FILE__ );
 define( 'SYCOMP_B2B_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SYCOMP_B2B_URL', plugin_dir_url( __FILE__ ) );
