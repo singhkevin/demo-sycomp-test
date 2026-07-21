@@ -1,4 +1,7 @@
 # Do not deploy WordPress core (WordPress.com manages this)
+wp-config.php
+.htaccess
+.htaccess.bk
 /index.php
 /license.txt
 /readme.html
