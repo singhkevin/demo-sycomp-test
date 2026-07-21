@@ -1,0 +1,49 @@
+# Do not deploy WordPress core (WordPress.com manages this)
+wp-config.php
+.htaccess
+.htaccess.bk
+/index.php
+/license.txt
+/readme.html
+/wp-activate.php
+/wp-admin/
+/wp-blog-header.php
+/wp-comments-post.php
+/wp-config-sample.php
+/wp-cron.php
+/wp-includes/
+/wp-links-opml.php
+/wp-load.php
+/wp-login.php
+/wp-mail.php
+/wp-settings.php
+/wp-signup.php
+/wp-trackback.php
+/xmlrpc.php
+
+# Do not deploy Jetpack (WordPress.com has its own managed version)
+/wp-content/plugins/jetpack/
+
+# Do not deploy third party or Hostinger plugins that aren't needed on WordPress.com
+/wp-content/plugins/woocommerce/
+/wp-content/plugins/all-in-one-wp-migration/
+/wp-content/plugins/hostinger/
+/wp-content/plugins/hostinger-ai-assistant/
+/wp-content/plugins/hostinger-easy-onboarding/
+/wp-content/plugins/hostinger-reach/
+/wp-content/plugins/litespeed-cache/
+
+# Do not deploy stock or hostinger themes
+/wp-content/themes/hostinger-ai-theme/
+/wp-content/themes/twentytwentyfive/
+/wp-content/themes/twentytwentyfour/
+/wp-content/themes/twentytwentythree/
+
+# Cache data
+/wp-content/.litespeed_conf.dat
+wp-content/litespeed/
+
+# Backups and Uploads (handled separately)
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/ai1wm-backups/

@@ -102,6 +102,11 @@ class Sycomp_B2B_Security {
 		add_filter( 'xmlrpc_enabled', array( __CLASS__, 'filter_xmlrpc_enabled' ) );
 		add_filter( 'wp_headers', array( __CLASS__, 'strip_pingback_header' ) );
 
+		// Fallback: if path matching at wp_loaded missed the front page
+		// (common on some hosts), still serve buyer login before the theme
+		// can render the market selector to logged-out visitors.
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_serve_buyer_login_on_front' ), 0 );
+
 		// --- Author / user enumeration. ---
 		add_action( 'template_redirect', array( __CLASS__, 'block_author_enumeration' ), 5 );
 		add_filter( 'rest_endpoints', array( __CLASS__, 'restrict_users_endpoint' ) );
@@ -182,7 +187,13 @@ class Sycomp_B2B_Security {
 		if ( $is_admin_target ) {
 			$_REQUEST['redirect_to'] = $manage;
 			$_GET['redirect_to']     = $manage;
-			$_POST['redirect_to']    = $manage;
+			// Only touch $_POST on real POSTs. Seeding it on GET makes
+			// wp-login.php skip its empty-$_POST cleanup and show
+			// "username/password field is empty" on every page load.
+			$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : '';
+			if ( 'POST' === $method ) {
+				$_POST['redirect_to'] = $manage;
+			}
 		}
 	}
 
@@ -614,6 +625,25 @@ class Sycomp_B2B_Security {
 				self::serve_login( 'buyer' );
 			}
 		}
+	}
+
+	/**
+	 * Front-page fallback for buyer login.
+	 *
+	 * `handle_request()` runs on `wp_loaded` and matches by URL path. On some
+	 * hosts that path check can miss the home page, which previously let the
+	 * market selector render for logged-out visitors. By the time
+	 * `template_redirect` fires, WordPress knows `is_front_page()`, so we can
+	 * reliably serve the branded login before the theme outputs markets.
+	 */
+	public static function maybe_serve_buyer_login_on_front() {
+		if ( is_user_logged_in() ) {
+			return;
+		}
+		if ( ! is_front_page() ) {
+			return;
+		}
+		self::serve_login( 'buyer' );
 	}
 
 	/**
