@@ -20,6 +20,7 @@ wp-content/debug.log
 # Hostinger-branded plugins/theme (leftover from the prior host, not
 # applicable on WordPress.com) are excluded — files stay on disk locally,
 # just no longer pushed on deploy.
+/wp-content/plugins/woocommerce/
 /wp-content/plugins/all-in-one-wp-migration/
 /wp-content/plugins/hostinger/
 /wp-content/plugins/hostinger-ai-assistant/
