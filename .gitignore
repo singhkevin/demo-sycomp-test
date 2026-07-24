@@ -5,6 +5,8 @@ wp-config.php
 local-xdebuginfo.php
 test-path.php
 fix-sycomp.php
+default.php
+.private/
 
 
 # WordPress Content Uploads & Backups
